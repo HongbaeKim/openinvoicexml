@@ -25,5 +25,7 @@ export interface Party {
   };
 
   /** BT-34 / BT-49: Electronic address (e.g. email) for routing. */
-  electronicAddress?: string;
+  electronicAddress: string;
+  /** BT-34 / BT-49: Scheme identifier for the electronic address (e.g. "EM" for email). */
+  electronicAddressSchemeId?: string;
 }

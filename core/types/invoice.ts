@@ -22,6 +22,10 @@ export interface Invoice {
   issueDate: string;
   /** BT-9: Payment due date in YYYY-MM-DD format. */
   dueDate?: string;
+  /** BT-5: Document currency code (ISO 4217, e.g. "EUR"). */
+  currencyCode: string;
+  /** BT-23: Business process type identifier (e.g. Peppol profile ID). */
+  businessProcessType: string;
 
   /** BG-4: Seller (invoicing party). */
   seller: Party;
@@ -41,6 +45,18 @@ export interface Invoice {
   taxInclusiveAmount: number;
   /** BT-115: Amount due for payment. */
   duePayableAmount: number;
+
+  /** BG-16: Payment means. */
+  paymentMeans?: {
+    /** BT-81: Payment means code (UNCL4461). */
+    code: string;
+    /** BT-84: Payment account identifier (IBAN). */
+    iban?: string;
+    /** BT-85: Payment account name. */
+    accountName?: string;
+    /** BT-86: Payment service provider identifier (BIC). */
+    bic?: string;
+  };
 
   /** BT-22: Note / free-text remark on the invoice. */
   note?: string;
