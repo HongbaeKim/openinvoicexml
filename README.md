@@ -33,8 +33,8 @@ This phased allocation ensures careful architectural groundwork in June, followe
 
 ### Week 1 (1 Jun – 7 Jun)
 
-- [v] Create repo + initial skeleton
-- [v] Add README quickstart
+- [ ] Create repo + initial skeleton
+- [ ] Add README quickstart
 
 Detailed tasks:
 - Create public GitHub repository under an open-source license (MIT); set up branch protection, issue templates, and PR template
