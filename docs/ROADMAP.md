@@ -2,29 +2,16 @@
 
 From 2028 onward, all domestic B2B invoices in Germany must be issued as a structured electronic invoice (e.g., XRechnung XML). Hybrid PDF/A-3 (Factur-X/ZUGFeRD) is a combined human-readable and machine-readable e-invoice format (PDF with embedded XML).
 
-## Time Allocation
-
-The total planned workload is **900 hours** over the six-month funding period from **June 1, 2026 to November 30, 2026** (approximately 26 weeks).
-
-Due to an existing internship commitment ending in June, approximately 8 hours per week will be allocated during the first four weeks.
-
-- **June (Architecture Phase):** 4 weeks × 8 hours = 32 hours — Focus: architectural design, internal schema definition, and foundational planning.
-
-From July onward, development will transition to full-time work. The remaining development time of 868 hours is distributed across July–November and structured through defined work packages.
-
-> 32 hours (June) + 868 hours (July–November) = 900 total hours.
-
-This phased allocation ensures careful architectural groundwork in June, followed by intensive implementation, validation, testing, and documentation from July onward.
 
 ### Work Packages
 
-| Work Package | Period | Focus | Planned Hours |
-|---|---|---|---|
-| WP1 – Architecture & Internal Schema | Weeks 1–4 (4 weeks) | Internal schema design, repo setup, modular architecture foundation | 32 hours |
-| WP2 – XML Engine & Validation | Weeks 5–8 (4 weeks) | XRechnung generation + local validation | 160 hours |
-| WP3 – Legal Compliance & Test Fixtures | Weeks 9–12 (4 weeks) | VAT scenarios, invoice types, fixture validation | 160 hours |
-| WP4 – Hybrid PDF/A-3 Export | Weeks 13–16 (4 weeks) | Hybrid export + profile support | 160 hours |
-| WP5 – Stabilization & Release Prep | Weeks 17–26 (10 weeks) | Testing, documentation, hardening, release prep | 388 hours |
+| Work Package | Period | Focus |
+|---|---|---|
+| WP1 – Architecture & Internal Schema | Weeks 1–4 (4 weeks) | Internal schema design, repo setup, modular architecture foundation |
+| WP2 – XML Engine & Validation | Weeks 5–8 (4 weeks) | XRechnung generation + local validation |
+| WP3 – Legal Compliance & Test Fixtures | Weeks 9–12 (4 weeks) | VAT scenarios, invoice types, fixture validation |
+| WP4 – Hybrid PDF/A-3 Export | Weeks 13–16 (4 weeks) | Hybrid export + profile support |
+| WP5 – Stabilization & Release Prep | Weeks 17–26 (10 weeks) | Testing, documentation, hardening, release prep |
 
 ---
 
