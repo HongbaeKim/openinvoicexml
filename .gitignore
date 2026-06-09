@@ -16,3 +16,6 @@ Thumbs.db
 # Env
 .env
 .env.local
+
+#note
+.step/
