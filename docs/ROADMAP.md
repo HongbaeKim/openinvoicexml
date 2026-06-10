@@ -34,7 +34,7 @@ Detailed tasks:
 
 ### Week 2 (8 Jun – 14 Jun)
 
-- [ ] Draft internal invoice schema v0.1
+- [ ] Draft internal invoice schema v0.1    
 - [ ] Add 2 example invoice JSON files
 - [ ] Add schema validation test
 
