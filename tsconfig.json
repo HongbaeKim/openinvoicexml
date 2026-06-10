@@ -14,7 +14,9 @@
     "noImplicitOverride": true,
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "include": ["core/**/*", "adapters/**/*", "validators/**/*"],
   "exclude": ["node_modules", "dist", "fixtures"]
