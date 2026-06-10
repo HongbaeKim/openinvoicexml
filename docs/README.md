@@ -9,3 +9,5 @@
 | `CONTRIBUTING.md` — How to contribute, coding conventions | Week 4 |
 | `LIMITATIONS.md` — What is not supported and why | Done |
 | `PROTOTYPEFUND.md` — Prototype Fund bi-weekly progress report | Active |
+| `DEPENDENCIES.md` — Purpose of each dependency in `package.json` | Done |
+| `TSCONFIG.md` — Explanation of each `tsconfig.json` compiler option | Done |
