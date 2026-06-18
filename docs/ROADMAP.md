@@ -25,7 +25,7 @@ From 2028 onward, all domestic B2B invoices in Germany must be issued as a struc
 - [ ] Add README quickstart
 
 Detailed tasks:
-- Create public GitHub repository under an open-source license (AGPL-3.0); set up branch protection, issue templates, and PR template
+- Create public GitHub repository under an open-source license (Apache-2.0); set up branch protection, issue templates, and PR template
 - Initialize project skeleton with clear module directory structure: `/core`, `/adapters`, `/validators`, `/fixtures`, `/docs`
 - Write README with quickstart guide: prerequisites, local dev setup instructions, how to run tests, links to docs
 - Add `.editorconfig`, `.gitignore`, and code style configuration (e.g. Prettier / ESLint or equivalent for chosen stack)
