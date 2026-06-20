@@ -54,3 +54,10 @@ The following scenarios are known and planned but not yet implemented:
 ## Validator Integration
 
 KoSIT validator integration is the deliverable of **Phase 2, Week 6**. Until then, generated XML (once available) is not automatically verified against the official XRechnung Schematron rules.
+
+The `BusinessRuleValidator` (`validators/business-rules.ts`, added in Week 7) checks VAT
+category/rate consistency, §13b reverse-charge requirements, exemption reasons, and EN 16931
+rounding/amount consistency directly on the internal `Invoice` model. This is independent of and
+does not replace KoSIT: it catches business-rule violations before XML generation exists, but
+only KoSIT (once integrated) can confirm full XRechnung Schematron conformance of the generated
+XML.
