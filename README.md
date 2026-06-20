@@ -4,7 +4,7 @@ An open-source TypeScript library for generating compliant German electronic inv
 
 From 2028 onward, all domestic B2B invoices in Germany must be issued as structured electronic invoices. This library handles the full pipeline: structured JSON input → validated XRechnung XML → hybrid PDF with embedded XML.
 
-Funded by [Prototype Fund](https://prototypefund.de) (Round 17, June–November 2026).
+Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml) (June–November 2026).
 
 ## What it does
 
@@ -40,6 +40,7 @@ npm test
 /core         — internal invoice schema and normalization
 /adapters     — output adapters (XRechnung XML, PDF/A-3)
 /validators   — validation layer (schema, KoSIT, veraPDF)
+  /rules      — individual business rule implementations
 /fixtures     — example invoices and expected outputs
 /docs         — architecture, roadmap, and API docs
 ```
@@ -48,7 +49,7 @@ npm test
 
 - [Architecture](docs/ARCHITECTURE.md) — adapter pattern, module boundaries, data flow
 - [Roadmap](docs/ROADMAP.md) — phases, milestones, week-by-week plan
-- [Limitations](LIMITATIONS.md) — what is not supported and why
+- [Limitations](docs/LIMITATIONS.md) — what is not supported and why
 - [Contributing](CONTRIBUTING.md) — how to contribute
 
 ## License
