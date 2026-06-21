@@ -19,6 +19,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 // Load format validators (date, email, uri, uuid, etc.)
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const addFormats: (ajv: InstanceType<typeof Ajv>) => void = require("ajv-formats");
 
 // Shared shape for both fixtures, used so generic mutation tests can run against either one.
