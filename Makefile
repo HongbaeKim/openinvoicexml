@@ -1,7 +1,10 @@
-.PHONY: test typecheck
+.PHONY: test type lint
 
 test:
 	npm test
 
-typecheck:
+type:
 	npm run typecheck
+
+lint:
+	npm run lint
