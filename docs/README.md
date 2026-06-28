@@ -2,11 +2,11 @@
 
 | Document | Status |
 |---|---|
-| `SCHEMA.md` — Internal invoice schema, field definitions, BT mapping | Week 2 |
-| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow | Week 4 |
+| `SCHEMA.md` — Internal invoice schema, field definitions, BT mapping | Done |
+| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow | Done |
 | `MAPPING.md` — Full XRechnung BT mapping table | Week 5 |
-| `ROADMAP.md` — Phase goals, non-goals, open questions | Week 4 |
-| `CONTRIBUTING.md` — How to contribute, coding conventions | Week 4 |
+| `ROADMAP.md` — Phase goals, non-goals, open questions | Done |
+| `CONTRIBUTING.md` — How to contribute, coding conventions | Done |
 | `LIMITATIONS.md` — What is not supported and why | Done |
 | `PROTOTYPEFUND.md` — Prototype Fund bi-weekly progress report | Active |
 | `DEPENDENCIES.md` — Purpose of each dependency in `package.json` | Done |
