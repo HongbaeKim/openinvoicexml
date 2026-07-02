@@ -4,3 +4,5 @@
 // Planned adapters:
 //   XRechnungAdapter  → UBL 2.1 XML (Phase 2)
 //   PdfAdapter        → PDF/A-3 hybrid with embedded XML (Phase 4)
+
+export { toXRechnung } from "./xrechnung.js";
