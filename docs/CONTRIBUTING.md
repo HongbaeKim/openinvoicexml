@@ -36,6 +36,8 @@ If all tests pass, your environment is ready.
 | `npm run format` | Format all files (Prettier) |
 | `npm run format:check` | Check formatting without changing files |
 | `npm run build` | Compile TypeScript to `dist/` |
+| `make generate` | Regenerate XML fixtures from `dist/` (run `npm run build` first) |
+| `make validate-xml` | Generate XML and verify each file has a valid XML declaration |
 
 ---
 
@@ -52,6 +54,12 @@ Before committing, run:
 ```bash
 npm run format
 npm run lint
+```
+
+After changing the adapter or fixtures, regenerate XML output with:
+
+```bash
+make type && make generate
 ```
 
 ---
