@@ -3,6 +3,9 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# KoSIT validator + JRE, downloaded on demand by scripts/setup-kosit.sh
+tools/
+
 # OS
 .DS_Store
 Thumbs.db
