@@ -11,6 +11,11 @@ set -euo pipefail
 # go to the root
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+# component | What it is | Analogy
+# JRE | Runs Java programs | oven
+# Validator | Checks XML | Chef
+# XRechnung Configuration | xRechnung rules | Recipe
+
 # itplr-kosit/validator — The validator program. 
 # It is a generic Java tool that checks XML files. 
 # By itself, it doesn't know what an XRechnung invoice is or which rules to apply.
