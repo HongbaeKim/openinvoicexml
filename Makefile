@@ -1,5 +1,5 @@
 .ONESHELL:
-.PHONY: test type lint generate validate-xml
+.PHONY: test type lint generate validate-xml kosit-setup validate-kosit
 
 test:
 	npm test
@@ -31,4 +31,34 @@ validate-xml: generate
 	  if (!xml.startsWith("<?xml")) throw new Error(f + ": missing XML declaration");
 	  console.log("✓ " + f);
 	}
+	EOF
+
+# one-time download of the KoSIT validator jar + XRechnung scenario config (+ a
+# portable JRE if java isn't already on PATH) into tools/ (git-ignored)
+kosit-setup:
+	bash scripts/setup-kosit.sh
+
+# generates XML from all fixtures, then runs it through the real KoSIT validator;
+# exits non-zero if any file has an error-severity Schematron/XSD finding
+# Only filters "error"
+
+# and expected output will be
+# ✗ dist/xml/invoice1.xml — 2 error(s)
+#     Missing BuyerReference
+#     Seller VAT ID missing
+# ✓ dist/xml/invoice2.xml
+validate-kosit: generate
+	node --input-type=module <<'EOF'
+	import { runKosit } from "./dist/validators/index.js";
+	import { readdirSync } from "fs";
+	const files = readdirSync("dist/xml").filter(f => f.endsWith(".xml")).map(f => "dist/xml/" + f);
+	const results = runKosit(files);
+	let failed = false;
+	for (const r of results) {
+	  const errors = r.issues.filter(i => i.severity === "error");
+	  console.log((errors.length ? "✗ " : "✓ ") + r.file + (errors.length ? " — " + errors.length + " error(s)" : ""));
+	  for (const e of errors) console.log("    " + e.message);
+	  if (errors.length) failed = true;
+	}
+	if (failed) process.exit(1);
 	EOF
