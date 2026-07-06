@@ -46,7 +46,7 @@ describe("toXRechnung", () => {
 
     it("CustomizationID is the XRechnung 3.x string", () => {
       expect(xml).toContain(
-        "<cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0</cbc:CustomizationID>",
+        "<cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>",
       );
     });
 
@@ -79,6 +79,14 @@ describe("toXRechnung", () => {
 
     it("PayableAmount is 1190.00", () => {
       expect(xml).toContain('<cbc:PayableAmount currencyID="EUR">1190.00</cbc:PayableAmount>');
+    });
+
+    it("includes seller Contact (BG-6, required by BR-DE-2)", () => {
+      const invoice = domesticSimple as unknown as Invoice;
+      expect(xml).toContain(`<cbc:Telephone>${invoice.seller.contact!.telephone}</cbc:Telephone>`);
+      expect(xml).toContain(
+        `<cbc:ElectronicMail>${invoice.seller.contact!.email}</cbc:ElectronicMail>`,
+      );
     });
   });
 
