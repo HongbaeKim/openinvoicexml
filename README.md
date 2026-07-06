@@ -15,7 +15,7 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 
 ## Status
 
-Early development — Phase 1 (Architecture & Internal Schema) in progress. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+Early development — Phase 2 (XML Engine & Validation) in progress: XRechnung XML generation is implemented and validated locally against the official KoSIT validator (see [docs/VALIDATION.md](docs/VALIDATION.md)). See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 
 ## Prerequisites
 
@@ -51,7 +51,8 @@ npm test
 |---|---|
 | `SCHEMA.md` — Internal invoice schema, field definitions, BT mapping | Done |
 | `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow | Done |
-| `MAPPING.md` — Full XRechnung BT mapping table | Week 5 |
+| `MAPPING.md` — Full XRechnung BT mapping table | Done |
+| `VALIDATION.md` — How to validate XRechnung output against KoSIT | Done |
 | `ROADMAP.md` — Phase goals, non-goals, open questions | Done |
 | `CONTRIBUTING.md` — How to contribute, coding conventions | Done |
 | `LIMITATIONS.md` — What is not supported and why | Done |
