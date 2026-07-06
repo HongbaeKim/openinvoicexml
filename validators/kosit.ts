@@ -50,7 +50,7 @@ function resolveJavaBin(): string {
 export function runKosit(xmlPaths: string[], options: KositOptions = {}): KositResult[] {
   const jarPath = options.jarPath ?? DEFAULT_JAR;
   const scenariosPath = options.scenariosPath ?? DEFAULT_SCENARIOS;
-  // mkdtempSync function adds a random unique string to the end 
+  // mkdtempSync function adds a random unique 6 characters to the end 
   const outDir = options.outDir ?? mkdtempSync(join(tmpdir(), "kosit-"));
 
   if (!existsSync(jarPath) || !existsSync(scenariosPath)) {

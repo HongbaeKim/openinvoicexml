@@ -8,7 +8,10 @@ import { Ajv } from "ajv";
 import schema from "../schemas/invoice.schema.json" with { type: "json" };
 import simpleFixture from "../fixtures/domestic-simple.invoice.json" with { type: "json" };
 import multiLineFixture from "../fixtures/domestic-multi-line.invoice.json" with { type: "json" };
-
+// describe() → groups related tests together.
+// it() → runs one test.
+// expect() → checks if the result is correct.
+// afterAll() → runs once after all tests are finished to clean up.
 import { describe, it, expect, beforeAll } from "vitest";
 import type { ValidateFunction } from "ajv";
 
