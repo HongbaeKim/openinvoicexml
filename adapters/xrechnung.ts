@@ -15,6 +15,9 @@ function renderParty(wrapperTag: string, party: Party): string {
   const companyId = party.legalId
     ? `\n        <cbc:CompanyID>${esc(party.legalId)}</cbc:CompanyID>`
     : "";
+  const contact = party.contact
+    ? `\n      <cac:Contact>${party.contact.name ? `\n        <cbc:Name>${esc(party.contact.name)}</cbc:Name>` : ""}\n        <cbc:Telephone>${esc(party.contact.telephone)}</cbc:Telephone>\n        <cbc:ElectronicMail>${esc(party.contact.email)}</cbc:ElectronicMail>\n      </cac:Contact>`
+    : "";
 
   return `  <${wrapperTag}>
     <cac:Party>
@@ -28,7 +31,7 @@ function renderParty(wrapperTag: string, party: Party): string {
       </cac:PostalAddress>${vatScheme}${fcScheme}
       <cac:PartyLegalEntity>
         <cbc:RegistrationName>${esc(party.name)}</cbc:RegistrationName>${companyId}
-      </cac:PartyLegalEntity>
+      </cac:PartyLegalEntity>${contact}
     </cac:Party>
   </${wrapperTag}>`;
 }
@@ -123,7 +126,7 @@ export function toXRechnung(invoice: Invoice): string {
   xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
   xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
   xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0</cbc:CustomizationID>
+  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>
   <cbc:ProfileID>${esc(invoice.businessProcessType)}</cbc:ProfileID>
   <cbc:ID>${esc(invoice.id)}</cbc:ID>
   <cbc:IssueDate>${invoice.issueDate}</cbc:IssueDate>${dueDate}
