@@ -17,7 +17,12 @@
       "countryCode": "DE"
     },
     "electronicAddress": "rechnung@mustermann.example",
-    "electronicAddressSchemeId": "EM"
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
   },
 
   "buyer": {

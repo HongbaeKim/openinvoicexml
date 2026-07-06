@@ -28,4 +28,14 @@ export interface Party {
   electronicAddress: string;
   /** BT-34 / BT-49: Scheme identifier for the electronic address (e.g. "EM" for email). */
   electronicAddressSchemeId?: string;
+
+  /** BG-6: Contact. Required on the seller for XRechnung (BR-DE-2). */
+  contact?: {
+    /** BT-41: Contact point (person or department name). */
+    name?: string;
+    /** BT-42: Contact telephone number. */
+    telephone: string;
+    /** BT-43: Contact email address. */
+    email: string;
+  };
 }

@@ -52,8 +52,8 @@
       "description": "BT-23: Business process type identifier. For Peppol: urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
     },
     "seller": {
-      "$ref": "#/$defs/Party",
-      "description": "BG-4: Seller (invoicing party). Required by §14 Abs. 4 Nr. 1 UStG."
+      "allOf": [{ "$ref": "#/$defs/Party" }, { "type": "object", "required": ["contact"] }],
+      "description": "BG-4: Seller (invoicing party). Required by §14 Abs. 4 Nr. 1 UStG. Must include contact details (BG-6) per XRechnung rule BR-DE-2."
     },
     "buyer": {
       "$ref": "#/$defs/Party",
@@ -184,6 +184,31 @@
         "electronicAddressSchemeId": {
           "type": "string",
           "description": "BT-34 / BT-49: Scheme identifier for the electronic address (e.g. EM for email, 9930 for German Leitweg-ID routing)."
+        },
+        "contact": {
+          "$ref": "#/$defs/Contact",
+          "description": "BG-6: Contact. Required on the seller for XRechnung (BR-DE-2)."
+        }
+      }
+    },
+    "Contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["telephone", "email"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "BT-41: Contact point (person or department name)."
+        },
+        "telephone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "BT-42: Contact telephone number."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "BT-43: Contact email address."
         }
       }
     },

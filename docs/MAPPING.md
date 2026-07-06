@@ -33,6 +33,14 @@ Invoice schema and to the UBL 2.1 XML element they produce.
 | BT-32 | Seller tax registration   | `seller.taxRegistrationId` (optional)    | `cac:PartyTaxScheme/cbc:CompanyID` (TaxScheme `FC`)            |
 | BT-30 | Seller legal registration | `seller.legalId` (opt., fallback: name)  | `cac:PartyLegalEntity/cbc:CompanyID`                           |
 | BT-28 | Seller legal name         | `seller.name`                            | `cac:PartyLegalEntity/cbc:RegistrationName`                    |
+| BT-41 | Seller contact point      | `seller.contact.name` (optional)         | `cac:Contact/cbc:Name`                                         |
+| BT-42 | Seller contact telephone  | `seller.contact.telephone`               | `cac:Contact/cbc:Telephone`                                    |
+| BT-43 | Seller contact email      | `seller.contact.email`                   | `cac:Contact/cbc:ElectronicMail`                                |
+
+Seller contact (BG-6) is mandatory under the XRechnung national extension rule `BR-DE-2` —
+enforced structurally: the JSON Schema requires `seller.contact` (see `schemas/invoice.schema.json`).
+`Party.contact` is defined once and shared with `buyer` (EN 16931 BG-9), but only the seller's
+is required.
 
 ## Buyer (BG-7)
 
