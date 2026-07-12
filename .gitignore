@@ -19,6 +19,10 @@ Thumbs.db
 # Env
 .env
 .env.local
+.env.example
+
+# Docker Compose per-machine local overrides (e.g. a different host port)
+docker-compose.override.yml
 
 #note
 .step/
