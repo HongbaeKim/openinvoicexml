@@ -63,3 +63,10 @@ npm test
 ## License
 
 Apache-2.0
+
+---
+
+<p>
+  <img src="logo/en/BMFTR_en.png" alt="Logo of the German Federal Ministry of Research, Technology and Space" height="80">
+  <img src="logo/en/P_en.png" alt="Prototype Fund logo" height="80">
+</p>
