@@ -26,6 +26,3 @@ docker-compose.override.yml
 
 #note
 .step/
-
-#logo
-.logo/
