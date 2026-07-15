@@ -38,6 +38,8 @@ If all tests pass, your environment is ready.
 | `npm run build` | Compile TypeScript to `dist/` |
 | `make generate` | Regenerate XML fixtures from `dist/` (run `npm run build` first) |
 | `make validate-xml` | Generate XML and verify each file has a valid XML declaration |
+| `make kosit-setup` | One-time download of the KoSIT validator + XRechnung config (see `docs/VALIDATION.md`) |
+| `make validate-kosit` | Generate XML and validate it against the real KoSIT validator |
 
 ---
 
