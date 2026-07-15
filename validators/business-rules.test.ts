@@ -150,6 +150,16 @@ describe("validateBusinessRules", () => {
     expect(issues.some((i) => i.code === "VAT_RATE_INVALID_FOR_CATEGORY")).toBe(true);
   });
 
+  it("flags a category 'S' line at a rate outside 19%/7%", () => {
+    const invoice = clone(domesticSimple) as Invoice;
+    // only 19 or 7 are valid; 15 must fail
+    invoice.lines[0]!.vatRate = 15;
+
+    const issues = validateBusinessRules(invoice);
+
+    expect(issues.some((i) => i.code === "VAT_RATE_INVALID_FOR_CATEGORY")).toBe(true);
+  });
+
   it("flags VAT_TAX_AMOUNT_ROUNDING on a 7% reduced-rate breakdown", () => {
     const invoice = clone(reducedRate) as Invoice;
     //fail 17.5

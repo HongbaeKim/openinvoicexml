@@ -5,6 +5,9 @@ import { isClose, round2 } from "../../core/utils/monetary.js";
 /** Categories that must carry a zero VAT rate (no VAT charged on the invoice). */
 export const ZERO_RATE_CATEGORIES: VatCategoryCode[] = ["Z", "E", "AE", "K", "G", "O"];
 
+/** Rates permitted for category 'S' (German standard/reduced VAT rates). */
+export const STANDARD_VAT_RATES: number[] = [19, 7];
+
 /** Categories for which BT-120/BT-121 (exemption reason) is mandatory per EN 16931. */
 export const EXEMPTION_REASON_REQUIRED_CATEGORIES: VatCategoryCode[] = ["E", "AE", "K", "G", "O"];
 
@@ -26,11 +29,11 @@ export function checkVatRateForCategory(
   issues: ValidationIssue[],
 ): void {
   if (categoryCode === "S") {
-    if (rate <= 0) {
+    if (!STANDARD_VAT_RATES.includes(rate)) {
       issues.push({
         code: "VAT_RATE_INVALID_FOR_CATEGORY",
         severity: "error",
-        message: `${path}: BT-118/BT-119 category 'S' requires a positive VAT rate, found ${rate}%.`,
+        message: `${path}: BT-118/BT-119 category 'S' requires a VAT rate of 19% or 7%, found ${rate}%.`,
         path,
       });
     }
