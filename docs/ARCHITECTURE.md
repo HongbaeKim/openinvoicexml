@@ -116,7 +116,7 @@ Two validation layers, each catching a different class of error:
 
 **Business rule validation** (`validateBusinessRules()`) catches legal errors that valid JSON can still contain:
 
-- VAT rate must match category (S requires positive rate; Z/E/AE/K/G/O require 0%)
+- VAT rate must match category (S requires 19% or 7%; Z/E/AE/K/G/O require 0%)
 - Reverse charge (AE) requires buyer VAT ID (§13b UStG)
 - Exemption categories (E/AE/K/G/O) require an exemption reason (BT-120 or BT-121)
 - Line amounts must equal quantity × unit price (within rounding tolerance)
@@ -172,11 +172,17 @@ The engine has zero production dependencies. All dependencies (`ajv`, `vitest`, 
 
 **Why:** Invoices can have multiple independent errors. Throwing on the first one forces the caller into a try-catch-fix-retry loop. Returning all issues at once lets callers display a complete error report, batch-process fixes, or selectively ignore warnings.
 
-### VAT rate is not hardcoded to German rates
+### VAT rate for category "S" is restricted to 19%/7%
 
-Category "S" (standard rate) accepts any positive rate, not just 19% or 7%.
+Category "S" (standard rate) only accepts the current German standard (19%) and reduced (7%) rates — `validators/rules/vat-rate.ts`'s `STANDARD_VAT_RATES`.
 
-**Why:** Germany temporarily used 16%/5% during COVID (July–December 2020). Historical invoices with those rates must validate. The engine should also work for other EU member states that use EN 16931 with different rates.
+**Why:** The engine targets current German invoicing. Historical rates (Germany's COVID-era 16%/5%, July–December 2020) and other EU member states' EN 16931 rates are not validated today. Broader rate support is a documented future extension, not current behavior — see `docs/LIMITATIONS.md` — and would require widening `STANDARD_VAT_RATES` plus corresponding fixtures.
+
+### `generateInvoice()` gates output on business-rule errors
+
+`toXRechnung()` remains a pure, unchecked building block — it always serializes whatever `Invoice` it's given. `generateInvoice()` (in `adapters/generate-invoice.ts`) is the recommended entry point: it runs `validateBusinessRules()` first and only calls `toXRechnung()` if there are no error-severity issues, returning `{ xml, issues }`.
+
+**Why:** Keeps `toXRechnung` and `validateBusinessRules` independently testable and composable — no forced coupling — while giving callers who want it a default that can't silently produce business-rule-invalid XML. It returns a structured result rather than throwing, consistent with "Validation returns data, not exceptions" below.
 
 ### Adapter pattern for output formats
 
