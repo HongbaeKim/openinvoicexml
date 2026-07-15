@@ -6,3 +6,6 @@
 //   PdfAdapter        → PDF/A-3 hybrid with embedded XML (Phase 4)
 
 export { toXRechnung } from "./xrechnung.js";
+
+export { generateInvoice } from "./generate-invoice.js";
+export type { GenerateInvoiceResult } from "./generate-invoice.js";
