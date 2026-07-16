@@ -118,6 +118,7 @@ Detailed tasks:
 
 - [ ] Implement structured VAT rule enforcement logic
 - [ ] Add automated test cases
+- [ ] Build user onboarding area (beta signup) in frontend
 
 Detailed tasks:
 - Implement structured VAT rule enforcement: a validation layer that checks VAT category code consistency (e.g. if category is AE/reverse charge, buyer VAT ID must be present; if category is S, rate must be 19% or 7%)
@@ -125,6 +126,11 @@ Detailed tasks:
 - Write automated test cases covering: standard 19% VAT, reduced 7% VAT, VAT-exempt (E), zero-rated (Z), and at least one reverse-charge (AE) scenario
 - Ensure all test cases pass KoSIT validation — add KoSIT check to the automated test runner
 - Log all VAT rule violations with a human-readable error message that can be surfaced to the end user
+- Wire `validateBusinessRules` into a new `generateInvoice()` pipeline (schema → business rules → XML) so any error-severity issue blocks XML output by default; `toXRechnung` remains available unchanged as the lower-level building block for callers who validate separately
+- Add a basic CI workflow (`.github/workflows/ci.yml`) running `test` + `typecheck` + `validate-kosit` on every push/PR, before Phase 3 broadens the fixture set — cheap now (public repo, so GitHub Actions runners are free and unlimited) and pays off once the fixture count triples in Weeks 9–12; 
+- Note: a GitHub Pages deployment workflow for the Second-Stage frontend prototype (`.github/workflows/deploy-frontend.yml`) shipped ahead of schedule during Week 7's parallel frontend work — it only builds/publishes `src/frontend`, and does not include the `test`/`typecheck`/`validate-kosit` steps above, which remain scoped to this week
+- Note: a user onboarding area (`beta.html` / `BetaPage` / `BetaForm`) is also being built ahead of schedule this week as part of the parallel frontend work — a simple signup form so people can register interest in the beta program; this is normally Phase 7 (User Onboarding & Public Beta) scope, started early alongside the frontend prototype
+- Open `openinvoicexml.de` to the public once DNS/VPS deployment is complete — beyond collecting beta/developer signups through `beta.html`/`developer.html`, the launch itself is a demand-validation signal (visits, signup conversion) for whether Phase 6's hosted service is worth building
 
 > **Why enforcement matters:** XRechnung uses Schematron rules (not just XSD) for business-level validation. Many conformance errors come from valid XML that violates business rules — e.g. a reverse-charge invoice missing the buyer's VAT ID. Catching these before KoSIT submission improves developer experience significantly.
 
@@ -402,3 +408,22 @@ Detailed tasks:
 - Post an announcement on LinkedIn, Mastodon, and relevant freelancer/open-source communities to invite users and contributors
 
 **Milestone: Production-ready open-source prototype engine validated locally and prepared for controlled public deployment in Second Stage.**
+
+---
+
+## Second Stage – Phases 6–10 (the hosted public web service)
+
+> **Status: Not yet selected — planned only.** Phases 1–5 above are the committed scope. Second Stage depends on a go/no-go decision after Phase 5 (v1.0.0-prototype), informed by the demand-validation signals described below (beta/developer signups, site traffic) and funding availability. Dates and phase breakdown here are a provisional plan, not a commitment.
+
+| Phase | Focus | Period |
+|---|---|---|
+| Phase 6 – Deployment & Operational Setup | Production deployment, monitoring, rate limiting | Weeks 27–29 (30 Nov – 20 Dec) |
+| Phase 7 – Public Beta Preparation | Documentation, tutorials | Weeks 30–32 (21 Dec – 10 Jan) |
+| Phase 8 – Integrations & API Reuse | API documentation, pilot integrations | Weeks 33–35 (11 Jan – 31 Jan) |
+| Phase 9 – Sustainability & Community Development | Community setup, hosting model, governance | Weeks 36–39 (1 Feb – 28 Feb) |
+| Phase 10 – Stabilization & Finalization | Improvements, issue resolution, final reporting | Weeks 40–42 (1 Mar – 21 Mar) |
+
+The beta program (`beta.html`) and developer feedback form (`developer.html`) collect early
+signups and integration interest ahead of Phase 6's production deployment. Publishing
+`openinvoicexml.de` itself doubles as a demand-validation step — traffic and signup volume are a
+lightweight signal for whether the hosted Second Stage service is worth the funded build-out.

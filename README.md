@@ -59,6 +59,10 @@ npm test
 | `PROTOTYPEFUND.md` — Prototype Fund bi-weekly progress report | Active |
 | `DEPENDENCIES.md` — Purpose of each dependency in `package.json` | Done |
 | `TSCONFIG.md` — Explanation of each `tsconfig.json` compiler option | Done |
+| `BACKENDSTRUCTURE.md` — Numbered folder convention for `src/backend/src/` | Done |
+| `FRONTENDSTRUCTURE.md` — Numbered folder convention for `src/frontend/src/` | Done |
+| `SECURITY.md` — Security considerations and responsible disclosure | Done |
+| `COMMITRULE.md` — Commit message type convention | Done |
 
 ## License
 

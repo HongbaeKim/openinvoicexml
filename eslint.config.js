@@ -24,6 +24,10 @@ export default [
   },
   prettier,
   {
-    ignores: ["dist/**", "node_modules/**"],
+    // src/ (frontend + backend) are separate services/apps with their own package.json and
+    // tsconfig.json (not part of the published npm package) — they're outside this eslint
+    // config's `project` (root tsconfig.json only covers core/adapters/validators). The root
+    // package itself has no /src of its own, so this is unambiguous.
+    ignores: ["dist/**", "node_modules/**", "src/**"],
   },
 ];

@@ -1,0 +1,95 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      # Must match the password embedded in DATABASE_URL below — they're two independent
+      # variables (this is what initializes the Postgres server; DATABASE_URL is what the
+      # backend actually connects with), so changing one without the other breaks auth.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: app
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # Postgres auto-runs any .sql file here on first boot (empty data dir) — this is our
+      # one-table migration, no separate migration tool needed.
+      - ./db:/docker-entrypoint-initdb.d:ro
+
+  backend:
+    build: ./backend
+    environment:
+      # Default matches postgres's dev-only defaults above. On the VPS, set both this and
+      # POSTGRES_PASSWORD in .env to the same real password — see the note on POSTGRES_PASSWORD.
+      DATABASE_URL: ${DATABASE_URL:-postgres://app:app@postgres:5432/app}
+      PORT: 3000
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost:8080}
+    # Bound to loopback by default: reachable for local dev (http://localhost:$HOST_PORT) and,
+    # on the VPS, from nginx via the docker network — never exposed directly on the VPS's public
+    # IP. Set BIND_HOST=0.0.0.0 in .env to reach this from another device on your LAN (e.g.
+    # working on a remote dev box and browsing from your own machine) — don't do that on the
+    # VPS, it would defeat the point of nginx being the only public-facing thing.
+    # HOST_PORT is the host-side port only (defaults to 3000); the container always listens on
+    # 3000 internally (PORT above) regardless of what this is set to.
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:${HOST_PORT:-3000}:3000"
+    depends_on:
+      - postgres
+
+  # Local dev convenience only — not how the frontend actually ships (that's a static `npm run
+  # build` output deployed via GitHub Pages, see src/frontend's own notes). This just runs
+  # Vite's dev server in a container so `docker compose up` alone is enough locally, instead of
+  # a separate `npm run dev` / `npx serve` command.
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:8080:8080"
+    depends_on:
+      - backend
+
+  # Only started on the VPS via `docker compose --profile production up`. Left out of the
+  # default `docker compose up` because it needs real Let's Encrypt certs on the host that
+  # don't exist on a local dev machine.
+  nginx:
+    profiles: ["production"]
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - /etc/letsencrypt/live/api.openinvoicexml.de:/etc/letsencrypt/live/api.openinvoicexml.de:ro
+      - /etc/letsencrypt/archive/api.openinvoicexml.de:/etc/letsencrypt/archive/api.openinvoicexml.de:ro
+    depends_on:
+      - backend
+
+  # Not a long-running process — invoked on demand (`docker compose --profile production run
+  # --rm certbot ...`) for issuing/renewing the cert. Kept in Docker, like everything else here,
+  # instead of `apt install certbot` on the host. See DEPLOY.md for the bootstrap sequencing:
+  # the very first cert must be obtained with `certonly --standalone` BEFORE nginx ever starts
+  # (nginx's HTTPS block fails to load with no cert files yet, so it can't be up first to serve
+  # the webroot challenge) — all renewals after that use --webroot, since nginx owns port 80
+  # continuously from then on.
+  certbot:
+    profiles: ["production"]
+    image: certbot/certbot
+    volumes:
+      - /var/www/certbot:/var/www/certbot
+      - /etc/letsencrypt:/etc/letsencrypt
+
+volumes:
+  # Explicit name so it doesn't get auto-prefixed with whatever directory name Compose infers
+  # as the project name (would otherwise be "src_pg_data", "server_pg_data", etc. depending on
+  # where/how it's run) — one fixed, predictable volume regardless of that.
+  pg_data:
+    name: pg_data
+  # Named instead of anonymous (bare "- /app/node_modules" with no source) — same reasoning:
+  # a fixed, predictable name instead of a random hash. This mount exists so the container's
+  # own node_modules (installed for the right platform) isn't shadowed by the ./frontend:/app
+  # bind mount above, which would otherwise overwrite it with whatever's on the host.
+  frontend_node_modules:
+    name: frontend_node_modules
