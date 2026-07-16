@@ -1,0 +1,5 @@
+# openinvoicexml cert renewal — installed via install-cron.sh, which merges this into
+# the existing crontab rather than replacing it (this VPS runs cron jobs for other
+# projects too; `crontab < file` would wipe those out, so don't install this file
+# directly with that command).
+0 3 * * * ~/openinvoicexml/src/certbot/renew.sh >> /var/log/certbot-renew.log 2>&1

@@ -68,18 +68,23 @@ serving both `api.openinvoicexml.de` (reverse-proxied to the backend) and `openi
 
 nginx owns port 80 continuously from now on, so all renewals after the first use `--webroot`
 instead of `--standalone`. Docker Compose has no built-in scheduler, so this is a host cron job.
-A single `certbot renew` renews every cert it manages, so one cron entry now covers both
-domains:
+`certbot/renew.sh` wraps the actual renewal command (a single `certbot renew` renews every cert
+it manages, so one script call covers both domains); `certbot/crontab` holds the schedule for
+it. Install it with:
 
-```
-0 3 * * * cd /path/to/repo/src && docker compose --profile production run --rm certbot renew \
-  --webroot -w /var/www/certbot \
-  --deploy-hook "docker compose --profile production restart nginx" \
-  >> /var/log/certbot-renew.log 2>&1
+```sh
+make deploy-cron-install
 ```
 
-The `--deploy-hook` only fires (restarting nginx to pick up the new cert) when a cert actually
-renews — most days this is a no-op.
+This merges `certbot/crontab`'s entry into your real crontab rather than replacing it — safe
+even if this VPS already runs cron jobs for other projects (`crontab < file` would wipe those
+out; the install script specifically avoids that, and is safe to re-run). If the repo doesn't
+live at `~/openinvoicexml`, edit the path in `certbot/crontab` first.
+
+The script's `--deploy-hook` only fires (restarting nginx to pick up the new cert) when a cert
+actually renews — most days this is a no-op. Run it by hand any time with `make deploy-renew`,
+or test the whole flow without touching the real cert via
+`docker compose --profile production run --rm certbot renew --dry-run`.
 
 ## Redeploying later
 
