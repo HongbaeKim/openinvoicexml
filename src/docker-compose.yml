@@ -35,9 +35,9 @@ services:
       - postgres
 
   # Local dev convenience only — not how the frontend actually ships (that's a static `npm run
-  # build` output deployed via GitHub Pages, see src/frontend's own notes). This just runs
-  # Vite's dev server in a container so `docker compose up` alone is enough locally, instead of
-  # a separate `npm run dev` / `npx serve` command.
+  # build` output served by nginx alongside the API, see the frontend-build service below). This
+  # just runs Vite's dev server in a container so `docker compose up` alone is enough locally,
+  # instead of a separate `npm run dev` / `npx serve` command.
   frontend:
     build:
       context: ./frontend
@@ -50,9 +50,24 @@ services:
     depends_on:
       - backend
 
+  # Only run on the VPS via `docker compose --profile production run --rm frontend-build`
+  # (see DEPLOY.md) — produces ./frontend/dist, which nginx below mounts read-only as its
+  # docroot. Own named node_modules volume for the same reason as the dev frontend service above:
+  # the container's Linux-built node_modules must not collide with anything on the host at that
+  # path.
+  frontend-build:
+    profiles: ["production"]
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_build_node_modules:/app/node_modules
+    command: sh -c "npm ci && npm run build"
+
   # Only started on the VPS via `docker compose --profile production up`. Left out of the
   # default `docker compose up` because it needs real Let's Encrypt certs on the host that
-  # don't exist on a local dev machine.
+  # don't exist on a local dev machine. Serves the frontend's static build directly (see
+  # frontend-build above) in addition to reverse-proxying api.openinvoicexml.de to backend.
   nginx:
     profiles: ["production"]
     image: nginx:1.27-alpine
@@ -61,9 +76,12 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
       - /var/www/certbot:/var/www/certbot:ro
       - /etc/letsencrypt/live/api.openinvoicexml.de:/etc/letsencrypt/live/api.openinvoicexml.de:ro
       - /etc/letsencrypt/archive/api.openinvoicexml.de:/etc/letsencrypt/archive/api.openinvoicexml.de:ro
+      - /etc/letsencrypt/live/openinvoicexml.de:/etc/letsencrypt/live/openinvoicexml.de:ro
+      - /etc/letsencrypt/archive/openinvoicexml.de:/etc/letsencrypt/archive/openinvoicexml.de:ro
     depends_on:
       - backend
 
@@ -80,6 +98,12 @@ services:
     volumes:
       - /var/www/certbot:/var/www/certbot
       - /etc/letsencrypt:/etc/letsencrypt
+      # The certbot image also declares /var/lib/letsencrypt (its own internal state dir,
+      # separate from /etc/letsencrypt) as a VOLUME in its Dockerfile — leaving it unmounted
+      # makes Docker silently create a fresh anonymous volume for it on every run. Mounted
+      # explicitly, host-side like the /etc/letsencrypt path above, both so it isn't an
+      # untracked random-named volume and so certbot's state actually persists across runs.
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
 
 volumes:
   # Explicit name so it doesn't get auto-prefixed with whatever directory name Compose infers
@@ -93,3 +117,9 @@ volumes:
   # bind mount above, which would otherwise overwrite it with whatever's on the host.
   frontend_node_modules:
     name: frontend_node_modules
+  # Isolates the production frontend-build service's node_modules the same way, for the same
+  # reason — separate from the dev volume above since the two services never run at once, but
+  # kept distinct rather than shared to avoid dev and prod builds silently depending on
+  # whatever the other last installed.
+  frontend_build_node_modules:
+    name: frontend_build_node_modules

@@ -1,5 +1,5 @@
 // Anything served from the production apex domain talks to the production API; everything else
-// (localhost, 127.0.0.1, a LAN IP like 192.168.x.x when accessing a remote dev box from another
+// (localhost, 127.0.0.1, a LAN IP like x.x.x.x when accessing a remote dev box from another
 // device — BIND_HOST=0.0.0.0 case, see .env.example) talks to that same host's backend port.
 // This is deliberately not an allowlist of specific dev hostnames, since those vary by network.
 const API_BASE =

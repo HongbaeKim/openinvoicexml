@@ -9,6 +9,12 @@ Scope is nginx only — this is the single public-facing entry point (backend is
 see `docker-compose.yml`'s comments), so headers, TLS policy, and rate limiting all belong here
 rather than in the app. Backend-level hardening is listed separately under **Deferred**, below.
 
+This nginx now fronts two origins, not one: `api.openinvoicexml.de` (reverse proxy to the
+backend, the focus of most of this doc) and `openinvoicexml.de` (the static frontend build,
+served directly — originally planned for GitHub Pages, moved onto this same VPS/nginx instead).
+Most of the hardening below was written with only the API origin in mind; where that origin split
+changes the reasoning, it's called out inline.
+
 Context for *why this matters now*: the backend currently exposes exactly three routes —
 `GET /health`, `POST /api/beta`, `POST /api/developer` (both signup forms, already have a
 honeypot `website` field client-side, no auth, no file uploads). So the realistic pre-launch risk
@@ -34,10 +40,18 @@ domain — not anything upload- or auth-related yet. That shaped the choices bel
   Can be added later once the deployment has proven stable.
 - `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`,
   a locked-down `Permissions-Policy` — standard defense-in-depth, cheap to add.
-- **No `Content-Security-Policy`.** This origin (`api.openinvoicexml.de`) only ever returns JSON —
-  it serves no HTML, so there's nothing for a CSP to protect against injection into. Omitted
-  deliberately, not an oversight. (The actual HTML site is `openinvoicexml.de` on GitHub Pages,
-  outside this nginx config entirely — see `DEPLOY.md`.)
+- **No `Content-Security-Policy` on the API origin.** `api.openinvoicexml.de` only ever returns
+  JSON — it serves no HTML, so there's nothing for a CSP to protect against injection into.
+  Omitted deliberately, not an oversight.
+- **`openinvoicexml.de` (the frontend) does have one**, since this origin serves HTML directly:
+  `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src
+  'self' https://api.openinvoicexml.de; frame-ancestors 'none'; base-uri 'self'; form-action
+  'self';`. No `'unsafe-inline'` anywhere — the Vite production build (`@vitejs/plugin-react` +
+  `@tailwindcss/vite`, no legacy/polyfill plugin) emits only external `<script type="module">`
+  and `<link rel="stylesheet">` tags, no inline script/style, so a strict policy works as-is.
+  `connect-src` allowlists exactly the one cross-origin fetch target the frontend legitimately
+  calls (`src/frontend/src/000-core/api.ts`). Revisit if either build tooling or the API surface
+  changes in a way that needs a new origin or an inline script.
 - `server_tokens off;` on both the :80 and :443 server blocks — stops nginx from announcing its
   version in the `Server` response header and default error pages.
 
@@ -63,8 +77,10 @@ domain — not anything upload- or auth-related yet. That shaped the choices bel
 
 ## Misc
 
-- `location ~ /\. { deny all; }` — blocks dotfile probes. Cheap defense-in-depth even though this
-  nginx has no static docroot to actually leak from (it's a pure reverse proxy).
+- `location ~ /\. { deny all; }` — blocks dotfile probes, on both server blocks. On the API
+  origin this is defense-in-depth with nothing to actually leak (it's a pure reverse proxy); on
+  the frontend origin it's load-bearing, since that block now has a real static docroot
+  (`/usr/share/nginx/html`) that could otherwise serve stray dotfiles.
 
 ## Deferred / future work
 
@@ -86,5 +102,8 @@ Not done now — scope was nginx-only for this pass:
    are present and `Server:` no longer reveals a version string.
 3. Rate limit: loop `curl -X POST https://api.openinvoicexml.de/api/beta ...` faster than 5/min and
    confirm it returns `429` once the burst is exhausted, and recovers after.
-4. Optional: run an SSL scan (Qualys SSL Labs / `testssl.sh`) once DNS is live, before announcing
-   the site publicly.
+4. `curl -I https://openinvoicexml.de` — confirm the CSP header is present, then load the site
+   with browser devtools open and check for CSP console errors (blocked script/style/connect);
+   tighten or loosen the policy based on what's actually needed.
+5. Optional: run an SSL scan (Qualys SSL Labs / `testssl.sh`) on both `api.openinvoicexml.de` and
+   `openinvoicexml.de` once DNS is live, before announcing the site publicly.
