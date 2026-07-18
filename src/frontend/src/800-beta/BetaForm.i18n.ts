@@ -36,7 +36,7 @@ export const betaFormDict: Record<
     roleOtherLabel: "Bitte gib an, was am besten auf dich zutrifft",
     roleOtherPlaceholder: "z. B. Gemeinnütziger Verein",
     messageLabel: "Möchtest du uns noch etwas mitteilen?",
-    wantsContactLabel: "Benachrichtige mich, wenn die Beta-Testphase im Januar 2027 beginnt.",
+    wantsContactLabel: "Benachrichtige mich, sobald die Beta verfügbar ist.",
     optionalLabel: "optional",
     consent: {
       before: "Ich bin damit einverstanden, über openinvoicexml-Updates kontaktiert zu werden. Siehe den ",
@@ -65,7 +65,7 @@ export const betaFormDict: Record<
     roleOtherLabel: "Please specify what best describes you",
     roleOtherPlaceholder: "e.g. Nonprofit organization",
     messageLabel: "Is there anything else you'd like to tell us?",
-    wantsContactLabel: "Notify me when beta testing starts in January 2027.",
+    wantsContactLabel: "Notify me when the beta becomes available.",
     optionalLabel: "optional",
     consent: {
       before: "I agree to be contacted about openinvoicexml updates. See the ",

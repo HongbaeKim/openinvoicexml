@@ -15,10 +15,10 @@ export const betaPageDict: Record<
   de: {
     metaTitle: "Am Beta-Programm teilnehmen — openinvoicexml",
     metaDescription:
-      "Nimm am openinvoicexml Beta-Programm teil für frühen Zugang zu einem gehosteten E-Rechnungs-Tool für Freiberufler und kleine Unternehmen. Kostenlos, ab Januar 2027.",
+      "Nimm am openinvoicexml Beta-Programm teil für frühen Zugang zu einem gehosteten E-Rechnungs-Tool für Freiberufler und kleine Unternehmen. Kostenlos — trage dich auf die Warteliste ein.",
     heading: "Am Beta-Programm teilnehmen",
     intro:
-      "Für Freiberufler, kleine Unternehmen und NGOs, die einfach konforme E-Rechnungen ausstellen möchten. Der Test startet im Januar 2027 und ist völlig kostenlos.",
+      "Für Freiberufler, kleine Unternehmen und NGOs, die einfach konforme E-Rechnungen ausstellen möchten. Trage dich auf die Warteliste ein, um zu den Ersten zu gehören, die eingeladen werden, sobald die Beta verfügbar ist. Die Teilnahme ist kostenlos.",
     howItWorksHeading: "So funktioniert's",
     howItWorksBody:
       "Erstelle deine E-Rechnung direkt im Browser und lade sie als XML-Datei herunter. Du kannst sie jederzeit selbst wieder öffnen und bearbeiten — ganz ohne Account oder Login.",
@@ -50,10 +50,10 @@ export const betaPageDict: Record<
   en: {
     metaTitle: "Join the Beta Program — openinvoicexml",
     metaDescription:
-      "Join the openinvoicexml beta program for early access to a hosted e-invoicing tool for freelancers and small businesses. Free, starting January 2027.",
+      "Join the openinvoicexml beta program for early access to a hosted e-invoicing tool for freelancers and small businesses. Free to participate — join the waitlist for early access.",
     heading: "Join the Beta Program",
     intro:
-      "For freelancers, small businesses, and NGOs who want an easy way to issue compliant e-invoices. Testing starts in January 2027 and is completely free.",
+      "For freelancers, small businesses, and NGOs who want an easy way to issue compliant e-invoices. Join the waitlist to be among the first invited when the beta becomes available. Participation will be free.",
     howItWorksHeading: "How it works",
     howItWorksBody:
       "Create your e-invoice right in the browser and download it as an XML file. Open and update it yourself anytime — no account or login required.",
