@@ -30,6 +30,15 @@ without a software background.
   end-to-end, including actually submitting a test sign-up and seeing it stored correctly
 - Wrote documentation explaining how sign-up data is stored and how duplicate sign-ups are
   handled
+- Announced the public launch across five social platforms, in German and English, to reach
+  freelancers and developers who might want to use or contribute to the project:
+  - LinkedIn (DE & EN): https://www.linkedin.com/feed/update/urn:li:activity:7484540635232919552
+  - Mastodon DE: https://mastodon.social/@openinvoicexml/116945979534281656
+  - Mastodon EN: https://mastodon.social/@openinvoicexml/116945987765124883
+  - Facebook (DE & EN): https://www.facebook.com/permalink.php?story_fbid=pfbid02BAZ96ePWjRzZQrTjS2HQMboWjRpNGaJgG8zdgAayaHvuYeKjWzndGPBxHL7JEfFSl&id=61590317082062
+  - Instagram DE: https://www.instagram.com/p/Da-HPrCDYt7/
+  - Instagram EN: https://www.instagram.com/p/Da-HghJDYEQ/
+  - Threads (DE & EN): https://www.threads.com/@openinvoicexml/post/Da-KdnljkrP
 
 **Doing** (20 July – 2 Aug)
 - Setting up automatic checks that run every time the code changes, to catch mistakes as
