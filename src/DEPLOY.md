@@ -1,10 +1,11 @@
 # Deploying (VPS)
 
 The backend API and the frontend static site both deploy to the same VPS, fronted by the same
-nginx. Prerequisites: a VPS with Docker + Docker Compose installed, and DNS for both
-`api.openinvoicexml.de` and `openinvoicexml.de` (apex) already pointed at the VPS's IP (A
-records — propagation must be complete before requesting certs, or the ACME challenge will
-fail).
+nginx. Prerequisites: a VPS with Docker + Docker Compose installed, and DNS for
+`api.openinvoicexml.de`, `openinvoicexml.de` (apex), and `www.openinvoicexml.de` already pointed
+at the VPS's IP (A records — propagation must be complete before requesting certs, or the ACME
+challenge will fail). `www` only ever 301-redirects to the apex (see nginx.conf) — it doesn't
+serve content of its own, but it still needs DNS + a cert so the redirect can happen over HTTPS.
 
 ## 1. First-time setup
 
@@ -38,9 +39,25 @@ docker compose --profile production run --rm -p 80:80 certbot certonly \
   --email contact@openinvoicexml.de --agree-tos -n
 
 docker compose --profile production run --rm -p 80:80 certbot certonly \
-  --standalone -d openinvoicexml.de \
+  --standalone -d openinvoicexml.de -d www.openinvoicexml.de \
   --email contact@openinvoicexml.de --agree-tos -n
 ```
+
+`www.openinvoicexml.de` is issued as a second name (SAN) on the same apex cert lineage, not a
+separate cert — nginx's `www` server block only redirects, so it reuses the apex's cert files
+directly (see nginx.conf).
+
+> Already have a running deployment whose apex cert predates `www` support? Expand the existing
+> lineage in place instead of re-bootstrapping, using `--webroot` since nginx already owns port 80:
+>
+> ```sh
+> docker compose --profile production run --rm certbot certonly \
+>   --webroot -w /var/www/certbot --cert-name openinvoicexml.de \
+>   -d openinvoicexml.de -d www.openinvoicexml.de --expand \
+>   --email contact@openinvoicexml.de --agree-tos -n
+> ```
+>
+> Then restart nginx to pick up the new cert: `docker compose --profile production restart nginx`.
 
 ## 3. Build the frontend
 
