@@ -1,5 +1,7 @@
 # openinvoicexml
 
+[![CI](https://github.com/HONGBAEKIM/openinvoicexml/actions/workflows/ci.yml/badge.svg)](https://github.com/HONGBAEKIM/openinvoicexml/actions/workflows/ci.yml)
+
 An open-source TypeScript library for generating compliant German electronic invoices — XRechnung XML and hybrid PDF/A-3 (Factur-X/ZUGFeRD).
 
 From 2028 onward, all domestic B2B invoices in Germany must be issued as structured electronic invoices. This library handles the full pipeline: structured JSON input → validated XRechnung XML → hybrid PDF with embedded XML.
@@ -34,6 +36,9 @@ npm install
 npm test
 ```
 
+CI (`.github/workflows/ci.yml`) also runs `npm run lint` and `npm run typecheck` on every push
+and PR to `main`.
+
 ## Project structure
 
 ```
@@ -50,6 +55,7 @@ npm test
 | Document | Status |
 |---|---|
 | `SCHEMA.md` — Internal invoice schema, field definitions, BT mapping | Done |
+| `API.md` — API usage: `generateInvoice`, `toXRechnung`, error codes | Done |
 | `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow | Done |
 | `MAPPING.md` — Full XRechnung BT mapping table | Done |
 | `VALIDATION.md` — How to validate XRechnung output against KoSIT | Done |

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      # Downloads the KoSIT validator jar + XRechnung scenario config (and a portable
+      # JRE if java isn't already on the runner) into tools/ — same script used locally
+      # via `make kosit-setup`. This makes the KoSIT-backed fixture regression in
+      # validators/kosit.test.ts (run as part of `npm test` below) an actual CI gate,
+      # not something that silently skips (validators/kosit.test.ts's
+      # describe.skipIf(!available) would otherwise let a missing jar/Java pass silently).
+      - run: bash scripts/setup-kosit.sh
+
+      - run: npm test
