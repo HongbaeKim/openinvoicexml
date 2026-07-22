@@ -1,10 +1,22 @@
-import type { Invoice, Party, VatBreakdown, InvoiceLine } from "../core/index.js";
+import type { Invoice } from "../core/index.js";
 import { esc, amt } from "../core/utils/xml.js";
+import {
+  mapInvoice,
+  type PartyFields,
+  type PaymentMeansFields,
+  type VatSubtotalFields,
+  type LineFields,
+} from "./xrechnung-mapping.js";
 
-function renderParty(wrapperTag: string, party: Party): string {
-  const schemeId = party.electronicAddressSchemeId ?? "EM";
-  const line2 = party.address.line2
-    ? `\n        <cbc:AdditionalStreetName>${esc(party.address.line2)}</cbc:AdditionalStreetName>`
+/**
+ * XML serialization — turns already-resolved field structures (see xrechnung-mapping.ts) into
+ * UBL 2.1 markup. Escaping and tag/element structure live here; no field defaulting or
+ * derivation belongs in this file.
+ */
+
+function renderParty(wrapperTag: string, party: PartyFields): string {
+  const line2 = party.addressLine2
+    ? `\n        <cbc:AdditionalStreetName>${esc(party.addressLine2)}</cbc:AdditionalStreetName>`
     : "";
   const vatScheme = party.vatId
     ? `\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID>${esc(party.vatId)}</cbc:CompanyID>\n        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>\n      </cac:PartyTaxScheme>`
@@ -21,13 +33,13 @@ function renderParty(wrapperTag: string, party: Party): string {
 
   return `  <${wrapperTag}>
     <cac:Party>
-      <cbc:EndpointID schemeID="${esc(schemeId)}">${esc(party.electronicAddress)}</cbc:EndpointID>
+      <cbc:EndpointID schemeID="${esc(party.schemeId)}">${esc(party.electronicAddress)}</cbc:EndpointID>
       <cac:PartyName><cbc:Name>${esc(party.name)}</cbc:Name></cac:PartyName>
       <cac:PostalAddress>
-        <cbc:StreetName>${esc(party.address.line1)}</cbc:StreetName>${line2}
-        <cbc:CityName>${esc(party.address.city)}</cbc:CityName>
-        <cbc:PostalZone>${esc(party.address.postalCode)}</cbc:PostalZone>
-        <cac:Country><cbc:IdentificationCode>${party.address.countryCode}</cbc:IdentificationCode></cac:Country>
+        <cbc:StreetName>${esc(party.addressLine1)}</cbc:StreetName>${line2}
+        <cbc:CityName>${esc(party.city)}</cbc:CityName>
+        <cbc:PostalZone>${esc(party.postalCode)}</cbc:PostalZone>
+        <cac:Country><cbc:IdentificationCode>${party.countryCode}</cbc:IdentificationCode></cac:Country>
       </cac:PostalAddress>${vatScheme}${fcScheme}
       <cac:PartyLegalEntity>
         <cbc:RegistrationName>${esc(party.name)}</cbc:RegistrationName>${companyId}
@@ -36,23 +48,24 @@ function renderParty(wrapperTag: string, party: Party): string {
   </${wrapperTag}>`;
 }
 
-function renderPaymentMeans(pm: NonNullable<Invoice["paymentMeans"]>): string {
+function renderPaymentMeans(pm: PaymentMeansFields): string {
   const iban = pm.iban ? `\n      <cbc:ID>${esc(pm.iban)}</cbc:ID>` : "";
   const accountName = pm.accountName ? `\n      <cbc:Name>${esc(pm.accountName)}</cbc:Name>` : "";
   const bic = pm.bic
     ? `\n      <cac:FinancialInstitutionBranch><cbc:ID>${esc(pm.bic)}</cbc:ID></cac:FinancialInstitutionBranch>`
     : "";
 
-  const account = (iban || accountName || bic)
-    ? `\n    <cac:PayeeFinancialAccount>${iban}${accountName}${bic}\n    </cac:PayeeFinancialAccount>`
-    : "";
+  const account =
+    iban || accountName || bic
+      ? `\n    <cac:PayeeFinancialAccount>${iban}${accountName}${bic}\n    </cac:PayeeFinancialAccount>`
+      : "";
 
   return `  <cac:PaymentMeans>
     <cbc:PaymentMeansCode>${esc(pm.code)}</cbc:PaymentMeansCode>${account}
   </cac:PaymentMeans>`;
 }
 
-function renderVatSubtotal(bd: VatBreakdown, currency: string): string {
+function renderVatSubtotal(bd: VatSubtotalFields, currency: string): string {
   const exemptionReason = bd.exemptionReason
     ? `\n        <cbc:TaxExemptionReason>${esc(bd.exemptionReason)}</cbc:TaxExemptionReason>`
     : "";
@@ -71,7 +84,7 @@ function renderVatSubtotal(bd: VatBreakdown, currency: string): string {
     </cac:TaxSubtotal>`;
 }
 
-function renderLine(line: InvoiceLine, currency: string): string {
+function renderLine(line: LineFields, currency: string): string {
   const description = line.description
     ? `\n      <cbc:Description>${esc(line.description)}</cbc:Description>`
     : "";
@@ -95,28 +108,24 @@ function renderLine(line: InvoiceLine, currency: string): string {
 }
 
 export function toXRechnung(invoice: Invoice): string {
-  const currency = invoice.currencyCode;
+  const fields = mapInvoice(invoice);
+  const currency = fields.currencyCode;
 
-  const note = invoice.note ? `\n  <cbc:Note>${esc(invoice.note)}</cbc:Note>` : "";
-  const buyerRef = invoice.buyerReference
-    ? `\n  <cbc:BuyerReference>${esc(invoice.buyerReference)}</cbc:BuyerReference>`
+  const note = fields.note ? `\n  <cbc:Note>${esc(fields.note)}</cbc:Note>` : "";
+  const buyerRef = fields.buyerReference
+    ? `\n  <cbc:BuyerReference>${esc(fields.buyerReference)}</cbc:BuyerReference>`
     : "";
-  const paymentMeans = invoice.paymentMeans
-    ? `\n${renderPaymentMeans(invoice.paymentMeans)}`
-    : "";
-  const dueDate = invoice.dueDate
-    ? `\n  <cbc:DueDate>${invoice.dueDate}</cbc:DueDate>`
-    : "";
+  const paymentMeans = fields.paymentMeans ? `\n${renderPaymentMeans(fields.paymentMeans)}` : "";
+  const dueDate = fields.dueDate ? `\n  <cbc:DueDate>${fields.dueDate}</cbc:DueDate>` : "";
 
-  // sum all the lineAmount 
-  // using recude() many items -> one value
-  const lineExtension = amt(invoice.lines.reduce((s, l) => s + l.lineAmount, 0));
+  const lineExtension = amt(fields.lineExtensionAmount);
   // Converting each VAT breakdown into XML
   // using map() many items -> many transformed items
   // vat1, vat2 -> xml1, xml2
-  const vatSubtotals = invoice.vatBreakdowns.map((bd) => renderVatSubtotal(bd, currency)).join("\n");
+  const vatSubtotals = fields.vatSubtotals.map((bd) => renderVatSubtotal(bd, currency)).join("\n");
+
   // for each invoice line(items), generate one <cac:InvoiceLine> xml element
-  const invoiceLines = invoice.lines.map((l) => renderLine(l, currency)).join("\n");
+  const invoiceLines = fields.lines.map((l) => renderLine(l, currency)).join("\n");
 
   // ubl = the overall document.
   // cac = complex "object-like" structures.
@@ -127,22 +136,22 @@ export function toXRechnung(invoice: Invoice): string {
   xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
   xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
   <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>
-  <cbc:ProfileID>${esc(invoice.businessProcessType)}</cbc:ProfileID>
-  <cbc:ID>${esc(invoice.id)}</cbc:ID>
-  <cbc:IssueDate>${invoice.issueDate}</cbc:IssueDate>${dueDate}
-  <cbc:InvoiceTypeCode>${invoice.typeCode}</cbc:InvoiceTypeCode>${note}
+  <cbc:ProfileID>${esc(fields.businessProcessType)}</cbc:ProfileID>
+  <cbc:ID>${esc(fields.id)}</cbc:ID>
+  <cbc:IssueDate>${fields.issueDate}</cbc:IssueDate>${dueDate}
+  <cbc:InvoiceTypeCode>${fields.typeCode}</cbc:InvoiceTypeCode>${note}
   <cbc:DocumentCurrencyCode>${currency}</cbc:DocumentCurrencyCode>${buyerRef}
-${renderParty("cac:AccountingSupplierParty", invoice.seller)}
-${renderParty("cac:AccountingCustomerParty", invoice.buyer)}${paymentMeans}
+${renderParty("cac:AccountingSupplierParty", fields.seller)}
+${renderParty("cac:AccountingCustomerParty", fields.buyer)}${paymentMeans}
   <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="${currency}">${amt(invoice.taxAmount)}</cbc:TaxAmount>
+    <cbc:TaxAmount currencyID="${currency}">${amt(fields.taxAmount)}</cbc:TaxAmount>
 ${vatSubtotals}
   </cac:TaxTotal>
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="${currency}">${lineExtension}</cbc:LineExtensionAmount>
-    <cbc:TaxExclusiveAmount currencyID="${currency}">${amt(invoice.taxExclusiveAmount)}</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="${currency}">${amt(invoice.taxInclusiveAmount)}</cbc:TaxInclusiveAmount>
-    <cbc:PayableAmount currencyID="${currency}">${amt(invoice.duePayableAmount)}</cbc:PayableAmount>
+    <cbc:TaxExclusiveAmount currencyID="${currency}">${amt(fields.taxExclusiveAmount)}</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="${currency}">${amt(fields.taxInclusiveAmount)}</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="${currency}">${amt(fields.duePayableAmount)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
 ${invoiceLines}
 </ubl:Invoice>`;
