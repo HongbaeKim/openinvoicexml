@@ -42,7 +42,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "eslint": "^9.0.0",
+    "eslint": "^10.7.0",
     "eslint-config-prettier": "^9.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.5.0",
