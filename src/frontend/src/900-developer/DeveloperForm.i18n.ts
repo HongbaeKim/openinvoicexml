@@ -39,7 +39,8 @@ export const developerFormDict: Record<
     wantsContactLabel: "Kontaktiere mich, sobald diese Funktionen verfügbar sind.",
     optionalLabel: "optional",
     consent: {
-      before: "Ich bin damit einverstanden, über openinvoicexml-Updates kontaktiert zu werden. Siehe den ",
+      before:
+        "Ich bin damit einverstanden, über openinvoicexml-Updates kontaktiert zu werden. Siehe den ",
       linkText: "Datenschutzhinweis",
       after: ".",
     },

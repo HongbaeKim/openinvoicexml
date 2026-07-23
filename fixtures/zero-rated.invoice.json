@@ -45,8 +45,8 @@
       "description": "Zero-rated Lieferung (Seeschifffahrt, §4 Nr. 2 UStG)",
       "quantity": 1,
       "unitCode": "C62",
-      "unitPrice": 1000.00,
-      "lineAmount": 1000.00,
+      "unitPrice": 1000.0,
+      "lineAmount": 1000.0,
       "vatCategoryCode": "Z",
       "vatRate": 0
     }
@@ -56,15 +56,15 @@
     {
       "categoryCode": "Z",
       "rate": 0,
-      "taxableAmount": 1000.00,
-      "taxAmount": 0.00
+      "taxableAmount": 1000.0,
+      "taxAmount": 0.0
     }
   ],
 
-  "taxExclusiveAmount": 1000.00,
-  "taxAmount": 0.00,
-  "taxInclusiveAmount": 1000.00,
-  "duePayableAmount": 1000.00,
+  "taxExclusiveAmount": 1000.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 1000.0,
+  "duePayableAmount": 1000.0,
 
   "paymentMeans": {
     "code": "58",

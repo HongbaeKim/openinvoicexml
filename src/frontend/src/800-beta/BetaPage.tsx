@@ -25,7 +25,10 @@ export function BetaPage(): JSX.Element {
         <section>
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {t.benefits.map((benefit) => (
-              <div key={benefit.title} className="rounded-[10px] border border-border bg-surface p-5">
+              <div
+                key={benefit.title}
+                className="rounded-[10px] border border-border bg-surface p-5"
+              >
                 <h3 className="mb-1 text-lg text-text">{benefit.title}</h3>
                 <p className="text-sm text-text-muted">{benefit.description}</p>
               </div>

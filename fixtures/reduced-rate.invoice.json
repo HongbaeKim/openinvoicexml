@@ -45,8 +45,8 @@
       "description": "Lieferung von Fachbüchern (reduzierter Steuersatz)",
       "quantity": 10,
       "unitCode": "C62",
-      "unitPrice": 25.00,
-      "lineAmount": 250.00,
+      "unitPrice": 25.0,
+      "lineAmount": 250.0,
       "vatCategoryCode": "S",
       "vatRate": 7
     }
@@ -56,15 +56,15 @@
     {
       "categoryCode": "S",
       "rate": 7,
-      "taxableAmount": 250.00,
-      "taxAmount": 17.50
+      "taxableAmount": 250.0,
+      "taxAmount": 17.5
     }
   ],
 
-  "taxExclusiveAmount": 250.00,
-  "taxAmount": 17.50,
-  "taxInclusiveAmount": 267.50,
-  "duePayableAmount": 267.50,
+  "taxExclusiveAmount": 250.0,
+  "taxAmount": 17.5,
+  "taxInclusiveAmount": 267.5,
+  "duePayableAmount": 267.5,
 
   "paymentMeans": {
     "code": "58",

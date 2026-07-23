@@ -72,7 +72,9 @@ export function StatusList(): JSX.Element {
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}
             />
             {i < phases.length - 1 && (
-              <span className={`mt-3 h-[2px] flex-1 self-start ${STATUS_LINE_CLASS[phase.status]}`} />
+              <span
+                className={`mt-3 h-[2px] flex-1 self-start ${STATUS_LINE_CLASS[phase.status]}`}
+              />
             )}
           </Fragment>
         ))}

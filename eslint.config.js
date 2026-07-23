@@ -18,7 +18,10 @@ export default [
     rules: {
       ...tseslint.configs["recommended"].rules,
       ...tseslint.configs["recommended-requiring-type-checking"].rules,
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/explicit-function-return-type": "error",
     },
   },

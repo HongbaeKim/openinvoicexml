@@ -91,17 +91,17 @@ interface ValidationIssue {
 sample of the codes currently produced by `validators/business-rules.ts` and
 `validators/rules/vat-rate.ts`:
 
-| Code | Meaning |
-|---|---|
-| `VAT_RATE_INVALID_FOR_CATEGORY` | Category `S` line/breakdown at a rate other than 19% or 7%, or a zero-rate category (`Z`/`E`/`AE`/`K`/`G`/`O`) at a non-zero rate |
-| `MONETARY_AMOUNT_DECIMAL_PRECISION` | A monetary amount has more than 2 decimal places |
-| `LINE_AMOUNT_ROUNDING` | BT-131 line net amount doesn't match `quantity × unitPrice` |
-| `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED` | VAT category `AE` (§13b reverse charge) used without a buyer VAT ID |
-| `VAT_EXEMPTION_REASON_REQUIRED` | VAT category requiring BT-120/BT-121 (`E`/`AE`/`K`/`G`/`O`) has neither an exemption reason nor code |
-| `VAT_BREAKDOWN_RATE_MISMATCH` | A `vatBreakdowns` entry has no matching invoice lines at that category/rate |
-| `VAT_TAXABLE_AMOUNT_MISMATCH` | BT-116 taxable amount doesn't match the sum of matching line amounts |
-| `VAT_TAX_AMOUNT_ROUNDING` | BT-117 VAT amount doesn't match `taxableAmount × rate` |
-| `INVOICE_TAX_EXCLUSIVE_AMOUNT_MISMATCH` / `INVOICE_TAX_AMOUNT_MISMATCH` / `INVOICE_TAX_INCLUSIVE_AMOUNT_MISMATCH` / `INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH` | Document-level totals (BT-109/110/112/115) don't reconcile against the VAT breakdown sums |
+| Code                                                                                                                                                      | Meaning                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `VAT_RATE_INVALID_FOR_CATEGORY`                                                                                                                           | Category `S` line/breakdown at a rate other than 19% or 7%, or a zero-rate category (`Z`/`E`/`AE`/`K`/`G`/`O`) at a non-zero rate |
+| `MONETARY_AMOUNT_DECIMAL_PRECISION`                                                                                                                       | A monetary amount has more than 2 decimal places                                                                                  |
+| `LINE_AMOUNT_ROUNDING`                                                                                                                                    | BT-131 line net amount doesn't match `quantity × unitPrice`                                                                       |
+| `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED`                                                                                                                    | VAT category `AE` (§13b reverse charge) used without a buyer VAT ID                                                               |
+| `VAT_EXEMPTION_REASON_REQUIRED`                                                                                                                           | VAT category requiring BT-120/BT-121 (`E`/`AE`/`K`/`G`/`O`) has neither an exemption reason nor code                              |
+| `VAT_BREAKDOWN_RATE_MISMATCH`                                                                                                                             | A `vatBreakdowns` entry has no matching invoice lines at that category/rate                                                       |
+| `VAT_TAXABLE_AMOUNT_MISMATCH`                                                                                                                             | BT-116 taxable amount doesn't match the sum of matching line amounts                                                              |
+| `VAT_TAX_AMOUNT_ROUNDING`                                                                                                                                 | BT-117 VAT amount doesn't match `taxableAmount × rate`                                                                            |
+| `INVOICE_TAX_EXCLUSIVE_AMOUNT_MISMATCH` / `INVOICE_TAX_AMOUNT_MISMATCH` / `INVOICE_TAX_INCLUSIVE_AMOUNT_MISMATCH` / `INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH` | Document-level totals (BT-109/110/112/115) don't reconcile against the VAT breakdown sums                                         |
 
 This list isn't exhaustive by design — new codes are added as `validators/business-rules.ts`
 grows (e.g. Phase 3's §19/§13b-subcase/credit-note rules). Read the source directly for the

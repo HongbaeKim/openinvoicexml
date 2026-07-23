@@ -7,35 +7,35 @@ boot of an empty data directory (see `docker-compose.yml`'s `postgres` service).
 
 ## `beta_signups`
 
-| Column | Type | Constraint | Notes |
-|---|---|---|---|
-| `id` | `SERIAL` | `PRIMARY KEY` | |
-| `name` | `TEXT` | required (API-level, not DB) | |
-| `email` | `TEXT` | `NOT NULL UNIQUE` | the only uniqueness constraint on this table |
-| `role` | `TEXT` | `NOT NULL` | e.g. `freelancer`, `small-business`, `other` |
-| `role_other` | `TEXT` | nullable | only set when `role = 'other'`; `NULL` otherwise, even if the client sends stray data |
-| `message` | `TEXT` | nullable | optional "anything else?" field, beta form only |
-| `consent` | `BOOLEAN` | `NOT NULL` | GDPR consent checkbox |
-| `wants_contact` | `BOOLEAN` | `NOT NULL DEFAULT false` | |
-| `created_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT now()` | |
+| Column          | Type          | Constraint                   | Notes                                                                                 |
+| --------------- | ------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| `id`            | `SERIAL`      | `PRIMARY KEY`                |                                                                                       |
+| `name`          | `TEXT`        | required (API-level, not DB) |                                                                                       |
+| `email`         | `TEXT`        | `NOT NULL UNIQUE`            | the only uniqueness constraint on this table                                          |
+| `role`          | `TEXT`        | `NOT NULL`                   | e.g. `freelancer`, `small-business`, `other`                                          |
+| `role_other`    | `TEXT`        | nullable                     | only set when `role = 'other'`; `NULL` otherwise, even if the client sends stray data |
+| `message`       | `TEXT`        | nullable                     | optional "anything else?" field, beta form only                                       |
+| `consent`       | `BOOLEAN`     | `NOT NULL`                   | GDPR consent checkbox                                                                 |
+| `wants_contact` | `BOOLEAN`     | `NOT NULL DEFAULT false`     |                                                                                       |
+| `created_at`    | `TIMESTAMPTZ` | `NOT NULL DEFAULT now()`     |                                                                                       |
 
 ## `developer_signups`
 
-| Column | Type | Constraint | Notes |
-|---|---|---|---|
-| `id` | `SERIAL` | `PRIMARY KEY` | |
-| `name` | `TEXT` | required (API-level, not DB) | |
-| `email` | `TEXT` | `NOT NULL UNIQUE` | the only uniqueness constraint on this table |
-| `role` | `TEXT` | `NOT NULL` | e.g. `software-developer`, `erp-developer`, `other` |
-| `role_other` | `TEXT` | nullable | same rule as `beta_signups.role_other` |
-| `what_to_build` | `TEXT` | nullable | developer form's free-text field (`beta_signups.message`'s equivalent) |
-| `wants_contact` | `BOOLEAN` | `NOT NULL DEFAULT false` | |
-| `consent` | `BOOLEAN` | `NOT NULL` | GDPR consent checkbox |
-| `created_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT now()` | |
+| Column          | Type          | Constraint                   | Notes                                                                  |
+| --------------- | ------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| `id`            | `SERIAL`      | `PRIMARY KEY`                |                                                                        |
+| `name`          | `TEXT`        | required (API-level, not DB) |                                                                        |
+| `email`         | `TEXT`        | `NOT NULL UNIQUE`            | the only uniqueness constraint on this table                           |
+| `role`          | `TEXT`        | `NOT NULL`                   | e.g. `software-developer`, `erp-developer`, `other`                    |
+| `role_other`    | `TEXT`        | nullable                     | same rule as `beta_signups.role_other`                                 |
+| `what_to_build` | `TEXT`        | nullable                     | developer form's free-text field (`beta_signups.message`'s equivalent) |
+| `wants_contact` | `BOOLEAN`     | `NOT NULL DEFAULT false`     |                                                                        |
+| `consent`       | `BOOLEAN`     | `NOT NULL`                   | GDPR consent checkbox                                                  |
+| `created_at`    | `TIMESTAMPTZ` | `NOT NULL DEFAULT now()`     |                                                                        |
 
 The two tables are independent — no foreign key between them. Someone can sign up for
 both the beta and the developer list with the same email; the `UNIQUE` constraint only
-prevents duplicates *within* a single table.
+prevents duplicates _within_ a single table.
 
 ## Duplicate signups: what "already_signed_up" means
 
@@ -85,7 +85,7 @@ per form):
    are silently discarded rather than merged into the existing row.
 
 This works safely only because each table has exactly one `UNIQUE` constraint. Neither
-`isUniqueViolation` nor `routes.ts` inspects *which* column caused a `23505` — if a
+`isUniqueViolation` nor `routes.ts` inspects _which_ column caused a `23505` — if a
 second `UNIQUE` column were ever added to either table, a violation on that new column
 would also be misreported as `already_signed_up`.
 
@@ -98,14 +98,14 @@ The frontend forms (`BetaForm.tsx`/`DeveloperForm.tsx`) mirror the same numbers 
 `<input>`/`<textarea>`'s `maxLength` attribute, but that's UX only (stops the browser
 from letting you type past it) — the backend schema is the source of truth.
 
-| Field | Max length | Notes |
-|---|---|---|
-| `name` | 200 | |
-| `email` | 320 | RFC 5321's actual maximum length for a valid email address — not arbitrary |
-| `role` | 50 | |
-| `roleOther` | 100 | only validated/required when `role === "other"` |
-| `message` (beta) / `whatToBuild` (developer) | 2000 | free-text "tell us more" field |
-| `website` (honeypot) | 200 | hidden field; any non-empty value here silently short-circuits the submission as spam (see `routes.ts`'s `if (website) return reply.code(201).send({ status: "ok" })` — accepted but never inserted) |
+| Field                                        | Max length | Notes                                                                                                                                                                                                |
+| -------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                                       | 200        |                                                                                                                                                                                                      |
+| `email`                                      | 320        | RFC 5321's actual maximum length for a valid email address — not arbitrary                                                                                                                           |
+| `role`                                       | 50         |                                                                                                                                                                                                      |
+| `roleOther`                                  | 100        | only validated/required when `role === "other"`                                                                                                                                                      |
+| `message` (beta) / `whatToBuild` (developer) | 2000       | free-text "tell us more" field                                                                                                                                                                       |
+| `website` (honeypot)                         | 200        | hidden field; any non-empty value here silently short-circuits the submission as spam (see `routes.ts`'s `if (website) return reply.code(201).send({ status: "ok" })` — accepted but never inserted) |
 
 Both `email` (`minLength: 3`) and `name` (`minLength: 1`) also have a minimum; other
 fields have no minimum beyond what `required` already implies.
@@ -115,6 +115,7 @@ fields have no minimum beyond what `required` already implies.
 ```sh
 make db-psql          # drops straight into psql (make db for a plain shell instead)
 ```
+
 ```sql
 \dt                                      -- list tables
 \d beta_signups                          -- describe columns

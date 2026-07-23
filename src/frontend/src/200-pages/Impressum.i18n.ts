@@ -24,12 +24,14 @@ export const impressumDict: Record<
     funding: {
       before: "openinvoicexml wird gefördert von ",
       linkText: "Prototype Fund",
-      after: ", einem Programm des Bundesministeriums für Forschung, Technologie und Raumfahrt (BMFTR), verwaltet von der Open Knowledge Foundation Deutschland.",
+      after:
+        ", einem Programm des Bundesministeriums für Forschung, Technologie und Raumfahrt (BMFTR), verwaltet von der Open Knowledge Foundation Deutschland.",
     },
   },
   en: {
     metaTitle: "Impressum — openinvoicexml",
-    metaDescription: "Legal notice (Impressum) for openinvoicexml, required under German law (§ 5 DDG).",
+    metaDescription:
+      "Legal notice (Impressum) for openinvoicexml, required under German law (§ 5 DDG).",
     heading: "Impressum",
     responsibleHeading: "Responsible for content",
     contactHeading: "Contact",
@@ -38,7 +40,8 @@ export const impressumDict: Record<
     funding: {
       before: "openinvoicexml is funded by ",
       linkText: "Prototype Fund",
-      after: ", a program of the Federal Ministry of Research, Technology and Space (BMFTR), managed by the Open Knowledge Foundation Germany.",
+      after:
+        ", a program of the Federal Ministry of Research, Technology and Space (BMFTR), managed by the Open Knowledge Foundation Germany.",
     },
   },
 };

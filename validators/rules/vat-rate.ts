@@ -11,7 +11,11 @@ export const STANDARD_VAT_RATES: number[] = [19, 7];
 /** Categories for which BT-120/BT-121 (exemption reason) is mandatory per EN 16931. */
 export const EXEMPTION_REASON_REQUIRED_CATEGORIES: VatCategoryCode[] = ["E", "AE", "K", "G", "O"];
 
-export function checkDecimalPrecision(value: number, path: string, issues: ValidationIssue[]): void {
+export function checkDecimalPrecision(
+  value: number,
+  path: string,
+  issues: ValidationIssue[],
+): void {
   if (!isClose(value, round2(value), 1e-9)) {
     issues.push({
       code: "MONETARY_AMOUNT_DECIMAL_PRECISION",

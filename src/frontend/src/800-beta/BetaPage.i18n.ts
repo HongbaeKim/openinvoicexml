@@ -34,7 +34,8 @@ export const betaPageDict: Record<
       },
       {
         title: "Hilfe bei der Vorbereitung auf Deutschlands B2B-E-Rechnungspflicht ab 2028",
-        description: "Bereite dich frühzeitig auf die verpflichtenden B2B-E-Rechnungsregeln ab 2028 vor.",
+        description:
+          "Bereite dich frühzeitig auf die verpflichtenden B2B-E-Rechnungsregeln ab 2028 vor.",
       },
       {
         title: "Direkter Kontakt zum Entwickler",

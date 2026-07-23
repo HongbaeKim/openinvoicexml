@@ -45,8 +45,8 @@
       "description": "Steuerfreie Heilbehandlung gem. §4 Nr. 14 UStG",
       "quantity": 1,
       "unitCode": "C62",
-      "unitPrice": 500.00,
-      "lineAmount": 500.00,
+      "unitPrice": 500.0,
+      "lineAmount": 500.0,
       "vatCategoryCode": "E",
       "vatRate": 0
     }
@@ -56,17 +56,17 @@
     {
       "categoryCode": "E",
       "rate": 0,
-      "taxableAmount": 500.00,
-      "taxAmount": 0.00,
+      "taxableAmount": 500.0,
+      "taxAmount": 0.0,
       "exemptionReason": "Steuerfrei gem. §4 Nr. 14 UStG (Heilbehandlung)",
       "exemptionReasonCode": "VATEX-EU-79-C"
     }
   ],
 
-  "taxExclusiveAmount": 500.00,
-  "taxAmount": 0.00,
-  "taxInclusiveAmount": 500.00,
-  "duePayableAmount": 500.00,
+  "taxExclusiveAmount": 500.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 500.0,
+  "duePayableAmount": 500.0,
 
   "paymentMeans": {
     "code": "58",

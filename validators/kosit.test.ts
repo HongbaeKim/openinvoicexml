@@ -53,7 +53,7 @@ const workDir = mkdtempSync(join(tmpdir(), "kosit-test-"));
 
 afterAll(() => {
   // recursive: true: Delete everything inside
-  // force: true: Do not throw an error if it is already gone 
+  // force: true: Do not throw an error if it is already gone
   rmSync(workDir, { recursive: true, force: true });
 });
 

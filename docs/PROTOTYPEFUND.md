@@ -9,6 +9,7 @@ This one covers the same two-week period in plain language, for anyone following
 without a software background.
 
 **Done** (6 July – 19 July)
+
 - Connected the project to the official German government tool that checks whether a
   generated e-invoice actually meets the legal format requirements — this now runs
   automatically every time the invoice-generation code changes, instead of needing a manual
@@ -41,6 +42,7 @@ without a software background.
   - Threads (DE & EN): https://www.threads.com/@openinvoicexml/post/Da-KdnljkrP
 
 **Doing** (20 July – 2 Aug)
+
 - Setting up automatic checks that run every time the code changes, to catch mistakes as
   early as possible (this was planned for the last two weeks but got pushed back on purpose,
   not forgotten)
@@ -49,6 +51,7 @@ without a software background.
   the EU, and exports outside the EU
 
 **Motivations & challenges**
+
 - Motivation: the system should never be able to silently produce an incorrect invoice — it's
   better for it to refuse and explain why than to hand back something that looks fine but
   breaks a legal rule
@@ -66,6 +69,7 @@ without a software background.
 ---
 
 **Done** (6 July – 19 July)
+
 - Integrated the KoSIT validator (`validators/kosit.ts`, `make validate-kosit`) as an automated validation step; documented setup and usage in `docs/VALIDATION.md`
 - Tightened VAT rule enforcement: category `S` (standard rate) now requires exactly 19% or 7% (`STANDARD_VAT_RATES`), not just `rate > 0`
 - Extended `kosit.test.ts` to run all 6 fixtures through the real KoSIT validator as part of `npm test`, not just the manual `make validate-kosit` step
@@ -78,17 +82,21 @@ without a software background.
 - Documented the database schema and duplicate-signup handling in a new `docs/DBSTRUCTURE.md`
 
 **Doing** (20 July – 2 Aug)
+
 - Add the CI workflow (`.github/workflows/ci.yml`: lint + typecheck + test) — explicitly deferred from Week 7, not forgotten
 - Stabilize XML generation and tag release `v0.2.0` (Week 8)
 - Begin Phase 3: §19 small-business regulation, §13b reverse-charge subcases, intra-EU supply, export, and place-of-supply rules (Week 9)
 
 **Motivations & challenges**
+
 - Motivation: making `generateInvoice()` block on error-severity business-rule issues by default, rather than leaving validation opt-in, closes a gap the roadmap flagged — a caller can no longer silently produce non-compliant XML without realizing it
 - Challenge: the VPS deployment surfaced problems no amount of local testing would have caught — an unrelated system service already occupying ports 80/443, a Postgres password that silently stopped matching once `.env` was edited after first boot, and an nginx rule that 404'd the site root while every other page worked fine. All three were found and fixed via actual live-traffic verification (curl and a real browser click-through), a reminder that "deployed" and "verified working end-to-end" are different milestones
 - Challenge: deciding where to run the frontend (GitHub Pages vs. the existing VPS) mid-implementation cost some rework, but landed on the simpler long-term answer — one less external dependency, one less DNS target, no separate deploy pipeline to maintain
+
 ---
 
 **Done** (22 Jun – 5 July)
+
 - Wrote `docs/ARCHITECTURE.md` and `docs/CONTRIBUTING.md`: adapter pattern, module boundaries, and the contributor workflow
 - Added `CHANGELOG.md` and tagged release `v0.1.0`
 - Implemented the XRechnung UBL 2.1 XML adapter (`adapters/xrechnung.ts`): maps document header, seller/buyer parties, payment means, VAT totals, and invoice lines to XRechnung 3.x elements, with XML-escaping and 2-decimal amount formatting
@@ -99,11 +107,13 @@ without a software background.
 - Full suite green: 68 tests passing across schema validation, business rules, and the XRechnung adapter
 
 **Doing** (6 July – 19 July)
+
 - Integrate the KoSIT validator (`validationtool`) as an automated validation step, run all XML fixtures through it, and fix structural validation errors
 - Document KoSIT setup (Java version, scenario download, local run instructions) in the README developer section
 - Implement structured VAT rule enforcement (category/rate consistency, reverse-charge buyer VAT ID, EN 16931 rounding tolerance) with automated test cases
 
 **Motivations & challenges**
+
 - Motivation: building the XML adapter only after the schema/validators were stable let it trust a fully-validated `Invoice` object, keeping the zero-runtime-dependency, template-string approach auditable
 - Challenge: UBL 2.1's strict element ordering (e.g. `TaxExemptionReasonCode` before `TaxExemptionReason`, `Item/Description` before `Item/Name`) meant early XML drafts were schema-invalid despite correct data — required careful sequencing ahead of Week 6's KoSIT validation
 - Challenge: settling where generated docs (`CHANGELOG.md`) should live took a few false starts — moved to `docs/` and back to the repo root before landing on root-level, matching where `README.md` and `LICENSE` already live
@@ -111,6 +121,7 @@ without a software background.
 ---
 
 **Done** (8 Jun – 21 Jun)
+
 - Drafted internal invoice schema v0.1 as a JSON Schema Draft-07 document (`schemas/invoice.schema.json`), covering all mandatory XRechnung Business Terms (BT-1 through BT-115) with field-level descriptions linking each field to its EU/German legal basis
 - Added 2 example invoice JSON fixtures: a simple single-line domestic invoice and a multi-line invoice with a purchase order reference — both validate against the schema
 - Wrote 33 schema validation tests with Vitest + AJV v8: 2 valid-fixture tests and 31 rejection tests covering missing required fields, wrong formats, invalid enumerations, extra properties, and multi-line-specific edge cases; all pass in CI
@@ -120,25 +131,30 @@ without a software background.
 - Wrote business-rule validator tests with Vitest covering all 6 fixtures as valid cases plus one negative test per rule violation
 
 **Doing** (22 Jun – 5 July)
+
 - Expand schema: VAT block edge cases (§19, §13b), allowances/charges, additional payment terms
 - Add multi-VAT-rate example invoice fixture
 - Draft `ARCHITECTURE.md` explaining the adapter pattern and module boundaries
 
 **Motivations & challenges**
+
 - Motivation: having a runtime-validated schema as the single source of truth makes it safe to build the XML and PDF adapters in isolation — each adapter reads from a known-good object
 - Challenge: TypeScript's strict NodeNext module resolution does not handle legacy CJS packages (AJV, ajv-formats) well; worked around by using named imports and `createRequire` in the test file
 
 ---
 
 **Done** (1 Jun – 7 Jun)
+
 - Initialized public repo: skeleton directories (`/core`, `/adapters`, `/validators`, `/fixtures`, `/docs`), TypeScript + ESLint + Prettier + Vitest toolchain
 - Defined core invoice types (`Invoice`, `InvoiceLine`, `Party`, `VatBreakdown`) and mapped them to XRechnung Business Terms. (example. BT-1 Invoice number, BT-2 Invoice issue data ...)
 
 **Doing** (8 Jun – 21 Jun)
+
 - Draft internal invoice schema v0.1 as JSON Schema (mandatory XRechnung fields)
 - Add 2 example invoice JSON fixtures + schema validation test
 - Expand schema: VAT block, payment terms, allowances/charges
 
 **Motivations & challenges**
+
 - Motivation: clean architectural foundation makes Phase 2 XML work straightforward
 - Challenge: balancing schema completeness now vs. keeping it minimal until XML mapping begins

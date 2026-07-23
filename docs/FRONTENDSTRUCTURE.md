@@ -17,15 +17,15 @@ This is a convention, not a standard architecture — the numbers only buy predi
 
 ## Slice numbers
 
-| # | Slice | Meaning |
-|---|---|---|
-| 000 | `core` | Shared API client, styles — no feature/page logic |
-| 100 | `layout` | Shared chrome: `Header` (site brand link, shown on every page) and `Footer` (wrapper; each page passes its own footer content as children) |
-| 200 | `pages` | Top-level pages not owned by a specific feature |
-| 300–600 | *(reserved)* | Not currently planned — available for future domain slices (e.g. authentication, customer accounts, billing) if the product grows beyond invoicing + beta/developer signups |
-| 700 | `invoicing` | UI for the XML invoice engine (planned — next feature) |
-| 800 | `beta` | Beta-program signup form for end users — today's actual feature |
-| 900 | `developer` | Developer feedback form — today's actual feature |
+| #       | Slice        | Meaning                                                                                                                                                                     |
+| ------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 000     | `core`       | Shared API client, styles — no feature/page logic                                                                                                                           |
+| 100     | `layout`     | Shared chrome: `Header` (site brand link, shown on every page) and `Footer` (wrapper; each page passes its own footer content as children)                                  |
+| 200     | `pages`      | Top-level pages not owned by a specific feature                                                                                                                             |
+| 300–600 | _(reserved)_ | Not currently planned — available for future domain slices (e.g. authentication, customer accounts, billing) if the product grows beyond invoicing + beta/developer signups |
+| 700     | `invoicing`  | UI for the XML invoice engine (planned — next feature)                                                                                                                      |
+| 800     | `beta`       | Beta-program signup form for end users — today's actual feature                                                                                                             |
+| 900     | `developer`  | Developer feedback form — today's actual feature                                                                                                                            |
 
 `000`/`100`/`200` are frontend-specific infrastructure concepts (there's no backend equivalent of "layout" or "pages"). If a reserved domain slice (e.g. `300-authentication`) is ever built, use the same number on the backend (`docs/BACKENDSTRUCTURE.md`) so the domain stays aligned across stacks.
 

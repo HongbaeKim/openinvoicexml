@@ -52,23 +52,23 @@ and PR to `main`.
 
 ## Docs
 
-| Document | Status |
-|---|---|
-| `SCHEMA.md` — Internal invoice schema, field definitions, BT mapping | Done |
-| `API.md` — API usage: `generateInvoice`, `toXRechnung`, error codes | Done |
-| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow | Done |
-| `MAPPING.md` — Full XRechnung BT mapping table | Done |
-| `VALIDATION.md` — How to validate XRechnung output against KoSIT | Done |
-| `ROADMAP.md` — Phase goals, non-goals, open questions | Done |
-| `CONTRIBUTING.md` — How to contribute, coding conventions | Done |
-| `LIMITATIONS.md` — What is not supported and why | Done |
-| `PROTOTYPEFUND.md` — Prototype Fund bi-weekly progress report | Active |
-| `DEPENDENCIES.md` — Purpose of each dependency in `package.json` | Done |
-| `TSCONFIG.md` — Explanation of each `tsconfig.json` compiler option | Done |
-| `BACKENDSTRUCTURE.md` — Numbered folder convention for `src/backend/src/` | Done |
-| `FRONTENDSTRUCTURE.md` — Numbered folder convention for `src/frontend/src/` | Done |
-| `SECURITY.md` — Security considerations and responsible disclosure | Done |
-| `COMMITRULE.md` — Commit message type convention | Done |
+| Document                                                                    | Status |
+| --------------------------------------------------------------------------- | ------ |
+| `SCHEMA.md` — Internal invoice schema, field definitions, BT mapping        | Done   |
+| `API.md` — API usage: `generateInvoice`, `toXRechnung`, error codes         | Done   |
+| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow           | Done   |
+| `MAPPING.md` — Full XRechnung BT mapping table                              | Done   |
+| `VALIDATION.md` — How to validate XRechnung output against KoSIT            | Done   |
+| `ROADMAP.md` — Phase goals, non-goals, open questions                       | Done   |
+| `CONTRIBUTING.md` — How to contribute, coding conventions                   | Done   |
+| `LIMITATIONS.md` — What is not supported and why                            | Done   |
+| `PROTOTYPEFUND.md` — Prototype Fund bi-weekly progress report               | Active |
+| `DEPENDENCIES.md` — Purpose of each dependency in `package.json`            | Done   |
+| `TSCONFIG.md` — Explanation of each `tsconfig.json` compiler option         | Done   |
+| `BACKENDSTRUCTURE.md` — Numbered folder convention for `src/backend/src/`   | Done   |
+| `FRONTENDSTRUCTURE.md` — Numbered folder convention for `src/frontend/src/` | Done   |
+| `SECURITY.md` — Security considerations and responsible disclosure          | Done   |
+| `COMMITRULE.md` — Commit message type convention                            | Done   |
 
 ## License
 

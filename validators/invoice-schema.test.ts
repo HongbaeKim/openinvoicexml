@@ -66,13 +66,13 @@ describe("Invoice JSON Schema", () => {
   describe.each(fixtures)("required field enforcement (%s)", (_label, fixture) => {
     it("rejects an invoice missing 'id'", () => {
       // ex)
-      // const _id = Fixture.id                                                
-      
-      // const noId = {                                                              
-      //   issueDate: Fixture.issueDate,                                         
+      // const _id = Fixture.id
+
+      // const noId = {
+      //   issueDate: Fixture.issueDate,
       //   seller: Fixture.seller,
-      //   ...all other properties except id                                           
-      // };                         
+      //   ...all other properties except id
+      // };
       const { id: _id, ...noId } = fixture;
       // Validate the invoice without an id.
       expect(validate(noId)).toBe(false);
@@ -84,11 +84,7 @@ describe("Invoice JSON Schema", () => {
       //     },
       //   },
       // ];
-      expect(
-        validate.errors?.some(
-          (e) => e.params?.missingProperty === "id"
-        )
-      ).toBe(true);
+      expect(validate.errors?.some((e) => e.params?.missingProperty === "id")).toBe(true);
     });
 
     it("rejects an invoice missing 'issueDate'", () => {
@@ -110,17 +106,17 @@ describe("Invoice JSON Schema", () => {
     });
 
     it("rejects an invoice with an empty 'lines' array", () => {
-      const bad = { 
-        ...fixture, 
-        lines: [] 
+      const bad = {
+        ...fixture,
+        lines: [],
       };
       expect(validate(bad)).toBe(false);
     });
 
     it("rejects an invoice with an empty 'vatBreakdowns' array", () => {
-      const bad = { 
-        ...fixture, 
-        vatBreakdowns: [] 
+      const bad = {
+        ...fixture,
+        vatBreakdowns: [],
       };
       expect(validate(bad)).toBe(false);
     });
@@ -128,25 +124,25 @@ describe("Invoice JSON Schema", () => {
 
   describe.each(fixtures)("type and format enforcement (%s)", (_label, fixture) => {
     it("rejects an invalid typeCode", () => {
-      const bad = { 
-        ...fixture, 
-        typeCode: "999" 
+      const bad = {
+        ...fixture,
+        typeCode: "999",
       };
       expect(validate(bad)).toBe(false);
     });
 
     it("rejects a non-date issueDate (DD/MM/YYYY format)", () => {
       const bad = {
-        ...fixture, 
-        issueDate: "09/06/2026" 
+        ...fixture,
+        issueDate: "09/06/2026",
       };
       expect(validate(bad)).toBe(false);
     });
 
     it("rejects a lowercase currencyCode", () => {
-      const bad = { 
-        ...fixture, 
-        currencyCode: "eur" 
+      const bad = {
+        ...fixture,
+        currencyCode: "eur",
       };
       expect(validate(bad)).toBe(false);
     });
@@ -181,9 +177,9 @@ describe("Invoice JSON Schema", () => {
 
   describe.each(fixtures)("additionalProperties enforcement (%s)", (_label, fixture) => {
     it("rejects an invoice with an unrecognised top-level field", () => {
-      const bad = { 
-        ...fixture, 
-        unknownField: "surprise" 
+      const bad = {
+        ...fixture,
+        unknownField: "surprise",
       };
       expect(validate(bad)).toBe(false);
     });

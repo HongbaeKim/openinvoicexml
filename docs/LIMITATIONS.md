@@ -48,16 +48,16 @@ Hybrid export is the deliverable of **Phase 4** (Weeks 13–16).
 
 The following scenarios are known and planned but not yet implemented:
 
-| Scenario | Planned phase |
-|---|---|
-| §19 UStG (Kleinunternehmerregelung — small business exemption) | Phase 3 |
-| §13b UStG reverse charge subcases | Phase 3 |
-| Intra-EU supply (VAT category K) | Phase 3 |
-| Export outside EU (VAT category G) | Phase 3 |
-| Credit notes (document type 381) | Phase 3 |
-| Corrective invoices (document type 384) | Phase 3 |
-| Down payment / final invoices | Phase 3 |
-| Mixed VAT rates on a single invoice | Phase 3 |
+| Scenario                                                       | Planned phase |
+| -------------------------------------------------------------- | ------------- |
+| §19 UStG (Kleinunternehmerregelung — small business exemption) | Phase 3       |
+| §13b UStG reverse charge subcases                              | Phase 3       |
+| Intra-EU supply (VAT category K)                               | Phase 3       |
+| Export outside EU (VAT category G)                             | Phase 3       |
+| Credit notes (document type 381)                               | Phase 3       |
+| Corrective invoices (document type 384)                        | Phase 3       |
+| Down payment / final invoices                                  | Phase 3       |
+| Mixed VAT rates on a single invoice                            | Phase 3       |
 
 ---
 

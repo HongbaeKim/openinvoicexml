@@ -15,7 +15,7 @@ served directly — originally planned for GitHub Pages, moved onto this same VP
 Most of the hardening below was written with only the API origin in mind; where that origin split
 changes the reasoning, it's called out inline.
 
-Context for *why this matters now*: the backend currently exposes exactly three routes —
+Context for _why this matters now_: the backend currently exposes exactly three routes —
 `GET /health`, `POST /api/beta`, `POST /api/developer` (both signup forms, already have a
 honeypot `website` field client-side, no auth, no file uploads). So the realistic pre-launch risk
 is unauthenticated signup-form spam and generic opportunistic scanning against a freshly-DNS'd
@@ -45,8 +45,8 @@ domain — not anything upload- or auth-related yet. That shaped the choices bel
   Omitted deliberately, not an oversight.
 - **`openinvoicexml.de` (the frontend) does have one**, since this origin serves HTML directly:
   `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src
-  'self' https://api.openinvoicexml.de; frame-ancestors 'none'; base-uri 'self'; form-action
-  'self';`. No `'unsafe-inline'` anywhere — the Vite production build (`@vitejs/plugin-react` +
+'self' https://api.openinvoicexml.de; frame-ancestors 'none'; base-uri 'self'; form-action
+'self';`. No `'unsafe-inline'` anywhere — the Vite production build (`@vitejs/plugin-react` +
   `@tailwindcss/vite`, no legacy/polyfill plugin) emits only external `<script type="module">`
   and `<link rel="stylesheet">` tags, no inline script/style, so a strict policy works as-is.
   `connect-src` allowlists exactly the one cross-origin fetch target the frontend legitimately

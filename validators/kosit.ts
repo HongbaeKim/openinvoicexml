@@ -50,7 +50,7 @@ function resolveJavaBin(): string {
 export function runKosit(xmlPaths: string[], options: KositOptions = {}): KositResult[] {
   const jarPath = options.jarPath ?? DEFAULT_JAR;
   const scenariosPath = options.scenariosPath ?? DEFAULT_SCENARIOS;
-  // mkdtempSync function adds a random unique 6 characters to the end 
+  // mkdtempSync function adds a random unique 6 characters to the end
   const outDir = options.outDir ?? mkdtempSync(join(tmpdir(), "kosit-"));
 
   if (!existsSync(jarPath) || !existsSync(scenariosPath)) {
@@ -88,15 +88,15 @@ export function runKosit(xmlPaths: string[], options: KositOptions = {}): KositR
     // Usually
     // exit code 0 Success
     // exit code 1 Failure
-    
+
     // But
     // KoSIT exits non-zero whenever any input file is rejected — that is expected
     // behavior, not a wrapper failure. The actual per-file result is read from the
     // generated report XML below, not from the process exit code.
   }
 
-  // for every XML file that was validated, look up its individual report 
-  // and turn it into a structured result 
+  // for every XML file that was validated, look up its individual report
+  // and turn it into a structured result
   // and return the array of all those results.
   // example
   // const xmlPaths = [
@@ -149,7 +149,6 @@ function parseReport(xmlPath: string, outDir: string): KositResult {
   }
 
   const issues: KositIssue[] = [];
-  
 
   // <rep:message : find a tag that starts with <rep:message
   // \b : word boundary, so it doesn't accidentally match <rep:messageFoo>
@@ -162,10 +161,10 @@ function parseReport(xmlPath: string, outDir: string): KositResult {
   // ([\s\S]*?) : capture everything inside the tag
   // *? : stop as soon as you find the first closing </rep:message> tag.
   // <\/rep:message> : closing tag
-  
+
   // /.../g : stands for global
   const messageRe = /<rep:message\b([^>]*)>([\s\S]*?)<\/rep:message>/g;
-  
+
   // Example input (the report string contains this):
 
   // <rep:message level="error" xpathLocation="/Invoice/ID">Missing invoice ID</rep:message>

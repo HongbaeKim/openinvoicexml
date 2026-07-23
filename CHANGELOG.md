@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.0] - 2026-07-20
 
 ### Added
+
 - XRechnung UBL 2.1 XML generation (`toXRechnung`) validated locally via the official KoSIT
   validator (`runKosit`) — zero error-severity findings across all 6 current fixtures
 - Structured VAT rule enforcement (`validateBusinessRules`): VAT category/rate consistency
@@ -19,6 +20,7 @@ All notable changes to this project will be documented in this file.
   fixture regression) on every push/PR to `main`
 
 ### Changed
+
 - `adapters/xrechnung.ts` refactored into a field-mapping step (`adapters/xrechnung-mapping.ts`,
   independently tested) and a serialization step, so BT-to-field resolution and UBL markup
   generation can be reasoned about and tested separately. Output is unchanged — verified
@@ -46,6 +48,7 @@ Phase 3 scope — see [`LIMITATIONS.md`](docs/LIMITATIONS.md).
 ## [0.1.0] - 2026-06-28
 
 ### Added
+
 - Core invoice schema and internal `Invoice` type
 - JSON Schema validation via AJV (zero runtime dependencies)
 - Business rule validators for XRechnung compliance

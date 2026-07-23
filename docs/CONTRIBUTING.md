@@ -25,21 +25,21 @@ If all tests pass, your environment is ready.
 
 ### Useful Commands
 
-| Command | What it does |
-|---|---|
-| `npm test` | Run all tests (Vitest) |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage report |
-| `npm run typecheck` | Type-check without emitting files |
-| `npm run lint` | Check for lint errors (ESLint) |
-| `npm run lint:fix` | Auto-fix lint errors |
-| `npm run format` | Format all files (Prettier) |
-| `npm run format:check` | Check formatting without changing files |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `make generate` | Regenerate XML fixtures from `dist/` (run `npm run build` first) |
-| `make validate-xml` | Generate XML and verify each file has a valid XML declaration |
-| `make kosit-setup` | One-time download of the KoSIT validator + XRechnung config (see `docs/VALIDATION.md`) |
-| `make validate-kosit` | Generate XML and validate it against the real KoSIT validator |
+| Command                 | What it does                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `npm test`              | Run all tests (Vitest)                                                                 |
+| `npm run test:watch`    | Run tests in watch mode                                                                |
+| `npm run test:coverage` | Run tests with coverage report                                                         |
+| `npm run typecheck`     | Type-check without emitting files                                                      |
+| `npm run lint`          | Check for lint errors (ESLint)                                                         |
+| `npm run lint:fix`      | Auto-fix lint errors                                                                   |
+| `npm run format`        | Format all files (Prettier)                                                            |
+| `npm run format:check`  | Check formatting without changing files                                                |
+| `npm run build`         | Compile TypeScript to `dist/`                                                          |
+| `make generate`         | Regenerate XML fixtures from `dist/` (run `npm run build` first)                       |
+| `make validate-xml`     | Generate XML and verify each file has a valid XML declaration                          |
+| `make kosit-setup`      | One-time download of the KoSIT validator + XRechnung config (see `docs/VALIDATION.md`) |
+| `make validate-kosit`   | Generate XML and validate it against the real KoSIT validator                          |
 
 ---
 

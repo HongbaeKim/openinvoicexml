@@ -45,8 +45,8 @@
       "description": "Bauleistung im Sinne des §13b Abs. 2 Nr. 4 UStG (Reverse-Charge)",
       "quantity": 1,
       "unitCode": "C62",
-      "unitPrice": 2000.00,
-      "lineAmount": 2000.00,
+      "unitPrice": 2000.0,
+      "lineAmount": 2000.0,
       "vatCategoryCode": "AE",
       "vatRate": 0
     }
@@ -56,17 +56,17 @@
     {
       "categoryCode": "AE",
       "rate": 0,
-      "taxableAmount": 2000.00,
-      "taxAmount": 0.00,
+      "taxableAmount": 2000.0,
+      "taxAmount": 0.0,
       "exemptionReason": "Steuerschuldnerschaft des Leistungsempfängers gem. §13b UStG",
       "exemptionReasonCode": "VATEX-EU-AE"
     }
   ],
 
-  "taxExclusiveAmount": 2000.00,
-  "taxAmount": 0.00,
-  "taxInclusiveAmount": 2000.00,
-  "duePayableAmount": 2000.00,
+  "taxExclusiveAmount": 2000.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 2000.0,
+  "duePayableAmount": 2000.0,
 
   "paymentMeans": {
     "code": "58",

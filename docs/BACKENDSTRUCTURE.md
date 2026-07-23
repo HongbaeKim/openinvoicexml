@@ -17,15 +17,15 @@ This is a convention, not a standard architecture — the numbers only buy predi
 
 ## Slice numbers
 
-| # | Slice | Meaning |
-|---|---|---|
-| 000 | `core` | Shared config, types — no persistence, no feature/route logic |
-| 100 | `middleware` | Fastify plugins: CORS, error handling |
-| 200 | `routes` | Route registration root, `/health` — registers each feature's routes, doesn't implement them |
-| 300–600 | *(reserved)* | Not currently planned — available for future domain slices (e.g. authentication, customer accounts, billing) if the product grows beyond invoicing + beta/developer signups |
-| 700 | `invoicing` | Hosted service layer over the invoice engine — stateless, XML file in/out (planned — next feature) |
-| 800 | `beta` | Beta-program signup API for end users — today's actual feature |
-| 900 | `developer` | Developer feedback/interest API — today's actual feature |
+| #       | Slice        | Meaning                                                                                                                                                                     |
+| ------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 000     | `core`       | Shared config, types — no persistence, no feature/route logic                                                                                                               |
+| 100     | `middleware` | Fastify plugins: CORS, error handling                                                                                                                                       |
+| 200     | `routes`     | Route registration root, `/health` — registers each feature's routes, doesn't implement them                                                                                |
+| 300–600 | _(reserved)_ | Not currently planned — available for future domain slices (e.g. authentication, customer accounts, billing) if the product grows beyond invoicing + beta/developer signups |
+| 700     | `invoicing`  | Hosted service layer over the invoice engine — stateless, XML file in/out (planned — next feature)                                                                          |
+| 800     | `beta`       | Beta-program signup API for end users — today's actual feature                                                                                                              |
+| 900     | `developer`  | Developer feedback/interest API — today's actual feature                                                                                                                    |
 
 `000`/`100`/`200` are backend-specific infrastructure concepts (there's no frontend equivalent of "middleware" or "route registration"). If a reserved domain slice (e.g. `300-authentication`) is ever built, use the same number on the frontend (`docs/FRONTENDSTRUCTURE.md`) so the domain stays aligned across stacks.
 

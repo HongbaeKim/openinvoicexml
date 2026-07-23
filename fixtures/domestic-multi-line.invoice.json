@@ -46,8 +46,8 @@
       "description": "Software architecture consulting, June 2026",
       "quantity": 8,
       "unitCode": "HUR",
-      "unitPrice": 125.00,
-      "lineAmount": 1000.00,
+      "unitPrice": 125.0,
+      "lineAmount": 1000.0,
       "vatCategoryCode": "S",
       "vatRate": 19
     },
@@ -57,8 +57,8 @@
       "description": "Pull request and architecture review",
       "quantity": 2,
       "unitCode": "HUR",
-      "unitPrice": 95.00,
-      "lineAmount": 190.00,
+      "unitPrice": 95.0,
+      "lineAmount": 190.0,
       "vatCategoryCode": "S",
       "vatRate": 19
     },
@@ -68,8 +68,8 @@
       "description": "Annual IDE plugin license, prorated",
       "quantity": 1,
       "unitCode": "C62",
-      "unitPrice": 49.00,
-      "lineAmount": 49.00,
+      "unitPrice": 49.0,
+      "lineAmount": 49.0,
       "vatCategoryCode": "S",
       "vatRate": 19
     }
@@ -79,12 +79,12 @@
     {
       "categoryCode": "S",
       "rate": 19,
-      "taxableAmount": 1239.00,
+      "taxableAmount": 1239.0,
       "taxAmount": 235.41
     }
   ],
 
-  "taxExclusiveAmount": 1239.00,
+  "taxExclusiveAmount": 1239.0,
   "taxAmount": 235.41,
   "taxInclusiveAmount": 1474.41,
   "duePayableAmount": 1474.41,

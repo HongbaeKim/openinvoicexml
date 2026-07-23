@@ -33,7 +33,8 @@ export const privacyDict: Record<
       "Diese Seite erklärt, was mit deinen Daten passiert, wenn du dich über das openinvoicexml Beta-Programm oder das Entwickler-Feedback-Formular anmeldest, gemäß Art. 13 DSGVO.",
     whoResponsibleHeading: "Wer verantwortlich ist",
     whoResponsible: {
-      before: "Die vollständige rechtliche Identität und Anschrift des Verantwortlichen findest du im ",
+      before:
+        "Die vollständige rechtliche Identität und Anschrift des Verantwortlichen findest du im ",
       linkText: "Impressum",
       after: ". Kontakt für alles, was diesen Hinweis betrifft:",
       email: "contact@openinvoicexml.de",
@@ -86,7 +87,8 @@ export const privacyDict: Record<
     whoResponsible: {
       before: "See the ",
       linkText: "Impressum",
-      after: " for the full legal identity and address of the data controller. Contact for anything related to this notice:",
+      after:
+        " for the full legal identity and address of the data controller. Contact for anything related to this notice:",
       email: "contact@openinvoicexml.de",
     },
     whatWeCollectHeading: "What we collect",

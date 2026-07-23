@@ -45,8 +45,8 @@
       "description": "Software architecture consulting, June 2026",
       "quantity": 8,
       "unitCode": "HUR",
-      "unitPrice": 125.00,
-      "lineAmount": 1000.00,
+      "unitPrice": 125.0,
+      "lineAmount": 1000.0,
       "vatCategoryCode": "S",
       "vatRate": 19
     }
@@ -56,15 +56,15 @@
     {
       "categoryCode": "S",
       "rate": 19,
-      "taxableAmount": 1000.00,
-      "taxAmount": 190.00
+      "taxableAmount": 1000.0,
+      "taxAmount": 190.0
     }
   ],
 
-  "taxExclusiveAmount": 1000.00,
-  "taxAmount": 190.00,
-  "taxInclusiveAmount": 1190.00,
-  "duePayableAmount": 1190.00,
+  "taxExclusiveAmount": 1000.0,
+  "taxAmount": 190.0,
+  "taxInclusiveAmount": 1190.0,
+  "duePayableAmount": 1190.0,
 
   "paymentMeans": {
     "code": "58",

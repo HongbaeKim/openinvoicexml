@@ -76,21 +76,21 @@ openinvoicexml/
 
 TypeScript type definitions for the internal invoice model. This is the contract that all other modules depend on.
 
-| File | Purpose |
-|---|---|
-| `types/invoice.ts` | `Invoice` interface — the root type with document-level fields (BT-1 through BT-115) |
-| `types/invoice-line.ts` | `InvoiceLine` interface — a single line item (BG-25) |
-| `types/party.ts` | `Party` interface — seller or buyer with address and identifiers (BG-4/BG-7) |
-| `types/vat-breakdown.ts` | `VatBreakdown` interface and `VatCategoryCode` union type (BG-23) |
-| `utils/monetary.ts` | `round2()` and `isClose()` — monetary rounding and comparison with EN 16931 tolerance |
-| `index.ts` | Re-exports all public types |
+| File                     | Purpose                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `types/invoice.ts`       | `Invoice` interface — the root type with document-level fields (BT-1 through BT-115)  |
+| `types/invoice-line.ts`  | `InvoiceLine` interface — a single line item (BG-25)                                  |
+| `types/party.ts`         | `Party` interface — seller or buyer with address and identifiers (BG-4/BG-7)          |
+| `types/vat-breakdown.ts` | `VatBreakdown` interface and `VatCategoryCode` union type (BG-23)                     |
+| `utils/monetary.ts`      | `round2()` and `isClose()` — monetary rounding and comparison with EN 16931 tolerance |
+| `index.ts`               | Re-exports all public types                                                           |
 
 `core/` has **no dependencies** on any other module. It is pure types and utility functions.
 
 ### `schemas/`
 
-| File | Purpose |
-|---|---|
+| File                  | Purpose                                                          |
+| --------------------- | ---------------------------------------------------------------- |
 | `invoice.schema.json` | JSON Schema (Draft-07) defining the structure of a valid invoice |
 
 The schema mirrors the TypeScript types in `core/` but is language-independent. It is used by AJV at runtime for validation and serves as machine-readable documentation of the invoice format. The schema enforces:
@@ -105,12 +105,12 @@ The schema mirrors the TypeScript types in `core/` but is language-independent. 
 
 Two validation layers, each catching a different class of error:
 
-| File | Purpose |
-|---|---|
-| `types.ts` | `ValidationIssue` interface — the return type for all validation |
-| `business-rules.ts` | `validateBusinessRules()` — checks legal and arithmetic rules |
-| `rules/vat-rate.ts` | VAT rate/category consistency rules, decimal precision check |
-| `index.ts` | Re-exports public API |
+| File                | Purpose                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| `types.ts`          | `ValidationIssue` interface — the return type for all validation |
+| `business-rules.ts` | `validateBusinessRules()` — checks legal and arithmetic rules    |
+| `rules/vat-rate.ts` | VAT rate/category consistency rules, decimal precision check     |
+| `index.ts`          | Re-exports public API                                            |
 
 **Schema validation** (AJV + `invoice.schema.json`) catches structural errors: missing fields, wrong types, invalid formats.
 
@@ -139,14 +139,14 @@ Each adapter is an independent module. Adding a new output format means adding a
 
 Example invoice JSON files that validate against the schema. Each fixture represents a distinct legal scenario:
 
-| Fixture | Scenario |
-|---|---|
-| `domestic-simple.invoice.json` | Standard domestic invoice, 19% VAT (S) |
-| `domestic-multi-line.invoice.json` | Multiple line items, 19% VAT (S) |
-| `reduced-rate.invoice.json` | Reduced 7% VAT rate (S) |
-| `zero-rated.invoice.json` | Zero-rated supply (Z) |
-| `exempt.invoice.json` | VAT-exempt supply (E) |
-| `reverse-charge.invoice.json` | §13b reverse charge (AE) |
+| Fixture                            | Scenario                               |
+| ---------------------------------- | -------------------------------------- |
+| `domestic-simple.invoice.json`     | Standard domestic invoice, 19% VAT (S) |
+| `domestic-multi-line.invoice.json` | Multiple line items, 19% VAT (S)       |
+| `reduced-rate.invoice.json`        | Reduced 7% VAT rate (S)                |
+| `zero-rated.invoice.json`          | Zero-rated supply (Z)                  |
+| `exempt.invoice.json`              | VAT-exempt supply (E)                  |
+| `reverse-charge.invoice.json`      | §13b reverse charge (AE)               |
 
 Fixtures serve three purposes: test inputs for automated tests, reference implementations for contributors, and documentation of supported scenarios.
 

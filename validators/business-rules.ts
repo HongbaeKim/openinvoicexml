@@ -156,7 +156,7 @@ export function validateBusinessRules(invoice: Invoice): ValidationIssue[] {
     });
   }
 
-  // BT-115 duePayableAmount = taxInclusiveAmount. 
+  // BT-115 duePayableAmount = taxInclusiveAmount.
   // BT-115 = BT-112 − BT-113 + BT-114
   if (!isClose(invoice.duePayableAmount, invoice.taxInclusiveAmount)) {
     issues.push({

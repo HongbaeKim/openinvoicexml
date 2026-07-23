@@ -18,7 +18,7 @@ cp .env.example .env
 ```
 
 **Important:** `POSTGRES_PASSWORD` only takes effect the first time Postgres initializes its
-data directory. Set the real password in `.env` *before* the first `docker compose up` —
+data directory. Set the real password in `.env` _before_ the first `docker compose up` —
 changing it afterwards on an already-running deployment does nothing silently (the volume
 already has the old password baked in) until you either wipe the volume (destroys data) or
 change it manually inside Postgres (`ALTER USER app WITH PASSWORD '...'`) and update

@@ -17,7 +17,8 @@ export const phasesDict: Record<Lang, Phase[]> = {
       title: "Phase 1 — Architektur & internes Schema",
       shortLabel: "Jun",
       period: "Jun 2026",
-      description: "Öffentliches Repo, dokumentiertes internes Rechnungsschema, modulare Architektur.",
+      description:
+        "Öffentliches Repo, dokumentiertes internes Rechnungsschema, modulare Architektur.",
       subItems: [
         "Repo & Grundgerüst",
         "Rechnungsschema v0.1",
@@ -51,8 +52,14 @@ export const phasesDict: Record<Lang, Phase[]> = {
       title: "Phase 4 — Hybrider PDF/A-3-Export",
       shortLabel: "Sep",
       period: "Sep 2026",
-      description: "Stabiler hybrider PDF/A-3-Export mit Unterstützung für Factur-X/ZUGFeRD-Profile.",
-      subItems: ["PDF/A-3-Erstellung", "veraPDF-Konformität", "Factur-X/ZUGFeRD-Profile", "40+ Testfälle"],
+      description:
+        "Stabiler hybrider PDF/A-3-Export mit Unterstützung für Factur-X/ZUGFeRD-Profile.",
+      subItems: [
+        "PDF/A-3-Erstellung",
+        "veraPDF-Konformität",
+        "Factur-X/ZUGFeRD-Profile",
+        "40+ Testfälle",
+      ],
       status: "upcoming",
     },
     {
@@ -60,7 +67,12 @@ export const phasesDict: Record<Lang, Phase[]> = {
       shortLabel: "Okt",
       period: "Okt 2026",
       description: "Vollständige automatisierte Testsuite, Sicherheitsprüfung und Dokumentation.",
-      subItems: ["Vollständige Testsuite", "Sicherheitsprüfung", "Performance-Tests", "Dokumentation"],
+      subItems: [
+        "Vollständige Testsuite",
+        "Sicherheitsprüfung",
+        "Performance-Tests",
+        "Dokumentation",
+      ],
       status: "upcoming",
     },
     {
@@ -83,7 +95,12 @@ export const phasesDict: Record<Lang, Phase[]> = {
       shortLabel: "Jun",
       period: "Jun 2026",
       description: "Public repo, documented internal invoice schema, modular architecture.",
-      subItems: ["Repo & skeleton", "Invoice schema v0.1", "VAT block & normalization", "Architecture docs"],
+      subItems: [
+        "Repo & skeleton",
+        "Invoice schema v0.1",
+        "VAT block & normalization",
+        "Architecture docs",
+      ],
       status: "done",
     },
     {
@@ -99,7 +116,12 @@ export const phasesDict: Record<Lang, Phase[]> = {
       shortLabel: "Aug",
       period: "Aug 2026",
       description: "Expanded VAT/legal scenario logic, 30+ KoSIT-validated fixtures.",
-      subItems: ["§19 / §13b VAT logic", "Credit notes & corrections", "Down payment invoices", "30+ fixtures"],
+      subItems: [
+        "§19 / §13b VAT logic",
+        "Credit notes & corrections",
+        "Down payment invoices",
+        "30+ fixtures",
+      ],
       status: "upcoming",
     },
     {
@@ -107,7 +129,12 @@ export const phasesDict: Record<Lang, Phase[]> = {
       shortLabel: "Sep",
       period: "Sep 2026",
       description: "Stable hybrid PDF/A-3 export with Factur-X/ZUGFeRD profile support.",
-      subItems: ["PDF/A-3 generation", "veraPDF compliance", "Factur-X/ZUGFeRD profiles", "40+ fixtures"],
+      subItems: [
+        "PDF/A-3 generation",
+        "veraPDF compliance",
+        "Factur-X/ZUGFeRD profiles",
+        "40+ fixtures",
+      ],
       status: "upcoming",
     },
     {
@@ -123,7 +150,12 @@ export const phasesDict: Record<Lang, Phase[]> = {
       shortLabel: "Nov",
       period: "Nov 2026",
       description: "Final compliance verification and the v1.0.0-prototype release.",
-      subItems: ["Refactoring & cleanup", "Final compliance check", "Dev docs & contributing", "v1.0.0 release"],
+      subItems: [
+        "Refactoring & cleanup",
+        "Final compliance check",
+        "Dev docs & contributing",
+        "v1.0.0 release",
+      ],
       status: "upcoming",
     },
   ],

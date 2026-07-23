@@ -120,7 +120,7 @@ export interface DocumentFields {
 }
 
 /** BT-106: sum of all line net amounts — derived, not a stored field on Invoice. */
-// sum all the lineAmount 
+// sum all the lineAmount
 // using reduce() many items -> one value
 function sumLineAmounts(lines: InvoiceLine[]): number {
   return lines.reduce((sum, line) => sum + line.lineAmount, 0);
