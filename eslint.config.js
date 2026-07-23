@@ -28,6 +28,8 @@ export default [
     // tsconfig.json (not part of the published npm package) — they're outside this eslint
     // config's `project` (root tsconfig.json only covers core/adapters/validators). The root
     // package itself has no /src of its own, so this is unambiguous.
-    ignores: ["dist/**", "node_modules/**", "src/**"],
+    // vitest.config.ts is root-level tooling config, outside tsconfig.json's
+    // `include` (core/adapters/validators only), so it can't use the type-aware parser project.
+    ignores: ["dist/**", "node_modules/**", "src/**", "vitest.config.ts"],
   },
 ];
