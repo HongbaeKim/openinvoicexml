@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, type JSX } from "react";
 import { useTranslation } from "../000-core/i18n";
 import { phasesDict, statusLabelDict, type Phase, type PhaseStatus } from "./StatusList.i18n";
 

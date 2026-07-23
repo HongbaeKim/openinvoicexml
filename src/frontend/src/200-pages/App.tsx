@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { Header } from "../100-layout/Header";
 import { Footer } from "../100-layout/Footer";
 import { StatusList } from "../800-beta/StatusList";

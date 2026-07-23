@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { useTranslation } from "../000-core/i18n";
 import { footerDict } from "./footer.i18n";
 

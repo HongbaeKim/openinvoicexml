@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type JSX } from "react";
 import { submitBetaSignup } from "../000-core/api";
 import { useTranslation } from "../000-core/i18n";
 import { betaFormDict } from "./BetaForm.i18n";

@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { useLanguage } from "../000-core/i18n";
 
 export function Header(): JSX.Element {
