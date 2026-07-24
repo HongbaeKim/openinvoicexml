@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [main]
 
+# 1.clean install → 2.lint → 3.type-check → 4.set up an external validator tool → 5.run tests
+# If any step fails, the workflow fails and (on a PR) shows up as a red ❌ 
 jobs:
   build:
     runs-on: ubuntu-latest
