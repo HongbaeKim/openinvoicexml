@@ -4,42 +4,33 @@ import { toXRechnung } from "./xrechnung.js";
 import type { Invoice } from "../core/index.js";
 
 import domesticSimple from "../fixtures/01.domestic-simple.invoice.json" with { type: "json" };
-import domesticMultiLine from "../fixtures/02.domestic-multi-line.invoice.json" with { type: "json" };
-import reducedRate from "../fixtures/03.reduced-rate.invoice.json" with { type: "json" };
-import exempt from "../fixtures/04.exempt.invoice.json" with { type: "json" };
-import zeroRated from "../fixtures/05.zero-rated.invoice.json" with { type: "json" };
-import reverseCharge from "../fixtures/06.reverse-charge.invoice.json" with { type: "json" };
-import smallBusiness from "../fixtures/07.small-business.invoice.json" with { type: "json" };
 import intraEuSupply from "../fixtures/08.intra-eu-supply.invoice.json" with { type: "json" };
-import exportInvoice from "../fixtures/09.export.invoice.json" with { type: "json" };
-import reverseChargeConstruction from "../fixtures/10.reverse-charge-construction.invoice.json" with { type: "json" };
-import reverseChargeScrapMetal from "../fixtures/11.reverse-charge-scrap-metal.invoice.json" with { type: "json" };
 import creditNoteFull from "../fixtures/16.credit-note-full.invoice.json" with { type: "json" };
+// XRechnung already proved both allowance levels work through one combined test. 
 import combinedLineAndDocumentDiscount from "../fixtures/24.combined-line-and-document-discount.invoice.json" with { type: "json" };
 
-const fixtures: [string, unknown][] = [
-  ["domestic-simple", domesticSimple],
-  ["domestic-multi-line", domesticMultiLine],
-  ["reduced-rate", reducedRate],
-  ["exempt", exempt],
-  ["zero-rated", zeroRated],
-  ["reverse-charge", reverseCharge],
-  ["small-business", smallBusiness],
-  ["intra-eu-supply", intraEuSupply],
-  ["export", exportInvoice],
-  ["reverse-charge-construction", reverseChargeConstruction],
-  ["reverse-charge-scrap-metal", reverseChargeScrapMetal],
-];
+import { allFixtures } from "../fixtures/index.js";
 
 describe("toXRechnung", () => {
-  describe.each(fixtures)("basic check: %s", (_label, rawFixture) => {
+  describe.each(allFixtures)("basic check: %s", (_label, rawFixture) => {
     it("produces valid XRechnung XML structure", () => {
       const invoice = rawFixture as Invoice;
       const xml = toXRechnung(invoice);
 
       expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-      expect(xml).toContain("<ubl:Invoice");
-      expect(xml).toContain('xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"');
+      // typeCode 381 (credit note) renders as ubl:CreditNote, not ubl:Invoice — see the
+      // "UBL document type by typeCode" describe block below for the dedicated coverage of why.
+      if (invoice.typeCode === "381") {
+        expect(xml).toContain("<ubl:CreditNote");
+        expect(xml).toContain(
+          'xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2"',
+        );
+      } else {
+        expect(xml).toContain("<ubl:Invoice");
+        expect(xml).toContain(
+          'xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"',
+        );
+      }
       expect(xml).toContain(
         'xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"',
       );
