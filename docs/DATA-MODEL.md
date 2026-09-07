@@ -107,6 +107,14 @@ element they produce. This table is the single source of truth for the BT mappin
 | BT-22 | Note                   | `note` (optional)       | —                      | `cbc:Note`                                   |
 | BT-5  | Document currency code | `currencyCode`          | EN 16931 §6.2.2       | `cbc:DocumentCurrencyCode`                   |
 | BT-10 | Buyer reference        | `buyerReference` (opt.) | XRechnung spec §2.4   | `cbc:BuyerReference`                         |
+
+BT-10 is optional in the TS type/JSON Schema (matches plain EN 16931), but XRechnung 3.0's CIUS
+gives it cardinality 1 — enforced as `XRECHNUNG_BUYER_REFERENCE_REQUIRED` by
+`validators/rules/19.xrechnung-mandatory-fields.ts` whenever `validateBusinessRules` is called
+with `profile: "XRECHNUNG"`. `generateInvoice`/`generateHybridPdf` always pass `"XRECHNUNG"`
+(their output is always genuine XRechnung UBL regardless of any profile option);
+`generateCii`/`generateFacturXPdf` pass through their own `options.profile`, which defaults to
+`"EN16931"` — see [`COMPLIANCE.md`](COMPLIANCE.md).
 | BT-9  | Payment due date       | `dueDate` (optional)    | —                      | `cbc:DueDate` (invoice root)                 |
 | BT-25 | Preceding invoice number | `precedingInvoiceReference.id` (optional)        | EN 16931 §6.2.3 | `cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID`        |
 | BT-26 | Preceding invoice issue date | `precedingInvoiceReference.issueDate` (optional) | EN 16931 §6.2.3 | `cac:BillingReference/cac:InvoiceDocumentReference/cbc:IssueDate` |
