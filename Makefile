@@ -1,5 +1,5 @@
 .ONESHELL:
-.PHONY: test type lint generate validate-xml kosit-setup validate-kosit generate-pdf validate-pdf-attachment verapdf-setup validate-verapdf validate-hybrid mustang-setup validate-mustang
+.PHONY: test type lint generate validate-xml kosit-setup validate-kosit generate-pdf validate-pdf-attachment verapdf-setup validate-verapdf validate-hybrid mustang-setup validate-mustang generate-cii validate-cii-kosit generate-facturx-pdf validate-facturx
 
 all: lint type test
 
@@ -246,6 +246,138 @@ validate-mustang: generate-pdf
 	  console.log((errors.length ? "✗ " : "✓ ") + r.file + " (validate)" + (errors.length ? " — " + errors.length + " error(s)" : ""));
 	  for (const e of errors) console.log("    " + e.message);
 	  if (errors.length) failed = true;
+	}
+	if (failed) process.exit(1);
+	EOF
+
+# generates standalone CII XML for every fixture, both profiles, into dist/cii/<profile>/ —
+# a subfolder per profile (not just a filename suffix) since EN16931 and XRechnung now produce
+# genuinely different content, not just different metadata (see adapters/cii.ts)
+generate-cii:
+	node --input-type=module <<'EOF'
+	import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "fs";
+	import { toCii } from "./dist/adapters/index.js";
+	const names = readdirSync("fixtures")
+	  .filter(f => f.endsWith(".invoice.json"))
+	  .map(f => f.slice(0, -".invoice.json".length))
+	  .sort();
+	for (const profile of ["en16931", "xrechnung"]) {
+	  mkdirSync("dist/cii/" + profile, { recursive: true });
+	  for (const n of names) {
+	    const inv = JSON.parse(readFileSync("fixtures/" + n + ".invoice.json", "utf8"));
+	    const xml = toCii(inv, { profile: profile.toUpperCase() });
+	    writeFileSync("dist/cii/" + profile + "/" + n + ".xml", xml);
+	  }
+	}
+	console.log("wrote dist/cii/en16931/ and dist/cii/xrechnung/");
+	EOF
+
+# runs both profiles' standalone CII XML through the real KoSIT validator; KoSIT self-selects
+# the matching scenario per file from its GuidelineSpecifiedDocumentContextParameter (EN16931
+# (CII) vs EN16931 XRechnung (CII)), so both subfolders go through the same runKosit() call —
+# exits non-zero if any file has an error-severity XSD/Schematron finding
+validate-cii-kosit: generate-cii
+	node --input-type=module <<'EOF'
+	import { runKosit } from "./dist/validators/index.js";
+	import { readdirSync } from "fs";
+	let failed = false;
+	for (const profile of ["en16931", "xrechnung"]) {
+	  console.log("--- " + profile + " ---");
+	  const dir = "dist/cii/" + profile;
+	  const files = readdirSync(dir).filter(f => f.endsWith(".xml")).sort().map(f => dir + "/" + f);
+	  const results = runKosit(files);
+	  for (const r of results) {
+	    const errors = r.issues.filter(i => i.severity === "error");
+	    console.log((errors.length ? "✗ " : "✓ ") + r.file + (errors.length ? " — " + errors.length + " error(s)" : ""));
+	    for (const e of errors) console.log("    " + e.message);
+	    if (errors.length) failed = true;
+	  }
+	}
+	if (failed) process.exit(1);
+	EOF
+
+# generates a Factur-X/ZUGFeRD hybrid PDF (CII embedded via embedFacturX() — a genuine
+# conformance claim, unlike generate-pdf/toHybridPdf()'s plain UBL attachment) for every
+# fixture, both profiles, into dist/facturx-pdf/<profile>/
+generate-facturx-pdf:
+	node --input-type=module <<'EOF'
+	import { readFileSync, readdirSync, writeFileSync, mkdirSync } from "fs";
+	import { toFacturXPdf } from "./dist/adapters/index.js";
+	const names = readdirSync("fixtures")
+	  .filter(f => f.endsWith(".invoice.json"))
+	  .map(f => f.slice(0, -".invoice.json".length))
+	  .sort();
+	for (const profile of ["en16931", "xrechnung"]) {
+	  mkdirSync("dist/facturx-pdf/" + profile, { recursive: true });
+	  for (const n of names) {
+	    const inv = JSON.parse(readFileSync("fixtures/" + n + ".invoice.json", "utf8"));
+	    const pdf = await toFacturXPdf(inv, { profile: profile.toUpperCase() });
+	    writeFileSync("dist/facturx-pdf/" + profile + "/" + n + ".pdf", pdf);
+	  }
+	  console.log("wrote dist/facturx-pdf/" + profile + "/");
+	}
+	EOF
+
+# the real proof-of-conformance target for Factur-X/ZUGFeRD output. Per profile: runs veraPDF
+# (PDF/A-3b conformance) against the generated PDFs; extracts each one's factur-x.xml attachment
+# and runs that through KoSIT (lands on EN16931 (CII) for the en16931 subfolder, EN16931
+# XRechnung (CII) for the xrechnung one); and — the concrete before/after proof this addendum
+# exists to produce — runs Mustang directly against the PDF itself, no extraction step first.
+# Before this addendum, that same call against the UBL-only hybrid PDF returned Mustang's
+# "Factur-X/ZUGFeRD and Order-X are always strictly CII only, no UBL allowed" rejection.
+validate-facturx: generate-facturx-pdf
+	node --input-type=module <<'EOF'
+	import { readdirSync, mkdirSync, writeFileSync } from "fs";
+	import { extractEmbeddedXml } from "./dist/adapters/index.js";
+	import { runVeraPdf, runKosit, runMustang } from "./dist/validators/index.js";
+	let failed = false;
+	for (const profile of ["en16931", "xrechnung"]) {
+	  console.log("=== " + profile + " ===");
+	  const pdfDir = "dist/facturx-pdf/" + profile;
+	  const names = readdirSync(pdfDir).filter(f => f.endsWith(".pdf")).sort()
+	    .map(f => f.slice(0, -".pdf".length));
+	  const pdfPaths = names.map(n => pdfDir + "/" + n + ".pdf");
+
+	  console.log("--- veraPDF (PDF/A-3b conformance) ---");
+	  const veraResults = runVeraPdf(pdfPaths);
+	  for (const r of veraResults) {
+	    const errors = r.issues.filter(i => i.severity === "error");
+	    console.log((errors.length ? "✗ " : "✓ ") + r.file + (errors.length ? " — " + errors.length + " error(s)" : ""));
+	    for (const e of errors) console.log("    " + e.message);
+	    if (errors.length) failed = true;
+	  }
+
+	  console.log("--- extracted factur-x.xml + KoSIT ---");
+	  mkdirSync("dist/cii-from-facturx-pdf/" + profile, { recursive: true });
+	  const xmlPaths = [];
+	  for (const n of names) {
+	    const pdfPath = pdfDir + "/" + n + ".pdf";
+	    try {
+	      const xml = await extractEmbeddedXml(pdfPath, "factur-x.xml");
+	      const xmlPath = "dist/cii-from-facturx-pdf/" + profile + "/" + n + ".xml";
+	      writeFileSync(xmlPath, xml);
+	      xmlPaths.push(xmlPath);
+	    } catch (err) {
+	      console.log("✗ " + pdfPath + " — " + (err instanceof Error ? err.message : String(err)));
+	      failed = true;
+	    }
+	  }
+	  const kositResults = runKosit(xmlPaths);
+	  for (const r of kositResults) {
+	    const errors = r.issues.filter(i => i.severity === "error");
+	    console.log((errors.length ? "✗ " : "✓ ") + r.file + (errors.length ? " — " + errors.length + " error(s)" : ""));
+	    for (const e of errors) console.log("    " + e.message);
+	    if (errors.length) failed = true;
+	  }
+
+	  console.log("--- Mustang, direct against the PDF (no extraction) ---");
+	  const mustangResults = runMustang(pdfPaths);
+	  for (const r of mustangResults) {
+	    const errors = r.issues.filter(i => i.severity === "error");
+	    console.log((errors.length ? "✗ " : "✓ ") + r.file + (errors.length ? " — " + errors.length + " error(s)" : ""));
+	    for (const e of errors) console.log("    " + e.message);
+	    if (errors.length) failed = true;
+	  }
 	}
 	if (failed) process.exit(1);
 	EOF
