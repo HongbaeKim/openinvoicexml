@@ -12,7 +12,7 @@ import { join, resolve } from "node:path";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 import { runVeraPdf } from "../91.vera-pdf.js";
-import { toHybridPdf } from "../../adapters/hybrid-pdf.js";
+import { toHybridPdf, toFacturXPdf } from "../../adapters/hybrid-pdf.js";
 import type { Invoice } from "../../core/index.js";
 import { PDFDocument, StandardFonts } from "@cantoo/pdf-lib";
 
@@ -171,4 +171,45 @@ describe.skipIf(!available)("runVeraPdf", () => {
     expect(result!.valid).toBe(false);
     expect(result!.issues.some((issue) => issue.severity === "error")).toBe(true);
   }, 20000);
+});
+
+/** Same real veraPDF CLI, now against toFacturXPdf()'s output — confirms embedFacturX()'s own
+ * PDF/A-3 conversion produces a genuinely conformant PDF/A-3b document, both profiles, not just
+ * that toHybridPdf()'s conversion does. */
+describe.skipIf(!available)("runVeraPdf (Factur-X, toFacturXPdf())", () => {
+  let results: Map<string, ReturnType<typeof runVeraPdf>[number]>;
+
+  beforeAll(async () => {
+    const paths: string[] = [];
+    const byPath = new Map<string, string>();
+    for (const [label, fixture] of allFixtures) {
+      const slug = label.replace(/^\d+\.\s*/, "").replace(/\s*\(.*\)$/, "");
+      for (const profile of ["EN16931", "XRECHNUNG"] as const) {
+        const key = `${label} (${profile})`;
+        const pdfPath = join(workDir, `facturx-${slug}-${profile}.pdf`);
+        const pdf = await toFacturXPdf(fixture as Invoice, { profile });
+        writeFileSync(pdfPath, pdf);
+        paths.push(pdfPath);
+        byPath.set(key, pdfPath);
+      }
+    }
+
+    const batch = runVeraPdf(paths);
+    const byFile = new Map(batch.map((result) => [resolve(result.file), result]));
+    results = new Map(
+      [...byPath.entries()].map(([key, pdfPath]) => [key, byFile.get(resolve(pdfPath))!]),
+    );
+  }, 180000);
+
+  describe.each(allFixtures)("%s", (label) => {
+    it.each(["EN16931", "XRECHNUNG"] as const)(
+      "passes veraPDF PDF/A-3b validation with zero errors, profile %s",
+      (profile) => {
+        const result = results.get(`${label} (${profile})`);
+        if (!result) throw new Error(`No veraPDF result found for fixture: ${label} (${profile})`);
+        expect(result.valid).toBe(true);
+        expect(result.issues.filter((issue) => issue.severity === "error")).toHaveLength(0);
+      },
+    );
+  });
 });

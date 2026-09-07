@@ -13,7 +13,8 @@ import { describe, it, expect, afterAll } from "vitest";
 
 import { runMustang, extractWithMustang } from "../92.mustang.js";
 import { toXRechnung } from "../../adapters/xrechnung.js";
-import { toHybridPdf } from "../../adapters/hybrid-pdf.js";
+import { toHybridPdf, toFacturXPdf } from "../../adapters/hybrid-pdf.js";
+import { toCii } from "../../adapters/cii.js";
 import type { Invoice } from "../../core/index.js";
 
 import { allFixtures } from "../../fixtures/index.js";
@@ -119,4 +120,40 @@ describe.skipIf(!available)("runMustang / extractWithMustang", () => {
     expect(result!.file).toBe(pdfPath);
     expect(typeof result!.valid).toBe("boolean");
   }, 20000);
+});
+
+/**
+ * Same real Mustang Project CLI, now against toFacturXPdf()'s output. Unlike the UBL-embedded
+ * hybrid PDF above, this one genuinely is Factur-X/ZUGFeRD-branded CII content — so, unlike the
+ * "capability check, not the main round-trip claim" test above, Mustang's own `--action
+ * validate` run **directly against the PDF, no extraction step** is the actual gating claim
+ * here: the concrete before/after proof this project's CII adapter exists to produce (see
+ * .step/15(2).md — before it, this same call against the UBL-only hybrid PDF returned Mustang's
+ * "Factur-X/ZUGFeRD and Order-X are always strictly CII only, no UBL allowed" rejection).
+ * Mustang's own extraction is also checked, corroborating this project's own
+ * extractEmbeddedXml() independently.
+ */
+describe.skipIf(!available)("runMustang (Factur-X, toFacturXPdf())", () => {
+  describe.each(allFixtures)("%s", (label, fixture) => {
+    it.each(["EN16931", "XRECHNUNG"] as const)(
+      "validates directly against the PDF with zero errors, and extracts byte-identical CII, profile %s",
+      async (profile) => {
+        const invoice = fixture as Invoice;
+        const expected = toCii(invoice, { profile });
+        const slug = label.replace(/^\d+\.\s*/, "").replace(/\s*\(.*\)$/, "");
+        const pdfPath = join(workDir, `facturx-${slug}-${profile}.pdf`);
+        writeFileSync(pdfPath, await toFacturXPdf(invoice, { profile }));
+
+        const [result] = runMustang([pdfPath], { jarPath: JAR_PATH });
+        expect(result!.valid).toBe(true);
+        expect(result!.issues.filter((issue) => issue.severity === "error")).toHaveLength(0);
+
+        const extracted = extractWithMustang(pdfPath, { jarPath: JAR_PATH });
+        expect(extracted).toBe(expected);
+
+        await new Promise((resolve) => setImmediate(resolve));
+      },
+      30000,
+    );
+  });
 });
