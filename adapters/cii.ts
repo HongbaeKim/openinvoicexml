@@ -1,6 +1,6 @@
 import type { Invoice } from "../core/index.js";
 import { esc, amt } from "../core/utils/xml.js";
-import type { EInvoiceProfile } from "./hybrid-pdf.js";
+import type { EInvoiceProfile } from "../core/types/profile.js";
 import {
   mapInvoice,
   type PartyFields,
