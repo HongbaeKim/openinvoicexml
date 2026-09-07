@@ -39,14 +39,19 @@ validation runs against one consistent representation.
                           │  validation      │
                           └────────┬────────┘
                                    │
-                        ┌──────────┴──────────┐
-                        ▼                     ▼
-               ┌─────────────────┐   ┌─────────────────┐
-               │  XRechnung XML  │   │  Hybrid PDF/A-3 │
-               │  adapter        │   │  adapter         │
-               │  (implemented)  │   │  (planned)       │
-               └─────────────────┘   └─────────────────┘
+                    ┌──────────────┼──────────────┐
+                    ▼              ▼              ▼
+           ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+           │ XRechnung   │ │ CII XML     │ │ Hybrid      │
+           │ XML adapter │ │ adapter     │ │ PDF/A-3     │
+           │ (UBL)       │ │ (EN16931/   │ │ adapter     │
+           │             │ │ XRechnung)  │ │ (2 entry    │
+           │             │ │             │ │ points)     │
+           └─────────────┘ └─────────────┘ └─────────────┘
 ```
+
+All three are implemented. The hybrid PDF/A-3 adapter's two entry points (`toHybridPdf()`/
+`toFacturXPdf()`) each consume one of the other two adapters' output — see `adapters/` below.
 
 1. **Input** arrives as JSON matching `schemas/invoice.schema.json`.
 2. **Schema validation** (consumer-side, not run by this package at runtime) checks structural
@@ -65,7 +70,7 @@ validation runs against one consistent representation.
 | `core/`       | TypeScript types for the internal invoice model — no dependencies on any other module                                    |
 | `schemas/`    | `invoice.schema.json` (JSON Schema, Draft-07) — the language-independent structural contract                             |
 | `validators/` | `validateBusinessRules()` + per-scenario `rules/*.ts`, plus `runKosit()` for external XML validation                     |
-| `adapters/`   | Output adapters (XRechnung XML implemented, PDF/A-3 planned)                                                             |
+| `adapters/`   | Output adapters — XRechnung UBL XML, CII XML, and two hybrid PDF/A-3 entry points, all implemented                       |
 | `fixtures/`   | Example invoice JSON files, one per legal scenario — see [`fixtures/README.md`](../fixtures/README.md) for the full list |
 | `docs/`       | Project documentation                                                                                                    |
 
@@ -86,11 +91,27 @@ Three layers, each catching a different class of error:
 
 ### `adapters/`
 
+Each adapter follows the same isolation convention: its own `*-mapping.ts` for BT-to-field
+resolution and its own serializer for the output format, deliberately **not** sharing a generic
+mapping module across adapters even when the resolved field shapes look similar — confirmed
+independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
+`hybrid-pdf-mapping.ts`.
+
 - **XRechnung XML adapter** — implemented: UBL 2.1 XML targeting XRechnung 3.x.
   `xrechnung-mapping.ts` handles BT-to-field resolution, `xrechnung.ts` handles serialization,
   and `generate-invoice.ts` composes `validateBusinessRules()` with `toXRechnung()` behind the
   `generateInvoice()` entry point (see [`API.md`](API.md)).
-- **Hybrid PDF/A-3 adapter** — not yet implemented (planned, see [`ROADMAP.md`](ROADMAP.md)).
+- **CII XML adapter** — implemented: UN/CEFACT Cross Industry Invoice XML, profile-aware
+  (`EN16931`/`XRECHNUNG`, selecting which `GuidelineSpecifiedDocumentContextParameter` URN gets
+  written). `cii-mapping.ts` + `cii.ts` mirror the XRechnung adapter's own split. Required because
+  every Factur-X/ZUGFeRD conformance level needs CII, not UBL — `toXRechnung()` can't serve that
+  role. See [`API.md`](API.md).
+- **Hybrid PDF/A-3 adapter** — implemented, two entry points sharing one visual-layout helper
+  (`buildInvoicePages()` in `hybrid-pdf.ts`) but branching at the end: `toHybridPdf()` embeds the
+  UBL XML as a plain associated file (no Factur-X/ZUGFeRD claim); `toFacturXPdf()` embeds the CII
+  XML via `@cantoo/pdf-lib`'s `embedFacturX()` (`fx:` XMP metadata, a genuine conformance claim).
+  `generate-invoice.ts` composes `validateBusinessRules()` with each behind
+  `generateHybridPdf()`/`generateFacturXPdf()`. See [`API.md`](API.md).
 
 ---
 

@@ -1,12 +1,93 @@
 # API
 
-Usage reference for the generation modules: `generateInvoice`/`toXRechnung` (XML), the hybrid
-PDF/A-3 counterparts `generateHybridPdf`/`toHybridPdf`, and the `ValidationIssue` error-code
-contract shared between them. `runKosit`, `runVeraPdf`, and `runMustang`/`extractWithMustang` are
-documented separately at the end as optional, external validation layers.
+Usage reference for the generation modules: the unified `generateInvoiceDocument` entry point,
+`generateInvoice`/`toXRechnung` (UBL XML), `generateCii`/`toCii` (CII XML), the hybrid PDF/A-3
+counterparts `generateHybridPdf`/`toHybridPdf` (UBL attachment, no Factur-X/ZUGFeRD claim) and
+`generateFacturXPdf`/`toFacturXPdf` (CII embedded via `embedFacturX()`, a genuine Factur-X/ZUGFeRD
+conformance claim), and the `ValidationIssue` error-code contract shared between them. `runKosit`,
+`runVeraPdf`, and `runMustang`/`extractWithMustang` are documented separately at the end as
+optional, external validation layers.
 
 For the `Invoice` input shape itself (fields, types, BT mapping), see
 [`DATA-MODEL.md`](DATA-MODEL.md) rather than re-reading it here.
+
+## `generateInvoiceDocument(invoice, options)` — unified entry point
+
+```ts
+import { generateInvoiceDocument } from "openinvoicexml/adapters";
+
+const result = await generateInvoiceDocument(invoice, { format: "XRECHNUNG_UBL" });
+```
+
+- **Input:** `Invoice`, plus `GenerateInvoiceDocumentOptions` (a required `format`)
+- **Output:** `GenerateInvoiceDocumentResult`
+
+```ts
+type InvoiceOutputFormat =
+  "XRECHNUNG_UBL" | "XRECHNUNG_CII" | "FACTURX_EN16931" | "FACTURX_XRECHNUNG";
+
+interface GenerateInvoiceDocumentOptions {
+  format: InvoiceOutputFormat;
+}
+
+type GenerateInvoiceDocumentResult =
+  | {
+      format: "XRECHNUNG_UBL";
+      contentType: "xml";
+      content: string | null;
+      issues: ValidationIssue[];
+    }
+  | {
+      format: "XRECHNUNG_CII";
+      contentType: "xml";
+      content: string | null;
+      issues: ValidationIssue[];
+    }
+  | {
+      format: "FACTURX_EN16931";
+      contentType: "pdf";
+      content: Uint8Array | null;
+      issues: ValidationIssue[];
+    }
+  | {
+      format: "FACTURX_XRECHNUNG";
+      contentType: "pdf";
+      content: Uint8Array | null;
+      issues: ValidationIssue[];
+    };
+```
+
+`generateInvoiceDocument` is a routing/composition layer, not a fifth serializer: it picks the
+existing recommended entry point for the requested `format` (`generateInvoice`/`generateCii`/
+`generateFacturXPdf`, documented individually below) and re-keys that function's own `xml`/`pdf`
+field to a uniform `content`/`contentType` shape, so a caller that doesn't know a format's
+syntax ahead of time can branch on `result.contentType` instead. Each branch keeps the same
+null-on-error convention as the function it delegates to — `content` is `null`, and `issues`
+contains at least one `severity: "error"` entry, exactly when the invoice fails
+`validateBusinessRules`.
+
+| `format`            | Underlying adapter                                                  | `contentType` | Use case                                                |
+| ------------------- | ------------------------------------------------------------------- | ------------- | ------------------------------------------------------- |
+| `XRECHNUNG_UBL`     | `toXRechnung` (via `generateInvoice`)                               | `xml`         | XRechnung XML using UBL syntax                          |
+| `XRECHNUNG_CII`     | `toCii({ profile: "XRECHNUNG" })` (via `generateCii`)               | `xml`         | XRechnung XML using CII syntax                          |
+| `FACTURX_EN16931`   | `toFacturXPdf({ profile: "EN16931" })` (via `generateFacturXPdf`)   | `pdf`         | Factur-X/ZUGFeRD hybrid PDF using the EN16931 profile   |
+| `FACTURX_XRECHNUNG` | `toFacturXPdf({ profile: "XRECHNUNG" })` (via `generateFacturXPdf`) | `pdf`         | Factur-X/ZUGFeRD hybrid PDF using the XRechnung profile |
+
+XRechnung is a syntax-agnostic _content_ profile — both `XRECHNUNG_UBL` and `XRECHNUNG_CII`
+satisfy it, just in different XML syntaxes; Germany's mandate isn't UBL-specific, which is the
+whole reason this project built a CII adapter alongside the original UBL one.
+
+```ts
+const result = await generateInvoiceDocument(invoice, { format: "FACTURX_XRECHNUNG" });
+
+if (result.content === null) {
+  for (const issue of result.issues) console.error(`${issue.code}: ${issue.message}`);
+} else if (result.contentType === "pdf") {
+  writeFileSync("invoice.pdf", result.content); // Uint8Array
+} else {
+  writeFileSync("invoice.xml", result.content); // string
+}
+```
 
 ## `generateInvoice(invoice)` — recommended entry point
 
@@ -119,6 +200,116 @@ that `toXRechnung` has to `generateInvoice`. Use this only when you validate sep
 prefer `generateHybridPdf`. Check PDF/A-3b conformance separately with veraPDF (`runVeraPdf`,
 below, or [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output)).
 
+## `generateCii(invoice, options)` — recommended entry point
+
+```ts
+import { generateCii } from "openinvoicexml/adapters";
+
+const result = generateCii(invoice, { profile: "XRECHNUNG" });
+```
+
+- **Input:** `Invoice`, plus an optional `{ profile?: EInvoiceProfile }` (same shape as `toCii`,
+  defaults to `"EN16931"`)
+- **Output:** `GenerateCiiResult`
+
+```ts
+interface GenerateCiiResult {
+  /** The generated CII XML, or null if business-rule validation found an error. */
+  xml: string | null;
+  /** All business-rule issues found, including non-blocking warnings. */
+  issues: ValidationIssue[];
+}
+```
+
+Same gate as `generateInvoice`, for `toCii` instead of `toXRechnung`: runs `validateBusinessRules`
+first, and returns `xml: null` with the errors in `issues` if any issue is `severity: "error"`.
+Otherwise `xml` contains the generated CII document for the requested profile. `generateCii` is
+synchronous, like `generateInvoice` and `toXRechnung`/`toCii` themselves — only the PDF-producing
+functions (`generateHybridPdf`/`generateFacturXPdf`) are async.
+
+`validateBusinessRules` is itself profile-aware: `generateCii` passes `options.profile` through to
+it, so requesting `{ profile: "XRECHNUNG" }` also enforces XRechnung-only requirements that plain
+EN16931 doesn't have (currently just BT-10 buyer reference cardinality — see
+[`COMPLIANCE.md`](COMPLIANCE.md) and [`DATA-MODEL.md`](DATA-MODEL.md)). `generateInvoice`/
+`generateHybridPdf` always validate as `"XRECHNUNG"` regardless of any option, since their output
+is always genuine XRechnung XML/PDF either way.
+
+## `toCii(invoice, options)` — low-level building block
+
+```ts
+import { toCii } from "openinvoicexml/adapters";
+
+const xml: string = toCii(invoice, { profile: "EN16931" });
+```
+
+- **Input:** `Invoice`, plus an optional `{ profile?: EInvoiceProfile }` (defaults to `"EN16931"`)
+- **Output:** a UN/CEFACT CII (Cross Industry Invoice) XML string (always produced, no validation)
+
+`toCii` performs **no business-rule validation** — same relationship to any `generate*` entry
+point that `toXRechnung` has to `generateInvoice`. Unlike `toHybridPdf`'s `profile` option, this
+one is a real branch, not a no-op: it selects which `GuidelineSpecifiedDocumentContextParameter`
+URN gets written (`urn:cen.eu:en16931:2017` for `"EN16931"`, the XRechnung-compliant URN for
+`"XRECHNUNG"`) — which determines which of KoSIT's two real CII scenarios the output matches
+(`EN16931 (CII)` vs. `EN16931 XRechnung (CII)`). Every Factur-X/ZUGFeRD conformance level requires
+CII, not UBL — this is what makes `toFacturXPdf` (below) a genuine conformance claim where
+`toHybridPdf` isn't. See [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output) and
+[`LIMITATIONS.md`](LIMITATIONS.md).
+
+## `generateFacturXPdf(invoice, options)` — recommended entry point
+
+```ts
+import { generateFacturXPdf } from "openinvoicexml/adapters";
+
+const result = await generateFacturXPdf(invoice);
+```
+
+- **Input:** `Invoice`, plus an optional `HybridPdfOptions` (same shape as `generateHybridPdf`)
+- **Output:** `GenerateFacturXPdfResult`
+
+```ts
+interface GenerateFacturXPdfResult {
+  /** The generated Factur-X/ZUGFeRD hybrid PDF bytes, or null if business-rule validation found an error. */
+  pdf: Uint8Array | null;
+  /** All business-rule issues found, including non-blocking warnings. */
+  issues: ValidationIssue[];
+}
+```
+
+Same gate as `generateHybridPdf`, but produces a genuine Factur-X/ZUGFeRD hybrid PDF: the CII
+invoice XML is embedded via `embedFacturX()` (which sets the `fx:ConformanceLevel`/
+`fx:DocumentFileName` XMP properties and PDF/A extension schema, and performs the PDF/A-3
+conversion itself), not the plain UBL attachment `generateHybridPdf`/`toHybridPdf` produce.
+Like `generateCii`, business-rule validation here is gated on `options.profile` (defaulting to
+`"EN16931"`, same as `toFacturXPdf`) — pass `{ profile: "XRECHNUNG" }` to also enforce
+XRechnung-only requirements such as BT-10's mandatory cardinality.
+
+## `toFacturXPdf(invoice, options)` — low-level building block
+
+```ts
+import { toFacturXPdf } from "openinvoicexml/adapters";
+
+const pdf: Uint8Array = await toFacturXPdf(invoice);
+```
+
+- **Input:** `Invoice`, plus an optional `HybridPdfOptions` (same shape as above)
+- **Output:** PDF/A-3b bytes with an embedded, genuinely conformant Factur-X/ZUGFeRD CII invoice
+  (always produced, no validation)
+
+`toFacturXPdf` performs **no business-rule validation** — same relationship to `generateFacturXPdf`
+that `toHybridPdf` has to `generateHybridPdf`. It shares the same visual layout as `toHybridPdf`
+(same `drawHeader`/`drawLineItemsTable`/`drawTotalsBlock`/`drawPaymentInfo`/`drawFooter` code) but
+embeds `toCii(invoice, { profile })` via `embedFacturX()` instead of `toXRechnung()` via a plain
+attachment — a genuine Factur-X/ZUGFeRD conformance claim, unlike `toHybridPdf`'s UBL attachment.
+
+`profile` (defaults to `"EN16931"`) maps onto `embedFacturX()`'s `conformanceLevel`:
+`"EN16931"` → `"EN 16931"` (note the space — `@cantoo/pdf-lib`'s `FacturXConformanceLevel`
+spelling, distinct from this project's own `EInvoiceProfile` spelling), `"XRECHNUNG"` →
+`"XRECHNUNG"` unchanged. Check PDF/A-3b conformance and CII conformance separately — veraPDF for
+PDF/A-3b, KoSIT for the embedded CII (`extractEmbeddedXml(path, "factur-x.xml")`, the same
+function `toHybridPdf` output uses, with an explicit second argument for this attachment's
+different file name) — see
+[`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output).
+
 ## `ValidationIssue` — error-code contract
 
 `validateBusinessRules(invoice)` (used internally by `generateInvoice`, also importable
@@ -142,13 +333,13 @@ for humans. Almost every issue is `severity: "error"`; the one exception is
 `PLACE_OF_SUPPLY_CROSS_BORDER` (`"warning"`, never blocks `generateInvoice` — see
 [`LIMITATIONS.md`](LIMITATIONS.md)). A few representative codes:
 
-| Code | Severity | Meaning |
-| --- | --- | --- |
-| `VAT_RATE_INVALID_FOR_CATEGORY` | `error` | Category `S` at a rate other than 19%/7%, or a zero-rate category at a non-zero rate |
-| `LINE_AMOUNT_ROUNDING` | `error` | BT-131 line net amount doesn't match `quantity × unitPrice` |
-| `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED` | `error` | Category `AE` used without a buyer VAT ID |
-| `VAT_EXEMPTION_REASON_REQUIRED` | `error` | Exemption category (`E`/`AE`/`K`/`G`/`O`) missing a reason (BT-120/BT-121) |
-| `PLACE_OF_SUPPLY_CROSS_BORDER` | `warning` | Seller/buyer countries differ — informational only |
+| Code                                   | Severity  | Meaning                                                                              |
+| -------------------------------------- | --------- | ------------------------------------------------------------------------------------ |
+| `VAT_RATE_INVALID_FOR_CATEGORY`        | `error`   | Category `S` at a rate other than 19%/7%, or a zero-rate category at a non-zero rate |
+| `LINE_AMOUNT_ROUNDING`                 | `error`   | BT-131 line net amount doesn't match `quantity × unitPrice`                          |
+| `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED` | `error`   | Category `AE` used without a buyer VAT ID                                            |
+| `VAT_EXEMPTION_REASON_REQUIRED`        | `error`   | Exemption category (`E`/`AE`/`K`/`G`/`O`) missing a reason (BT-120/BT-121)           |
+| `PLACE_OF_SUPPLY_CROSS_BORDER`         | `warning` | Seller/buyer countries differ — informational only                                   |
 
 Not exhaustive — see `validators/02.business-rules.ts` and `validators/rules/17.vat-rate.ts` for
 the full, current set.

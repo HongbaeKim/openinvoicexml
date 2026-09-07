@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/HongbaeKim/openinvoicexml/actions/workflows/ci.yml/badge.svg)](https://github.com/HongbaeKim/openinvoicexml/actions/workflows/ci.yml)
 
-An open-source TypeScript library for generating compliant German electronic invoices — XRechnung XML and hybrid PDF/A-3 (Factur-X/ZUGFeRD).
+An open-source TypeScript library for generating compliant German electronic invoices — XRechnung UBL XML, CII XML, and hybrid PDF/A-3 (including genuine Factur-X/ZUGFeRD, EN16931/XRechnung profiles).
 
 From 2028 onward, all domestic B2B invoices in Germany must be issued as structured electronic invoices. This library handles the full pipeline: structured JSON input → validated XRechnung XML → hybrid PDF with embedded XML.
 
@@ -12,8 +12,14 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 
 - Generates XRechnung 3.x compliant UBL 2.1 XML from a structured JSON invoice
 - Validates output against KoSIT (the official German e-invoice validator)
-- Exports hybrid PDF/A-3b with the XRechnung XML embedded as an associated file, veraPDF-
-  validated (Factur-X/ZUGFeRD profile support planned — see [ROADMAP.md](docs/ROADMAP.md))
+- Exports hybrid PDF/A-3b: `toHybridPdf()` embeds the XRechnung UBL XML as an associated file
+  (veraPDF-validated); `toFacturXPdf()` embeds CII via `embedFacturX()` for a genuine
+  Factur-X/ZUGFeRD conformance claim (`EN16931`/`XRECHNUNG` profiles — see
+  [docs/LIMITATIONS.md](docs/LIMITATIONS.md) for the MINIMUM/BASIC WL/BASIC gap), validated
+  against KoSIT, veraPDF, and Mustang
+- `generateInvoiceDocument(invoice, { format })` gives one call site across all four output
+  formats — XRechnung UBL, XRechnung CII, Factur-X/ZUGFeRD EN16931, Factur-X/ZUGFeRD XRechnung —
+  without callers needing to know which adapter or `profile` value each one maps to
 - Covers major German VAT and legal scenarios: [§19][ustg-19] small business, [§13b][ustg-13b] reverse charge, intra-EU supply, credit notes, down payment invoices, and more
 
 ## Status
@@ -53,16 +59,16 @@ and PR to `main`.
 
 ## Docs
 
-| Document                                                                                                  | Status |
-| ----------------------------------------------------------------------------------------------------------- | ------ |
-| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow, backend/frontend folder conventions       | Done   |
+| Document                                                                                                      | Status |
+| ------------------------------------------------------------------------------------------------------------- | ------ |
+| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow, backend/frontend folder conventions        | Done   |
 | `DEVELOPMENT.md` — Local setup, available commands, TypeScript/dependency config, coding & commit conventions | Done   |
-| `COMPLIANCE.md` — Index of compliance sources, rule → file → status map, KoSIT validation setup and usage    | Done   |
+| `COMPLIANCE.md` — Index of compliance sources, rule → file → status map, KoSIT validation setup and usage     | Done   |
 | `DATA-MODEL.md` — Internal invoice schema, full XRechnung BT mapping table, hosted-platform DB schema         | Done   |
-| `API.md` — API usage: `generateInvoice`, `toXRechnung`, error codes                                          | Done   |
-| `ROADMAP.md` — Phase goals, non-goals, open questions                                                        | Done   |
-| `LIMITATIONS.md` — What is not supported and why                                                             | Done   |
-| `SECURITY.md` — Security considerations and responsible disclosure                                           | Done   |
+| `API.md` — API usage: `generateInvoiceDocument`, `generateInvoice`, `toXRechnung`, error codes                | Done   |
+| `ROADMAP.md` — Phase goals, non-goals, open questions                                                         | Done   |
+| `LIMITATIONS.md` — What is not supported and why                                                              | Done   |
+| `SECURITY.md` — Security considerations and responsible disclosure                                            | Done   |
 
 ## License
 
