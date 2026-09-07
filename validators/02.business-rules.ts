@@ -1,5 +1,6 @@
 import type { Invoice } from "../core/types/invoice.js";
 import type { AllowanceCharge } from "../core/types/allowance-charge.js";
+import type { EInvoiceProfile } from "../core/types/profile.js";
 import type { ValidationIssue } from "./types.js";
 import { isClose, round2 } from "../core/utils/monetary.js";
 import { resolvePlaceOfSupply } from "../core/utils/place-of-supply.js";
@@ -16,6 +17,7 @@ import { checkExportRequirements } from "./rules/12.export.js";
 import { checkReverseChargeSubcaseRequirements } from "./rules/15.reverse-charge.js";
 import { checkCreditNoteAndCorrectionRequirements } from "./rules/10.credit-note.js";
 import { checkAllowanceChargeRequirements } from "./rules/18.allowance-charge.js";
+import { checkXRechnungBuyerReferenceRequirement } from "./rules/19.xrechnung-mandatory-fields.js";
 
 export type { ValidationIssue } from "./types.js";
 
@@ -33,8 +35,15 @@ function netAllowanceChargeAdjustment(items: AllowanceCharge[] | undefined): num
  *
  * @see ../docs/COMPLIANCE.md for the source, pinned version, and implementation status of
  * every rule enforced here and in `validators/rules/*`.
+ *
+ * profile defaults to "EN16931"
+ * Use "XRECHNUNG" when creating an XRechnung invoice,
+ * so XRechnung-only rules like BT-10 buyer reference are also checked.
  */
-export function validateBusinessRules(invoice: Invoice): ValidationIssue[] {
+export function validateBusinessRules(
+  invoice: Invoice,
+  profile: EInvoiceProfile = "EN16931",
+): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   // --- Line-level checks -------------------------------------------------
@@ -97,6 +106,9 @@ export function validateBusinessRules(invoice: Invoice): ValidationIssue[] {
 
   // --- Export outside EU (VAT category 'G') --------------------------------
   checkExportRequirements(invoice.buyer, invoice.vatBreakdowns, issues);
+
+  // --- XRechnung-only mandatory fields (BT-10 buyer reference) --------------
+  checkXRechnungBuyerReferenceRequirement(invoice.buyerReference, profile, issues);
 
   // --- Credit notes (381) and corrective invoices (384) --------------------
   checkCreditNoteAndCorrectionRequirements(

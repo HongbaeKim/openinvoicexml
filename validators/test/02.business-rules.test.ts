@@ -29,7 +29,7 @@ function clone<T>(fixture: T): T {
 /**
  * What's tested here (full business-rule validation pipeline):
  *
- * Every test below is numbered 1-57, in the same top-to-bottom order they appear in the
+ * Every test below is numbered 1-60, in the same top-to-bottom order they appear in the
  * file, so a row here can be matched to its `it(...)` by searching for "N." in either
  * place — useful if you didn't write this file and the describe/it nesting alone isn't
  * enough to navigate by.
@@ -534,6 +534,33 @@ describe("validateBusinessRules", () => {
       expect(
         issues.some((i) => i.code === "DOCUMENT_ALLOWANCE_CHARGE_VAT_CATEGORY_REQUIRED"),
       ).toBe(true);
+    });
+
+    it("58. does not flag a missing buyer reference by default (EN16931)", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      delete invoice.buyerReference;
+
+      const issues = validateBusinessRules(invoice);
+
+      expect(issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(false);
+    });
+
+    it("59. does not flag a missing buyer reference when profile is explicitly EN16931", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      delete invoice.buyerReference;
+
+      const issues = validateBusinessRules(invoice, "EN16931");
+
+      expect(issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(false);
+    });
+
+    it("60. flags a missing buyer reference when profile is XRECHNUNG", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      delete invoice.buyerReference;
+
+      const issues = validateBusinessRules(invoice, "XRECHNUNG");
+
+      expect(issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(true);
     });
   });
 });
