@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: app
       # Must match the password embedded in DATABASE_URL below — they're two independent
@@ -16,6 +17,7 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped
     environment:
       # Default matches postgres's dev-only defaults above. On the VPS, set both this and
       # POSTGRES_PASSWORD in .env to the same real password — see the note on POSTGRES_PASSWORD.
@@ -71,6 +73,7 @@ services:
   nginx:
     profiles: ["production"]
     image: nginx:1.27-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
