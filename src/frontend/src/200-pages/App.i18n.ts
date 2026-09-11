@@ -26,6 +26,7 @@ export const appDict: Record<
     shareNeeds: string;
     statusHeading: string;
     statusNote: string;
+    faqHeading: string;
   }
 > = {
   de: {
@@ -54,6 +55,7 @@ export const appDict: Record<
     statusHeading: "Aktueller Stand",
     statusNote:
       "Die 5 Phasen oben decken die Open-Source-Engine selbst ab. Der gehostete Webdienst (das Beta-Programm oben) ist als zweite Stufe nach der Veröffentlichung geplant.",
+    faqHeading: "Häufige Fragen",
   },
   en: {
     metaTitle: "openinvoicexml — German e-invoicing, open source",
@@ -81,5 +83,6 @@ export const appDict: Record<
     statusHeading: "Where things stand",
     statusNote:
       "The 5 phases above cover the open-source engine itself. The hosted web service (the beta program above) is planned as a Second Stage after release.",
+    faqHeading: "FAQ",
   },
 };

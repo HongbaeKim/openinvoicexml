@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { Header } from "../100-layout/Header";
 import { Footer } from "../100-layout/Footer";
 import { StatusList } from "../800-beta/StatusList";
+import { Faq } from "./Faq";
 import { useTranslation, usePageMeta } from "../000-core/i18n";
 import { appDict } from "./App.i18n";
 
@@ -96,6 +97,11 @@ export function App(): JSX.Element {
           <h2 className="mb-4 text-xl text-text">{t.statusHeading}</h2>
           <StatusList />
           <p className="mt-3 text-[0.85rem]">{t.statusNote}</p>
+        </section>
+
+        <section>
+          <h2 className="mb-4 text-xl text-text">{t.faqHeading}</h2>
+          <Faq />
         </section>
       </main>
 
