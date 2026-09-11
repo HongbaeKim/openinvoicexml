@@ -122,7 +122,7 @@ export const phasesDict: Record<Lang, Phase[]> = {
         "Down payment invoices",
         "30+ fixtures",
       ],
-      status: "progress",
+      status: "done",
     },
     {
       title: "Phase 4 — Hybrid PDF/A-3 Export",
@@ -135,7 +135,7 @@ export const phasesDict: Record<Lang, Phase[]> = {
         "Factur-X/ZUGFeRD profiles",
         "40+ fixtures",
       ],
-      status: "upcoming",
+      status: "progress",
     },
     {
       title: "Phase 5.1 — Testing, Security & Documentation",
