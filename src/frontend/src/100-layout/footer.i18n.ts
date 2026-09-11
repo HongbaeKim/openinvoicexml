@@ -11,6 +11,11 @@ export const footerDict: Record<
     funding: string;
     bmftrAlt: string;
     prototypeFundAlt: string;
+    mastodonAria: string;
+    linkedinAria: string;
+    facebookAria: string;
+    instagramAria: string;
+    threadsAria: string;
   }
 > = {
   de: {
@@ -22,6 +27,11 @@ export const footerDict: Record<
     funding: "Förderung",
     bmftrAlt: "Logo des Bundesministeriums für Forschung, Technologie und Raumfahrt",
     prototypeFundAlt: "Logo des Prototype Fund",
+    mastodonAria: "OpenInvoiceXML auf Mastodon",
+    linkedinAria: "OpenInvoiceXML auf LinkedIn",
+    facebookAria: "OpenInvoiceXML auf Facebook",
+    instagramAria: "OpenInvoiceXML auf Instagram",
+    threadsAria: "OpenInvoiceXML auf Threads",
   },
   en: {
     privacy: "Privacy",
@@ -32,5 +42,10 @@ export const footerDict: Record<
     funding: "Funding",
     bmftrAlt: "Logo of the German Federal Ministry of Research, Technology and Space",
     prototypeFundAlt: "Prototype Fund logo",
+    mastodonAria: "OpenInvoiceXML on Mastodon",
+    linkedinAria: "OpenInvoiceXML on LinkedIn",
+    facebookAria: "OpenInvoiceXML on Facebook",
+    instagramAria: "OpenInvoiceXML on Instagram",
+    threadsAria: "OpenInvoiceXML on Threads",
   },
 };
