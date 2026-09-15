@@ -1,0 +1,87 @@
+{
+  "id": "RE-2026-0075",
+  "typeCode": "380",
+  "issueDate": "2026-08-01",
+  "dueDate": "2026-08-31",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Liberty Precision Imports LLC",
+    "address": {
+      "line1": "5th Avenue 350",
+      "city": "New York",
+      "postalCode": "10001",
+      "countryCode": "US"
+    },
+    "electronicAddress": "purchasing@libertyimports.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Präzisionswerkzeuge",
+      "description": "Ausfuhrlieferung gem. §4 Nr. 1 Buchst. a UStG",
+      "quantity": 15,
+      "unitCode": "C62",
+      "unitPrice": 150.0,
+      "lineAmount": 2250.0,
+      "vatCategoryCode": "G",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "G",
+      "rate": 0,
+      "taxableAmount": 2250.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Steuerfreie Ausfuhrlieferung gem. §4 Nr. 1 Buchst. a UStG",
+      "exemptionReasonCode": "VATEX-EU-G"
+    }
+  ],
+
+  "taxExclusiveAmount": 2250.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 2250.0,
+  "duePayableAmount": 2250.0,
+
+  "delivery": {
+    "actualDeliveryDate": "2026-07-30",
+    "deliverTo": {
+      "city": "New York",
+      "postalCode": "10001",
+      "countryCode": "US"
+    }
+  },
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Steuerfreie Ausfuhrlieferung (§4 Nr. 1 Buchst. a UStG). Zollanmeldung (Ausfuhrbegleitdokument/MRN): 26DE1234567890123R4."
+}

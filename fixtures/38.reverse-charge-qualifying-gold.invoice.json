@@ -1,0 +1,80 @@
+{
+  "id": "RE-2026-0092",
+  "typeCode": "380",
+  "issueDate": "2026-08-07",
+  "dueDate": "2026-09-06",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Edelmetall Handel Frankfurt GmbH",
+    "vatId": "DE445566778",
+    "address": {
+      "line1": "Börsenplatz 4",
+      "city": "Frankfurt am Main",
+      "postalCode": "60313",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "handel@edelmetall-frankfurt.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Handelsabteilung",
+      "telephone": "+49 69 7654321",
+      "email": "handel@edelmetall-frankfurt.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Goldscheideanstalt Pforzheim AG",
+    "vatId": "DE556677889",
+    "address": {
+      "line1": "Goldschmiedeweg 2",
+      "city": "Pforzheim",
+      "postalCode": "75173",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@goldscheide-pforzheim.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Feingold in Barrenform",
+      "description": "Lieferung von Anlagegold (Feingehalt ≥ 325/1000) gem. §13b Abs. 2 Nr. 9 UStG",
+      "quantity": 2,
+      "unitCode": "KGM",
+      "unitPrice": 65000.0,
+      "lineAmount": 130000.0,
+      "vatCategoryCode": "AE",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "AE",
+      "rate": 0,
+      "taxableAmount": 130000.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Steuerschuldnerschaft des Leistungsempfängers bei Lieferungen von Anlagegold gem. §13b Abs. 2 Nr. 9 UStG",
+      "exemptionReasonCode": "VATEX-EU-AE",
+      "reverseChargeReason": "qualifying-gold"
+    }
+  ],
+
+  "taxExclusiveAmount": 130000.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 130000.0,
+  "duePayableAmount": 130000.0,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Edelmetall Handel Frankfurt GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Steuerschuldnerschaft des Leistungsempfängers (§13b Abs. 2 Nr. 9 UStG, Anlagegold)."
+}

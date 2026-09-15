@@ -1,0 +1,80 @@
+{
+  "id": "RE-2026-0090",
+  "typeCode": "380",
+  "issueDate": "2026-08-05",
+  "dueDate": "2026-09-04",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Alpin Bauservice GmbH",
+    "vatId": "ATU87654321",
+    "address": {
+      "line1": "Getreidegasse 5",
+      "city": "Salzburg",
+      "postalCode": "5020",
+      "countryCode": "AT"
+    },
+    "electronicAddress": "buchhaltung@alpin-bauservice.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+43 662 1234567",
+      "email": "buchhaltung@alpin-bauservice.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Nordbau GmbH",
+    "vatId": "DE111222333",
+    "address": {
+      "line1": "Speicherstadt 8",
+      "city": "Hamburg",
+      "postalCode": "20457",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@nordbau.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Fassadenmontage",
+      "description": "Werklieferung (Fassadenmontage) in Deutschland durch einen im Ausland ansässigen Unternehmer gem. §13b Abs. 2 Nr. 1 UStG",
+      "quantity": 1,
+      "unitCode": "C62",
+      "unitPrice": 8000.0,
+      "lineAmount": 8000.0,
+      "vatCategoryCode": "AE",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "AE",
+      "rate": 0,
+      "taxableAmount": 8000.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Steuerschuldnerschaft des Leistungsempfängers für Werklieferungen eines ausländischen Unternehmers gem. §13b Abs. 2 Nr. 1 UStG",
+      "exemptionReasonCode": "VATEX-EU-AE",
+      "reverseChargeReason": "foreign-supplier"
+    }
+  ],
+
+  "taxExclusiveAmount": 8000.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 8000.0,
+  "duePayableAmount": 8000.0,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "AT611904300234573201",
+    "accountName": "Alpin Bauservice GmbH",
+    "bic": "BKAUATWW"
+  },
+
+  "note": "Steuerschuldnerschaft des Leistungsempfängers (§13b Abs. 2 Nr. 1 UStG, ausländischer Unternehmer)."
+}

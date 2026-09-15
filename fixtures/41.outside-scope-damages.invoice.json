@@ -1,0 +1,78 @@
+{
+  "id": "RE-2026-0095",
+  "typeCode": "380",
+  "issueDate": "2026-08-10",
+  "dueDate": "2026-09-09",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "legalId": "HRB 123456",
+    "taxRegistrationId": "27/815/08150",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Acme GmbH",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Schadensersatz",
+      "description": "Echter Schadensersatz für einen durch Falschlieferung entstandenen Sachschaden; keine Gegenleistung, daher nicht steuerbarer Umsatz gem. §1 Abs. 1 UStG",
+      "quantity": 1,
+      "unitCode": "C62",
+      "unitPrice": 1500.0,
+      "lineAmount": 1500.0,
+      "vatCategoryCode": "O",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "O",
+      "rate": 0,
+      "taxableAmount": 1500.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Echter Schadensersatz, keine Leistung gegen Entgelt, nicht steuerbarer Umsatz gem. §1 Abs. 1 UStG"
+    }
+  ],
+
+  "taxExclusiveAmount": 1500.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 1500.0,
+  "duePayableAmount": 1500.0,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Nicht steuerbarer Schadensersatz (VAT-Kategorie 'O', §1 Abs. 1 UStG)."
+}

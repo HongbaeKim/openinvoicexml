@@ -1,0 +1,93 @@
+{
+  "id": "RE-2026-0080",
+  "typeCode": "384",
+  "issueDate": "2026-07-20",
+  "dueDate": "2026-08-19",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "precedingInvoiceReference": {
+    "id": "RE-2026-0078",
+    "issueDate": "2026-07-05"
+  },
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Projektmanagement",
+      "description": "Korrektur zu Rechnung RE-2026-0078: 5 zusätzliche Stunden Projektmanagement, in der Originalrechnung versehentlich nicht abgerechnet",
+      "quantity": 5,
+      "unitCode": "HUR",
+      "unitPrice": 140.0,
+      "lineAmount": 700.0,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "2",
+      "name": "Reisekosten",
+      "description": "Korrektur zu Rechnung RE-2026-0078: Reisekosten für Vor-Ort-Termin, in der Originalrechnung versehentlich nicht abgerechnet",
+      "quantity": 1,
+      "unitCode": "C62",
+      "unitPrice": 320.0,
+      "lineAmount": 320.0,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 1020.0,
+      "taxAmount": 193.8
+    }
+  ],
+
+  "taxExclusiveAmount": 1020.0,
+  "taxAmount": 193.8,
+  "taxInclusiveAmount": 1213.8,
+  "duePayableAmount": 1213.8,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Berichtigungsrechnung zu Rechnung RE-2026-0078 vom 05.07.2026: 2 Positionen (Projektmanagement, Reisekosten), die in der ursprünglichen Rechnung versehentlich nicht abgerechnet wurden. Alle übrigen Positionen der Originalrechnung bleiben unverändert bestehen."
+}

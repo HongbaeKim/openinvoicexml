@@ -1,0 +1,80 @@
+{
+  "id": "RE-2026-0093",
+  "typeCode": "380",
+  "issueDate": "2026-08-08",
+  "dueDate": "2026-09-07",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Metallgroßhandel Ruhr GmbH",
+    "vatId": "DE667788990",
+    "address": {
+      "line1": "Hüttenstraße 21",
+      "city": "Duisburg",
+      "postalCode": "47059",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "handel@metallgrosshandel-ruhr.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Handelsabteilung",
+      "telephone": "+49 203 1234567",
+      "email": "handel@metallgrosshandel-ruhr.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Kupferwerk Nord AG",
+    "vatId": "DE778899001",
+    "address": {
+      "line1": "Industriering 17",
+      "city": "Hamburg",
+      "postalCode": "21109",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@kupferwerk-nord.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Kupferkathoden",
+      "description": "Lieferung von Kupferkathoden (Anlage 4) gem. §13b Abs. 2 Nr. 11 UStG; Nettoentgelt ≥ 5.000 EUR",
+      "quantity": 1000,
+      "unitCode": "KGM",
+      "unitPrice": 8.5,
+      "lineAmount": 8500.0,
+      "vatCategoryCode": "AE",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "AE",
+      "rate": 0,
+      "taxableAmount": 8500.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Steuerschuldnerschaft des Leistungsempfängers für die Lieferung von Kupfer gem. §13b Abs. 2 Nr. 11 UStG, Anlage 4",
+      "exemptionReasonCode": "VATEX-EU-AE",
+      "reverseChargeReason": "industrial-metals"
+    }
+  ],
+
+  "taxExclusiveAmount": 8500.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 8500.0,
+  "duePayableAmount": 8500.0,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Metallgroßhandel Ruhr GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Steuerschuldnerschaft des Leistungsempfängers (§13b Abs. 2 Nr. 11 UStG, Industriemetalle)."
+}

@@ -1,0 +1,80 @@
+{
+  "id": "RE-2026-0091",
+  "typeCode": "380",
+  "issueDate": "2026-08-06",
+  "dueDate": "2026-09-05",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Green Energy Trading GmbH",
+    "vatId": "DE223344556",
+    "address": {
+      "line1": "Europaplatz 3",
+      "city": "Frankfurt am Main",
+      "postalCode": "60327",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "handel@green-energy-trading.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Handelsabteilung",
+      "telephone": "+49 69 1234567",
+      "email": "handel@green-energy-trading.example"
+    }
+  },
+
+  "buyer": {
+    "name": "CarbonTrade AG",
+    "vatId": "DE334455667",
+    "address": {
+      "line1": "Leipziger Platz 9",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@carbontrade.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "EU-Emissionszertifikate (EUA)",
+      "description": "Handel mit Emissionszertifikaten (EU-ETS) gem. §13b Abs. 2 Nr. 6 UStG",
+      "quantity": 500,
+      "unitCode": "C62",
+      "unitPrice": 85.0,
+      "lineAmount": 42500.0,
+      "vatCategoryCode": "AE",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "AE",
+      "rate": 0,
+      "taxableAmount": 42500.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Steuerschuldnerschaft des Leistungsempfängers beim Handel mit Emissionszertifikaten gem. §13b Abs. 2 Nr. 6 UStG",
+      "exemptionReasonCode": "VATEX-EU-AE",
+      "reverseChargeReason": "emission-certificates"
+    }
+  ],
+
+  "taxExclusiveAmount": 42500.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 42500.0,
+  "duePayableAmount": 42500.0,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Green Energy Trading GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Steuerschuldnerschaft des Leistungsempfängers (§13b Abs. 2 Nr. 6 UStG, Emissionszertifikate)."
+}
