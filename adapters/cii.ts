@@ -134,11 +134,24 @@ function renderPaymentMeans(pm: PaymentMeansFields): string {
     </ram:SpecifiedTradeSettlementPaymentMeans>`;
 }
 
-/** BT-119/BT-152: CII, like UBL, omits the VAT percent entirely for category "O" (BR-O-05/06/07). */
+/**
+ * BT-152 (invoice line) and BT-96/BT-103 (allowance/charge):
+ * for VAT category "O", do not include the VAT percent
+ * (required by BR-O-05/06/07).
+ *
+ * BT-119 (document-level VAT breakdown) is different:
+ * it must still include a percent, so category "O" uses 0%.
+ *
+ * This matches the same behavior in the UBL renderer.
+ */
 function renderRateApplicablePercent(categoryCode: string, rate: number | undefined): string {
   return categoryCode === "O" || rate === undefined
     ? ""
     : `\n        <ram:RateApplicablePercent>${rate}</ram:RateApplicablePercent>`;
+}
+
+function renderBreakdownRateApplicablePercent(rate: number): string {
+  return `\n        <ram:RateApplicablePercent>${rate}</ram:RateApplicablePercent>`;
 }
 
 function renderVatSubtotal(bd: VatSubtotalFields): string {
@@ -148,7 +161,7 @@ function renderVatSubtotal(bd: VatSubtotalFields): string {
   const exemptionReasonCode = bd.exemptionReasonCode
     ? `\n        <ram:ExemptionReasonCode>${esc(bd.exemptionReasonCode)}</ram:ExemptionReasonCode>`
     : "";
-  const percent = renderRateApplicablePercent(bd.categoryCode, bd.rate);
+  const percent = renderBreakdownRateApplicablePercent(bd.rate);
 
   // ram:TradeTaxType's fixed sequence: CalculatedAmount, TypeCode, ExemptionReason, ...,
   // BasisAmount, CategoryCode, ..., ExemptionReasonCode, ..., RateApplicablePercent.

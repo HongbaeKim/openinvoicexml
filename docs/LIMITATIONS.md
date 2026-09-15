@@ -11,7 +11,7 @@ item (statutory citations, per-subcase eligibility conditions) is preserved in
 | VAT codes `L` (Canary Islands IGIC), `M` (Ceuta/Melilla IPSI) | Spanish special-territory taxes, out of scope for a Germany-focused engine |
 | Category `S` rates other than 19%/7% | Historical (COVID-era 16%/5%) and non-German EN 16931 rates rejected as `VAT_RATE_INVALID_FOR_CATEGORY` — see [§12 UStG][ustg-12] |
 | §19 UStG turnover conditions | Only checks a seller tax ID is present when §19 is referenced — doesn't verify the €25,000/€100,000 turnover thresholds or an Abs. 3 waiver |
-| Export customs reference | No dedicated field — use `note` (BT-22) as a workaround |
+| Export customs reference | No dedicated field — use `note` (BT-22) as a workaround, exercised in `fixtures/34.export-with-customs-reference.invoice.json` |
 | Place of supply — goods/B2C/special categories | Only the default + B2B-service-override rule is checked (`PLACE_OF_SUPPLY_CROSS_BORDER`, warning-only, never blocks). Goods vs. services, B2C, and special categories (real estate, transport, events, catering) aren't modeled — see [§3a UStG][ustg-3a] |
 | Deliver-to city/postal code (`BR-DE-10`/`BR-DE-11`) | Only country code (BT-80) is enforced by the TS validator; a `deliverTo` address missing city/postal code passes here but is rejected by real KoSIT — populate them anyway |
 | Payment means mandatory under XRechnung (`BR-DE-1`) | `validateBusinessRules()` doesn't check that BG-16 (payment means) is present at all; an invoice with no `paymentMeans` passes here but is rejected by real KoSIT for the XRechnung CIUS — discovered via `fixtures/33.minimal-required-fields.invoice.json` (Week 16 Task 1), which now sets a minimal `paymentMeans` to stay KoSIT-clean |
@@ -39,7 +39,10 @@ verified here.
 | `eu-cross-border-service` | **Yes** |
 | `real-estate` | **Yes** |
 | `telecommunications` | **Yes** |
-| `foreign-supplier`, `emission-certificates`, `qualifying-gold`, `industrial-metals` | No fixture yet — logic exists, exercise directly via `reverseChargeReason` |
+| `foreign-supplier` | **Yes** |
+| `emission-certificates` | **Yes** |
+| `qualifying-gold` | **Yes** |
+| `industrial-metals` | **Yes** |
 
 One remaining real-world subcase (insolvency-specific security-asset transfers) has no dedicated
 identifier — falls back to the generic `AE` checks only.
@@ -51,7 +54,7 @@ identifier — falls back to the generic `AE` checks only.
 - **Hybrid PDF/A-3, UBL (`toHybridPdf()`)** — implemented (`adapters/hybrid-pdf.ts`). The current
   hybrid PDFs pass veraPDF's PDF/A-3b profile with zero errors across all fixtures.
   `make validate-mustang` independently confirms, via the Mustang Project CLI (a third-party
-  tool, not this project's own code), that all 33 fixtures' embedded XML extracts byte-for-byte
+  tool, not this project's own code), that all 41 fixtures' embedded XML extracts byte-for-byte
   identically to `toXRechnung()` and passes Mustang's own EN16931/XRechnung UBL validation with
   zero errors. Not a Factur-X/ZUGFeRD hybrid — it embeds UBL, and every ZUGFeRD/Factur-X
   conformance level requires CII.
@@ -59,7 +62,7 @@ identifier — falls back to the generic `AE` checks only.
   `adapters/cii.ts`), `EN16931`/`XRECHNUNG` profiles only (see "Not supported" above for
   MINIMUM/BASIC WL/BASIC). Sets `fx:ConformanceLevel`/`fx:DocumentFileName` XMP via
   `embedFacturX()` — a genuine conformance claim. `make validate-facturx` confirms, per profile
-  across all 33 fixtures: veraPDF PDF/A-3b conformance, KoSIT conformance of the extracted
+  across all 41 fixtures: veraPDF PDF/A-3b conformance, KoSIT conformance of the extracted
   `factur-x.xml`, and `runMustang()` validating the PDF directly (no extraction) with zero
   errors. See [`COMPLIANCE.md`](COMPLIANCE.md#validating-factur-xzugferd-output-cii).
 

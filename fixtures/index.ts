@@ -31,6 +31,14 @@ import reverseChargeTelecommunications from "./30.reverse-charge-telecommunicati
 import manyLines from "./31.many-lines.invoice.json" with { type: "json" };
 import umlautName from "./32.umlaut-name.invoice.json" with { type: "json" };
 import minimalRequiredFields from "./33.minimal-required-fields.invoice.json" with { type: "json" };
+import exportWithCustomsReference from "./34.export-with-customs-reference.invoice.json" with { type: "json" };
+import correctiveInvoiceMultiLine from "./35.corrective-invoice-multi-line.invoice.json" with { type: "json" };
+import reverseChargeForeignSupplier from "./36.reverse-charge-foreign-supplier.invoice.json" with { type: "json" };
+import reverseChargeEmissionCertificates from "./37.reverse-charge-emission-certificates.invoice.json" with { type: "json" };
+import reverseChargeQualifyingGold from "./38.reverse-charge-qualifying-gold.invoice.json" with { type: "json" };
+import reverseChargeIndustrialMetals from "./39.reverse-charge-industrial-metals.invoice.json" with { type: "json" };
+import documentMixedAllowanceAndCharge from "./40.document-mixed-allowance-and-charge.invoice.json" with { type: "json" };
+import outsideScopeDamages from "./41.outside-scope-damages.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -66,10 +74,18 @@ export {
   manyLines,
   umlautName,
   minimalRequiredFields,
+  exportWithCustomsReference,
+  correctiveInvoiceMultiLine,
+  reverseChargeForeignSupplier,
+  reverseChargeEmissionCertificates,
+  reverseChargeQualifyingGold,
+  reverseChargeIndustrialMetals,
+  documentMixedAllowanceAndCharge,
+  outsideScopeDamages,
 };
 
 /**
- * All 33 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
+ * All 41 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
  * (matching the fixture's filename prefix) and annotated with its VAT category, so it shows
  * up that way in every test runner's output, wherever this list is consumed.
  */
@@ -107,4 +123,12 @@ export const allFixtures: [string, unknown][] = [
   ["31. many-lines (19% S)", manyLines],
   ["32. umlaut-name (19% S)", umlautName],
   ["33. minimal-required-fields (19% S)", minimalRequiredFields],
+  ["34. export-with-customs-reference (G)", exportWithCustomsReference],
+  ["35. corrective-invoice-multi-line (384)", correctiveInvoiceMultiLine],
+  ["36. reverse-charge-foreign-supplier (AE)", reverseChargeForeignSupplier],
+  ["37. reverse-charge-emission-certificates (AE)", reverseChargeEmissionCertificates],
+  ["38. reverse-charge-qualifying-gold (AE)", reverseChargeQualifyingGold],
+  ["39. reverse-charge-industrial-metals (AE)", reverseChargeIndustrialMetals],
+  ["40. document-mixed-allowance-and-charge (19% S)", documentMixedAllowanceAndCharge],
+  ["41. outside-scope-damages (O)", outsideScopeDamages],
 ];

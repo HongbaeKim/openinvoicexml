@@ -40,6 +40,14 @@ expected XRechnung XML output once Phase 2 is complete.
 | `31.many-lines.invoice.json`          | 55 line items, standard 19% VAT          | Implemented |
 | `32.umlaut-name.invoice.json`         | Umlauts/ß in party names, long wrapped line description | Implemented |
 | `33.minimal-required-fields.invoice.json` | Only required fields set (plus mandatory BT-10) | Implemented |
+| `34.export-with-customs-reference.invoice.json` | Export outside EU (category G) with a customs/export declaration reference | Implemented |
+| `35.corrective-invoice-multi-line.invoice.json` | Corrective invoice (typeCode 384), two omitted lines corrected together | Implemented |
+| `36.reverse-charge-foreign-supplier.invoice.json` | §13b subcase: foreign (non-established) supplier (category AE) | Implemented |
+| `37.reverse-charge-emission-certificates.invoice.json` | §13b subcase: emission certificates trading (category AE) | Implemented |
+| `38.reverse-charge-qualifying-gold.invoice.json` | §13b subcase: qualifying/investment gold (category AE) | Implemented |
+| `39.reverse-charge-industrial-metals.invoice.json` | §13b subcase: industrial metals, Anlage 4 (category AE) | Implemented |
+| `40.document-mixed-allowance-and-charge.invoice.json` | Document-level allowance and charge combined in one invoice | Implemented |
+| `41.outside-scope-damages.invoice.json` | Outside the scope of VAT (category O) — genuine damages compensation | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -194,6 +202,39 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   absent, rather than printing a header with only a bank-detail-less `Verwendungszweck` row; this
   fixture's own `paymentMeans` only sets `code`/`iban` (no `accountName`/`bic`) to also exercise
   that block's own optional sub-fields.
+- **`34.export-with-customs-reference.invoice.json`** — Week 16 Task 2's "export with customs
+  reference" scenario: same category `G` export-outside-EU mechanism as `09.export.invoice.json`,
+  but to a US buyer instead of a Swiss one, and with an export customs declaration reference (an
+  ATLAS MRN) stated in free-text `note` (BT-22). There's no dedicated field for it — EN 16931/
+  XRechnung has no BT for a customs reference — see `docs/LIMITATIONS.md`.
+- **`35.corrective-invoice-multi-line.invoice.json`** — Week 16 Task 2's multi-line corrective
+  invoice, distinct from `18.corrective-invoice.invoice.json`'s single omitted line: two separate
+  line items (project management hours, travel expenses) that were both left off the original
+  invoice are billed together in one correction (typeCode `384`).
+- **`36.reverse-charge-foreign-supplier.invoice.json`**, **`37.reverse-charge-emission-certificates.invoice.json`**,
+  **`38.reverse-charge-qualifying-gold.invoice.json`**, **`39.reverse-charge-industrial-metals.invoice.json`** —
+  close 4 of the 4 remaining previously-unfixtured §13b Abs. 2 subcases noted in
+  `docs/LIMITATIONS.md` (`foreign-supplier`, `emission-certificates`, `qualifying-gold`,
+  `industrial-metals`). `foreign-supplier` is also the first fixture with a non-German seller
+  (Austria) — the reverse-charge liability here shifts to the German buyer specifically because
+  the supplier is established abroad. `industrial-metals` follows the same €5,000+ net-amount
+  convention `14.reverse-charge-mobile-devices.invoice.json` established for the (also unverified)
+  statutory threshold.
+- **`40.document-mixed-allowance-and-charge.invoice.json`** — a document-level allowance
+  (`Treuerabatt`) and a document-level charge (`Expresszuschlag`) in the same `allowancesCharges`
+  array on one invoice, proving the mixed-sign case: `VAT_TAXABLE_AMOUNT_MISMATCH`'s
+  `netAllowanceChargeAdjustment` (`validators/02.business-rules.ts`) sums allowances and charges
+  together correctly (`1000 − 100 + 40 = 940`) rather than only being exercised with same-sign
+  entries, as every other allowance/charge fixture (`22`–`26`) is.
+- **`41.outside-scope-damages.invoice.json`** — the first fixture for VAT category `O` ("not
+  subject to VAT"), for which `checkOutsideScopeRequirements` (`validators/rules/14.outside-scope.ts`)
+  existed with unit-test coverage but no end-to-end fixture. Models genuine damages compensation
+  (no goods/service/right/tolerance given in return, so outside the VAT system entirely per §1
+  Abs. 1 UStG — not the same as an `E`-category exemption). Per `BR-O-02`, neither party may carry
+  a VAT identifier (BT-31/BT-48) on an `O`-category invoice, so the seller here drops `vatId` in
+  favor of `legalId` (BT-30, Handelsregisternummer) instead — real KoSIT's `BR-CO-26` independently
+  requires at least one seller identifier (BT-29/BT-30/BT-31), which `taxRegistrationId` (BT-32,
+  a different element) doesn't satisfy on its own.
 
 ## References
 
