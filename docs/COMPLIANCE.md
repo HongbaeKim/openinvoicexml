@@ -109,6 +109,8 @@ artifacts under `tools/facturx/` have no such script — see "Validating Factur-
 | `BT-118`/`BT-119` | VAT rate rules | `validators/rules/17.vat-rate.ts` | Implemented |
 | `BT-120`/`BT-121` | Exemption-reason presence | `validators/rules/17.vat-rate.ts` + `02.business-rules.ts` | Implemented |
 | `BR-DE-10`/`BR-DE-11` | Deliver-to city/postal code | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
+| `BR-DE-1` | Payment means (BG-16) mandatory under XRechnung | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
+| `BR-CO-25` | Due date (BT-9) or payment terms (BT-20) required when amount due is positive | — | Not implemented (and no BT-20 field exists) — see [`LIMITATIONS.md`](LIMITATIONS.md) |
 | `BT-10` (cardinality 1 under the XRechnung 3.0 CIUS) | Buyer reference, mandatory under XRechnung though optional under plain EN 16931 | `validators/rules/19.xrechnung-mandatory-fields.ts` | Implemented — profile-gated (only applies when validated with `profile: "XRECHNUNG"`), presence-only, no Leitweg-ID format/B2G check |
 | Full BT → field mapping | — | [`DATA-MODEL.md`](DATA-MODEL.md) | Reference |
 
@@ -185,10 +187,10 @@ UBL, not CII — every Factur-X/ZUGFeRD conformance level (including the `XRECHN
 requires CII syntax, so this PDF deliberately carries no `fx:` XMP metadata claiming ZUGFeRD/
 Factur-X conformance. `toFacturXPdf()` (see ["Validating Factur-X/ZUGFeRD output
 (CII)"](#validating-factur-xzugferd-output-cii) below) is this project's actual Factur-X/ZUGFeRD
-hybrid — the two coexist as separate entry points, not a replacement of one by the other. All 30
+hybrid — the two coexist as separate entry points, not a replacement of one by the other. All 33
 fixtures pass veraPDF's PDF/A-3b profile with zero errors.
 
-`make validate-hybrid` automates a round-trip check across all 30 fixtures: it runs veraPDF
+`make validate-hybrid` automates a round-trip check across all 33 fixtures: it runs veraPDF
 against every generated hybrid PDF, then extracts each one's embedded XML
 (`extractEmbeddedXml()`, `adapters/hybrid-pdf.ts`) and runs *that* through KoSIT — proving what a
 real recipient would actually extract from the PDF is itself a conformant XRechnung document, not
@@ -199,7 +201,7 @@ just that the PDF passes PDF/A-3b on its own.
 `make validate-mustang` runs the same kind of round-trip proof as `validate-hybrid`, but through
 an independent, third-party tool instead of this project's own `extractEmbeddedXml()`: the
 [Mustang Project][mustang-tool] CLI's own `--action extract` must recover XML byte-for-byte
-identical to `toXRechnung()`'s direct output from every one of the 30 generated hybrid PDFs
+identical to `toXRechnung()`'s direct output from every one of the 33 generated hybrid PDFs
 (despite the PDF not being ZUGFeRD-branded), and Mustang's own `--action validate` — run against
 that *extracted* XML, not the PDF — must independently corroborate this project's EN16931/
 XRechnung UBL validation findings with zero error-severity findings.
@@ -233,7 +235,7 @@ Factur-X/ZUGFeRD hybrid PDF (unlike `toHybridPdf()` above). Same three validator
 
 - **KoSIT**, against CII instead of UBL. `tools/kosit/config/scenarios.xml` defines
   `EN16931 (CII)` and `EN16931 XRechnung (CII)` scenarios; KoSIT self-selects per file from its
-  guideline URN. All 30 fixtures pass, both profiles.
+  guideline URN. All 33 fixtures pass, both profiles.
 - **veraPDF**, same PDF/A-3b check as `toHybridPdf()` — confirms `embedFacturX()`'s own PDF/A-3
   conversion is genuinely conformant.
 - **Mustang**, direct against the PDF, no extraction — this is the gating claim (unlike the

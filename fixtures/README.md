@@ -37,6 +37,9 @@ expected XRechnung XML output once Phase 2 is complete.
 | `28.multiple-vat-rates.invoice.json`  | Multiple VAT rates (19%/7%) on one invoice | Implemented |
 | `29.reverse-charge-real-estate.invoice.json` | §13b subcase: real estate transfer (category AE) | Implemented |
 | `30.reverse-charge-telecommunications.invoice.json` | §13b subcase: telecommunications (category AE) | Implemented |
+| `31.many-lines.invoice.json`          | 55 line items, standard 19% VAT          | Implemented |
+| `32.umlaut-name.invoice.json`         | Umlauts/ß in party names, long wrapped line description | Implemented |
+| `33.minimal-required-fields.invoice.json` | Only required fields set (plus mandatory BT-10) | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -158,6 +161,39 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
 - **`30.reverse-charge-telecommunications.invoice.json`** — category `AE`, wholesale
   telecommunications services sold to a reseller, reverse-charged under §13b Abs. 2 Nr. 12 UStG.
   Tests the `telecommunications` subcase, closing another of the previously-unfixtured 7.
+- **`31.many-lines.invoice.json`** — `ROADMAP.md` Week 16 Task 1's "50+ line items" edge case:
+  55 daily-consulting line items (`RE-2026-0070`), all category `S`/19%, so the fixture stresses
+  the hybrid PDF table's pagination rather than any VAT-category logic. Regression-tested in
+  `adapters/hybrid-pdf.test.ts` ("50+ line items (pagination)") to confirm the generated PDF
+  actually spans multiple pages (with the table header repeated on each) instead of silently
+  overflowing past the page margin — see `adapters/hybrid-pdf.ts`'s `ensureSpace()`/`drawLineRow()`
+  fix for the bug this fixture caught: a hardcoded per-row space estimate that didn't account for
+  wrapped multi-line rows.
+- **`32.umlaut-name.invoice.json`** — Week 16 Task 1's "font glyph coverage" and "long
+  descriptions" edge cases together: seller and buyer names containing `ä ö ü ß` (`Härtel Öztürk
+  Straßmann GmbH` / `Grünwald Straßenbau Gebäudetechnik AG`), and a line-item description long
+  enough to wrap across several lines in the PDF table cell. `adapters/hybrid-pdf.test.ts` checks
+  the embedded DejaVuSans font has real glyphs (not `.notdef`) for every umlaut/`ß` character and
+  that the long description wraps to multiple lines rather than being truncated; actually opening
+  the rendered PDF and eyeballing the glyphs is still a manual step — embedded fonts are subset
+  and CID-encoded, so rendered text isn't recoverable as plain strings from the saved PDF bytes
+  for an automated assertion.
+- **`33.minimal-required-fields.invoice.json`** — Week 16 Task 1's "empty optional fields" edge
+  case: sets none of `note`, `contractReference`, `purchaseOrderReference`,
+  `precedingInvoiceReference`, `prepaidAmount`, line `description`, or `allowancesCharges`.
+  `.step/16.md`'s original plan also listed `buyerReference`, `dueDate`, and `paymentMeans` as
+  safe to leave empty, but `make validate-hybrid` (real KoSIT, not this project's own TS
+  validator) rejected that version of the fixture with two errors: BR-DE-1 (XRechnung requires
+  BG-16 payment means outright) and BR-CO-25 (BT-9 due date or BT-20 payment terms is required
+  whenever the amount due is positive — this engine has no BT-20 field, so BT-9 is the only way
+  to satisfy it, on top of BT-10 buyer reference already being XRechnung-mandatory). Neither rule
+  is checked by `validateBusinessRules()` yet, so this fixture (and
+  `adapters/xrechnung.test.ts`'s "empty optional fields" describe block) is the regression guard
+  until they are — see `docs/LIMITATIONS.md`. `adapters/hybrid-pdf.ts`'s `drawPaymentInfo()` was
+  separately fixed to skip the "Zahlungsinformationen" block entirely when `paymentMeans` is
+  absent, rather than printing a header with only a bank-detail-less `Verwendungszweck` row; this
+  fixture's own `paymentMeans` only sets `code`/`iban` (no `accountName`/`bic`) to also exercise
+  that block's own optional sub-fields.
 
 ## References
 

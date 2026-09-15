@@ -28,6 +28,9 @@ import reverseChargeIntraEuServices from "./27.reverse-charge-intra-eu-services.
 import multipleVatRates from "./28.multiple-vat-rates.invoice.json" with { type: "json" };
 import reverseChargeRealEstate from "./29.reverse-charge-real-estate.invoice.json" with { type: "json" };
 import reverseChargeTelecommunications from "./30.reverse-charge-telecommunications.invoice.json" with { type: "json" };
+import manyLines from "./31.many-lines.invoice.json" with { type: "json" };
+import umlautName from "./32.umlaut-name.invoice.json" with { type: "json" };
+import minimalRequiredFields from "./33.minimal-required-fields.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -60,10 +63,13 @@ export {
   multipleVatRates,
   reverseChargeRealEstate,
   reverseChargeTelecommunications,
+  manyLines,
+  umlautName,
+  minimalRequiredFields,
 };
 
 /**
- * All 30 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
+ * All 33 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
  * (matching the fixture's filename prefix) and annotated with its VAT category, so it shows
  * up that way in every test runner's output, wherever this list is consumed.
  */
@@ -98,4 +104,7 @@ export const allFixtures: [string, unknown][] = [
   ["28. multiple-vat-rates (19%/7% S)", multipleVatRates],
   ["29. reverse-charge-real-estate (AE)", reverseChargeRealEstate],
   ["30. reverse-charge-telecommunications (AE)", reverseChargeTelecommunications],
+  ["31. many-lines (19% S)", manyLines],
+  ["32. umlaut-name (19% S)", umlautName],
+  ["33. minimal-required-fields (19% S)", minimalRequiredFields],
 ];

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { toXRechnung } from "./xrechnung.js";
+import { validateBusinessRules } from "../validators/02.business-rules.js";
 import type { Invoice } from "../core/index.js";
 
 import domesticSimple from "../fixtures/01.domestic-simple.invoice.json" with { type: "json" };
@@ -8,6 +9,7 @@ import intraEuSupply from "../fixtures/08.intra-eu-supply.invoice.json" with { t
 import creditNoteFull from "../fixtures/16.credit-note-full.invoice.json" with { type: "json" };
 // XRechnung already proved both allowance levels work through one combined test. 
 import combinedLineAndDocumentDiscount from "../fixtures/24.combined-line-and-document-discount.invoice.json" with { type: "json" };
+import minimalRequiredFields from "../fixtures/33.minimal-required-fields.invoice.json" with { type: "json" };
 
 import { allFixtures } from "../fixtures/index.js";
 
@@ -352,6 +354,44 @@ describe("toXRechnung", () => {
       const xml = toXRechnung(invoice);
       expect(xml).toContain("<ubl:Invoice");
       expect(xml).toContain("<cbc:InvoiceTypeCode>384</cbc:InvoiceTypeCode>");
+    });
+  });
+
+  describe("empty optional fields (Week 16 edge case)", () => {
+    // 33.minimal-required-fields.invoice.json sets none of: note, contractReference,
+    // purchaseOrderReference, precedingInvoiceReference, prepaidAmount, line description, or
+    // allowances/charges. It does set buyerReference, dueDate, and a (minimal) paymentMeans —
+    // three fields the original Week 16 plan listed as safe to leave empty too, but real KoSIT
+    // validation (`make validate-hybrid`) says otherwise for all three:
+    //   - BT-10 buyer reference: became XRechnung-mandatory after this scenario was first
+    //     planned (validators/rules/19.xrechnung-mandatory-fields.ts).
+    //   - BT-9 due date: BR-CO-25 requires either BT-9 or BT-20 (payment terms) whenever
+    //     duePayableAmount is positive; this engine has no BT-20 field, so BT-9 is the only way
+    //     to satisfy it.
+    //   - BG-16 payment means: BR-DE-1 (XRechnung CIUS) mandates it outright.
+    // Neither BR-CO-25 nor BR-DE-1 is checked by validateBusinessRules() yet — see
+    // docs/LIMITATIONS.md — so this fixture is the regression guard until they are.
+    const xml = toXRechnung(minimalRequiredFields as unknown as Invoice);
+
+    it("omits every genuinely-optional-field element rather than an empty/malformed placeholder", () => {
+      expect(xml).not.toContain("<cbc:Note>");
+      expect(xml).not.toContain("<cac:OrderReference>");
+      expect(xml).not.toContain("<cac:ContractDocumentReference>");
+      expect(xml).not.toContain("<cac:BillingReference>");
+      expect(xml).not.toContain("<cbc:PrepaidAmount");
+      expect(xml).not.toContain("<cac:AllowanceCharge>");
+      expect(xml).not.toContain("<cbc:Description>");
+    });
+
+    it("still renders BT-10/BT-9/BG-16, which real KoSIT rules (BR-DE-1, BR-CO-25) require", () => {
+      expect(xml).toContain("<cbc:BuyerReference>04011000-12345-72</cbc:BuyerReference>");
+      expect(xml).toContain("<cbc:DueDate>2026-10-14</cbc:DueDate>");
+      expect(xml).toContain("<cac:PaymentMeans>");
+    });
+
+    it("passes business-rule validation with zero errors as XRECHNUNG", () => {
+      const issues = validateBusinessRules(minimalRequiredFields as unknown as Invoice, "XRECHNUNG");
+      expect(issues.filter((i) => i.severity === "error")).toEqual([]);
     });
   });
 

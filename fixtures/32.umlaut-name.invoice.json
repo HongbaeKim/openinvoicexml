@@ -1,0 +1,77 @@
+{
+  "id": "RE-2026-0071",
+  "typeCode": "380",
+  "issueDate": "2026-09-14",
+  "dueDate": "2026-10-14",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-71",
+
+  "seller": {
+    "name": "Härtel Öztürk Straßmann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Königsallee 3",
+      "city": "Düsseldorf",
+      "postalCode": "40212",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@haertel-oeztuerk-strassmann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 211 1234567",
+      "email": "buchhaltung@haertel-oeztuerk-strassmann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Grünwald Straßenbau Gebäudetechnik AG",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Schloßstraße 12",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@gruenwald-strassenbau.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Straßenbeleuchtung – Ersatzteile für Außenanlagen",
+      "description": "Lieferung von Straßenlaternen-Ersatzteilen für die Außenbeleuchtung gemäß Angebot Nr. 4471: enthält Leuchtmittel, Vorschaltgeräte, wetterfeste Anschlussdosen sowie Halterungen für Gehwege, Plätze und Grünanlagen in Düsseldorf und Umgebung, einschließlich Übergabeprotokoll und Gewährleistungsübersicht.",
+      "quantity": 12,
+      "unitCode": "C62",
+      "unitPrice": 145.5,
+      "lineAmount": 1746.0,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 1746.0,
+      "taxAmount": 331.74
+    }
+  ],
+
+  "taxExclusiveAmount": 1746.0,
+  "taxAmount": 331.74,
+  "taxInclusiveAmount": 2077.74,
+  "duePayableAmount": 2077.74,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Härtel Öztürk Straßmann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Vielen Dank für Ihren Auftrag. Zahlbar innerhalb von 30 Tagen ohne Abzug."
+}

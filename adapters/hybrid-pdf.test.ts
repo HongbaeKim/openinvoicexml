@@ -1,16 +1,21 @@
-import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, it, expect, afterAll } from "vitest";
 import { PDFDocument, parsePDFAConformanceFromXmp, AFRelationship } from "@cantoo/pdf-lib";
+import * as fontkit from "fontkit";
+import type { Font } from "fontkit";
 
-import { toHybridPdf, toFacturXPdf, extractEmbeddedXml } from "./hybrid-pdf.js";
+import { toHybridPdf, toFacturXPdf, extractEmbeddedXml, wrappedLineCount } from "./hybrid-pdf.js";
 import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
 import type { Invoice } from "../core/index.js";
 
-import { allFixtures, domesticSimple } from "../fixtures/index.js";
+import { allFixtures, domesticSimple, manyLines, umlautName } from "../fixtures/index.js";
+
+const FONT_DIR = fileURLToPath(new URL("./assets/fonts/", import.meta.url));
 
 // toFacturXPdf()
 // Creates the PDF and embeds factur-x.xml.
@@ -136,11 +141,70 @@ describe("toHybridPdf", () => {
     });
   });
 
+  // Week 16 Task 1: edge-case hardening for the PDF renderer. These are the automatable parts
+  // of what docs/.step/16.md's Task 1 asks for; opening the umlaut-name and many-lines PDFs and
+  // eyeballing the actual glyphs/layout is still a manual step no automated check here replaces
+  // (@cantoo/pdf-lib subsets and CID-encodes embedded fonts, so drawn text isn't recoverable as
+  // plain strings from the saved PDF bytes for an automated content assertion).
+  describe("German umlaut/ß glyph coverage", () => {
+    it.each(["DejaVuSans.ttf", "DejaVuSans-Bold.ttf"])(
+      "%s has real glyphs (not .notdef) for ä ö ü ß Ä Ö Ü",
+      (fontFile) => {
+        // DejaVuSans*.ttf are plain single fonts, never font collections, so this cast is safe.
+        const font = fontkit.openSync(`${FONT_DIR}${fontFile}`) as Font;
+        for (const ch of ["ä", "ö", "ü", "ß", "Ä", "Ö", "Ü"]) {
+          const glyph = font.layout(ch).glyphs[0];
+          expect(glyph, `glyph for '${ch}'`).toBeDefined();
+          expect(glyph!.id, `glyph for '${ch}'`).not.toBe(0);
+        }
+      },
+    );
+
+    it("generates a reloadable PDF for seller/buyer names containing ä ö ü ß", async () => {
+      const bytes = await toHybridPdf(umlautName as Invoice);
+      expect(Buffer.from(bytes.slice(0, 5)).toString("ascii")).toBe("%PDF-");
+      const reloaded = await PDFDocument.load(bytes);
+      expect(reloaded.getPageCount()).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("long line-item descriptions", () => {
+    it("wraps a long description into multiple lines instead of truncating it to one", async () => {
+      const doc = await PDFDocument.create();
+      doc.registerFontkit(fontkit);
+      const font = await doc.embedFont(readFileSync(`${FONT_DIR}DejaVuSans.ttf`));
+
+      const shortText = "Kurze Beschreibung";
+      const longText =
+        "Lieferung von Straßenlaternen-Ersatzteilen für die Außenbeleuchtung gemäß Angebot " +
+        "Nr. 4471: enthält Leuchtmittel, Vorschaltgeräte, wetterfeste Anschlussdosen sowie " +
+        "Halterungen für Gehwege, Plätze und Grünanlagen in Düsseldorf und Umgebung.";
+
+      expect(wrappedLineCount(doc, font, shortText, 8)).toBe(1);
+      expect(wrappedLineCount(doc, font, longText, 8)).toBeGreaterThan(4);
+    });
+  });
+
+  describe("50+ line items (pagination)", () => {
+    it("paginates a 55-line invoice across multiple pages without throwing", async () => {
+      const invoiceLines = (manyLines as Invoice).lines;
+      expect(invoiceLines.length).toBeGreaterThanOrEqual(50);
+
+      const bytes = await toHybridPdf(manyLines as Invoice);
+      const reloaded = await PDFDocument.load(bytes);
+      // A sanity range, not an exact pixel-derived count: must genuinely paginate (not silently
+      // stay on one page) but shouldn't explode into an unreasonable number of pages either.
+      expect(reloaded.getPageCount()).toBeGreaterThan(1);
+      expect(reloaded.getPageCount()).toBeLessThan(10);
+    });
+  });
+
   // Structural smoke test only, across all fixtures: doesn't throw, starts with %PDF, reloads,
   // and carries the xrechnung.xml attachment. This does not assert anything about page count,
-  // layout, or rendered content per fixture — some fixtures (long descriptions, many lines,
-  // unusual allowances) may not render well yet under this first-pass layout. Visual/content
-  // correctness is a manual check.
+  // layout, or actual rendered glyph correctness per fixture — the umlaut/long-description and
+  // 50+-line pagination cases have their own targeted checks above, but visually eyeballing the
+  // rendered PDF is still the only way to catch a silently-wrong-looking (as opposed to
+  // throwing/malformed) layout.
   describe.each(allFixtures)("all fixtures (%s)", (_label, fixture) => {
     it("generates a reloadable PDF without throwing", async () => {
       const bytes = await toHybridPdf(fixture as Invoice);

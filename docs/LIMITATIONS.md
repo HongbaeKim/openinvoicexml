@@ -14,6 +14,8 @@ item (statutory citations, per-subcase eligibility conditions) is preserved in
 | Export customs reference | No dedicated field — use `note` (BT-22) as a workaround |
 | Place of supply — goods/B2C/special categories | Only the default + B2B-service-override rule is checked (`PLACE_OF_SUPPLY_CROSS_BORDER`, warning-only, never blocks). Goods vs. services, B2C, and special categories (real estate, transport, events, catering) aren't modeled — see [§3a UStG][ustg-3a] |
 | Deliver-to city/postal code (`BR-DE-10`/`BR-DE-11`) | Only country code (BT-80) is enforced by the TS validator; a `deliverTo` address missing city/postal code passes here but is rejected by real KoSIT — populate them anyway |
+| Payment means mandatory under XRechnung (`BR-DE-1`) | `validateBusinessRules()` doesn't check that BG-16 (payment means) is present at all; an invoice with no `paymentMeans` passes here but is rejected by real KoSIT for the XRechnung CIUS — discovered via `fixtures/33.minimal-required-fields.invoice.json` (Week 16 Task 1), which now sets a minimal `paymentMeans` to stay KoSIT-clean |
+| Due date / payment terms required when amount is owed (`BR-CO-25`) | EN 16931 requires BT-9 (due date) or BT-20 (payment terms) whenever the amount due (BT-115) is positive; `validateBusinessRules()` doesn't check either, and this project's `Invoice` type has no BT-20 field at all, so BT-9 is the only way to satisfy this rule today — discovered alongside `BR-DE-1` above |
 | BT-10 buyer reference format (Leitweg-ID) | `validators/rules/19.xrechnung-mandatory-fields.ts` only checks that BT-10 is *present* when validated with `profile: "XRECHNUNG"` — it does not check Leitweg-ID structure/format, and doesn't distinguish B2G (where some recipients require a Leitweg-ID) from B2B (where XRechnung's own FAQ allows any suitable buyer-provided identifier) |
 | Factur-X/ZUGFeRD hybrid profiles MINIMUM/BASIC WL/BASIC | These three are partial-data profiles by design — they deliberately *omit* content this project's `Invoice` model always carries, so supporting them needs a profile-aware serializer that knows what to leave out, not just a different `GuidelineSpecifiedDocumentContextParameter` value the way `EN16931`/`XRECHNUNG` did. Those two profiles are implemented (`adapters/cii.ts`'s `toCii()`, `adapters/hybrid-pdf.ts`'s `toFacturXPdf()`) and validated against KoSIT, veraPDF, Mustang, and FeRD's own D22B EN16931 artifacts — see [`COMPLIANCE.md`](COMPLIANCE.md#validating-factur-xzugferd-output-cii). MINIMUM/BASIC WL/BASIC remain a distinct follow-up, tracked in `.step/longtermplan.md`, not this file's per-week roadmap |
 
@@ -49,7 +51,7 @@ identifier — falls back to the generic `AE` checks only.
 - **Hybrid PDF/A-3, UBL (`toHybridPdf()`)** — implemented (`adapters/hybrid-pdf.ts`). The current
   hybrid PDFs pass veraPDF's PDF/A-3b profile with zero errors across all fixtures.
   `make validate-mustang` independently confirms, via the Mustang Project CLI (a third-party
-  tool, not this project's own code), that all 30 fixtures' embedded XML extracts byte-for-byte
+  tool, not this project's own code), that all 33 fixtures' embedded XML extracts byte-for-byte
   identically to `toXRechnung()` and passes Mustang's own EN16931/XRechnung UBL validation with
   zero errors. Not a Factur-X/ZUGFeRD hybrid — it embeds UBL, and every ZUGFeRD/Factur-X
   conformance level requires CII.
@@ -57,7 +59,7 @@ identifier — falls back to the generic `AE` checks only.
   `adapters/cii.ts`), `EN16931`/`XRECHNUNG` profiles only (see "Not supported" above for
   MINIMUM/BASIC WL/BASIC). Sets `fx:ConformanceLevel`/`fx:DocumentFileName` XMP via
   `embedFacturX()` — a genuine conformance claim. `make validate-facturx` confirms, per profile
-  across all 30 fixtures: veraPDF PDF/A-3b conformance, KoSIT conformance of the extracted
+  across all 33 fixtures: veraPDF PDF/A-3b conformance, KoSIT conformance of the extracted
   `factur-x.xml`, and `runMustang()` validating the PDF directly (no extraction) with zero
   errors. See [`COMPLIANCE.md`](COMPLIANCE.md#validating-factur-xzugferd-output-cii).
 

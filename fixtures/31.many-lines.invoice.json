@@ -1,0 +1,609 @@
+{
+  "id": "RE-2026-0070",
+  "typeCode": "380",
+  "issueDate": "2026-09-14",
+  "dueDate": "2026-10-14",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-99999-14",
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+  "buyer": {
+    "name": "Langzeitprojekt Consulting AG",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@langzeitprojekt.example",
+    "electronicAddressSchemeId": "EM"
+  },
+  "lines": [
+    {
+      "id": "1",
+      "name": "Beratungstag 1",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 53.37,
+      "lineAmount": 53.37,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "2",
+      "name": "Beratungstag 2",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 56.74,
+      "lineAmount": 56.74,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "3",
+      "name": "Beratungstag 3",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 60.11,
+      "lineAmount": 60.11,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "4",
+      "name": "Beratungstag 4",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 63.48,
+      "lineAmount": 63.48,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "5",
+      "name": "Beratungstag 5",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 66.85,
+      "lineAmount": 66.85,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "6",
+      "name": "Beratungstag 6",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 70.22,
+      "lineAmount": 70.22,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "7",
+      "name": "Beratungstag 7",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 73.59,
+      "lineAmount": 73.59,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "8",
+      "name": "Beratungstag 8",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 76.96,
+      "lineAmount": 76.96,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "9",
+      "name": "Beratungstag 9",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 80.33,
+      "lineAmount": 80.33,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "10",
+      "name": "Beratungstag 10",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 83.7,
+      "lineAmount": 83.7,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "11",
+      "name": "Beratungstag 11",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 87.07,
+      "lineAmount": 87.07,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "12",
+      "name": "Beratungstag 12",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 90.44,
+      "lineAmount": 90.44,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "13",
+      "name": "Beratungstag 13",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 93.81,
+      "lineAmount": 93.81,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "14",
+      "name": "Beratungstag 14",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 97.18,
+      "lineAmount": 97.18,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "15",
+      "name": "Beratungstag 15",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 100.55,
+      "lineAmount": 100.55,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "16",
+      "name": "Beratungstag 16",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 103.92,
+      "lineAmount": 103.92,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "17",
+      "name": "Beratungstag 17",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 107.29,
+      "lineAmount": 107.29,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "18",
+      "name": "Beratungstag 18",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 110.66,
+      "lineAmount": 110.66,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "19",
+      "name": "Beratungstag 19",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 114.03,
+      "lineAmount": 114.03,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "20",
+      "name": "Beratungstag 20",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 117.4,
+      "lineAmount": 117.4,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "21",
+      "name": "Beratungstag 21",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 120.77,
+      "lineAmount": 120.77,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "22",
+      "name": "Beratungstag 22",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 124.14,
+      "lineAmount": 124.14,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "23",
+      "name": "Beratungstag 23",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 127.51,
+      "lineAmount": 127.51,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "24",
+      "name": "Beratungstag 24",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 130.88,
+      "lineAmount": 130.88,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "25",
+      "name": "Beratungstag 25",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 134.25,
+      "lineAmount": 134.25,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "26",
+      "name": "Beratungstag 26",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 137.62,
+      "lineAmount": 137.62,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "27",
+      "name": "Beratungstag 27",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 140.99,
+      "lineAmount": 140.99,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "28",
+      "name": "Beratungstag 28",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 144.36,
+      "lineAmount": 144.36,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "29",
+      "name": "Beratungstag 29",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 147.73,
+      "lineAmount": 147.73,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "30",
+      "name": "Beratungstag 30",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 151.1,
+      "lineAmount": 151.1,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "31",
+      "name": "Beratungstag 31",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 154.47,
+      "lineAmount": 154.47,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "32",
+      "name": "Beratungstag 32",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 157.84,
+      "lineAmount": 157.84,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "33",
+      "name": "Beratungstag 33",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 161.21,
+      "lineAmount": 161.21,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "34",
+      "name": "Beratungstag 34",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 164.58,
+      "lineAmount": 164.58,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "35",
+      "name": "Beratungstag 35",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 167.95,
+      "lineAmount": 167.95,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "36",
+      "name": "Beratungstag 36",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 171.32,
+      "lineAmount": 171.32,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "37",
+      "name": "Beratungstag 37",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 174.69,
+      "lineAmount": 174.69,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "38",
+      "name": "Beratungstag 38",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 178.06,
+      "lineAmount": 178.06,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "39",
+      "name": "Beratungstag 39",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 181.43,
+      "lineAmount": 181.43,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "40",
+      "name": "Beratungstag 40",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 184.8,
+      "lineAmount": 184.8,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "41",
+      "name": "Beratungstag 41",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 188.17,
+      "lineAmount": 188.17,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "42",
+      "name": "Beratungstag 42",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 191.54,
+      "lineAmount": 191.54,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "43",
+      "name": "Beratungstag 43",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 194.91,
+      "lineAmount": 194.91,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "44",
+      "name": "Beratungstag 44",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 198.28,
+      "lineAmount": 198.28,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "45",
+      "name": "Beratungstag 45",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 201.65,
+      "lineAmount": 201.65,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "46",
+      "name": "Beratungstag 46",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 205.02,
+      "lineAmount": 205.02,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "47",
+      "name": "Beratungstag 47",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 208.39,
+      "lineAmount": 208.39,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "48",
+      "name": "Beratungstag 48",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 211.76,
+      "lineAmount": 211.76,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "49",
+      "name": "Beratungstag 49",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 215.13,
+      "lineAmount": 215.13,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "50",
+      "name": "Beratungstag 50",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 218.5,
+      "lineAmount": 218.5,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "51",
+      "name": "Beratungstag 51",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 221.87,
+      "lineAmount": 221.87,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "52",
+      "name": "Beratungstag 52",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 225.24,
+      "lineAmount": 225.24,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "53",
+      "name": "Beratungstag 53",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 228.61,
+      "lineAmount": 228.61,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "54",
+      "name": "Beratungstag 54",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 231.98,
+      "lineAmount": 231.98,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "55",
+      "name": "Beratungstag 55",
+      "quantity": 1,
+      "unitCode": "DAY",
+      "unitPrice": 235.35,
+      "lineAmount": 235.35,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    }
+  ],
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 7939.8,
+      "taxAmount": 1508.56
+    }
+  ],
+  "taxExclusiveAmount": 7939.8,
+  "taxAmount": 1508.56,
+  "taxInclusiveAmount": 9448.36,
+  "duePayableAmount": 9448.36,
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+  "note": "Einzelabrechnung je Beratungstag über den gesamten Projektzeitraum (55 Tage)."
+}

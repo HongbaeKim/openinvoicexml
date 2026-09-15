@@ -121,11 +121,12 @@ function startPage(doc: PDFDocument): { page: PDFPage; y: number } {
   return { page, y: PAGE_SIZE[1] - MARGIN };
 }
 
-function ensureSpace(layout: Layout, needed: number): void {
+function ensureSpace(layout: Layout, needed: number, onNewPage?: () => void): void {
   if (layout.y - needed < MARGIN) {
     const { page, y } = startPage(layout.doc);
     layout.page = page;
     layout.y = y;
+    onNewPage?.();
   }
 }
 
@@ -264,8 +265,12 @@ function drawTableHeader(layout: Layout): void {
   layout.y -= 18;
 }
 
-/** Number of lines `text` will wrap to at `size` within the description column's width. */
-function wrappedLineCount(doc: PDFDocument, font: PDFFont, text: string, size: number): number {
+/**
+ * Number of lines `text` will wrap to at `size` within the description column's width.
+ * Exported only for the wrapping-correctness test (long descriptions must wrap, not truncate) —
+ * not part of the adapter's public API surface (see adapters/index.ts).
+ */
+export function wrappedLineCount(doc: PDFDocument, font: PDFFont, text: string, size: number): number {
   const maxWidth = TABLE_COLUMNS.description - 8;
   return breakTextIntoLines(text, doc.defaultWordBreaks, maxWidth, (t) =>
     font.widthOfTextAtSize(t, size),
@@ -273,10 +278,21 @@ function wrappedLineCount(doc: PDFDocument, font: PDFFont, text: string, size: n
 }
 
 function drawLineRow(layout: Layout, fields: PdfDocumentFields, line: PdfLineFields): void {
-  ensureSpace(layout, 40);
-  const { doc, page, fonts } = layout;
   const maxDescWidth = TABLE_COLUMNS.description - 8;
 
+  // Row height depends on how many lines the name/description wrap to, so it must be known
+  // *before* deciding whether a page break is needed — a fixed guess here previously let tall
+  // wrapped rows (long descriptions) overflow past the bottom margin instead of paginating.
+  const nameLineCount = wrappedLineCount(layout.doc, layout.fonts.regular, line.name, 9);
+  const descriptionLineCount = line.description
+    ? wrappedLineCount(layout.doc, layout.fonts.regular, line.description, 8)
+    : 0;
+  const rowHeight = 16 + (nameLineCount - 1) * 11 + descriptionLineCount * 10;
+
+  // Make sure this row fits. If a new page is needed, redraw the table header on that new page.
+  ensureSpace(layout, rowHeight, () => drawTableHeader(layout));
+
+  const { page, fonts } = layout;
   const rowTop = layout.y;
   let x = MARGIN;
 
@@ -289,9 +305,7 @@ function drawLineRow(layout: Layout, fields: PdfDocumentFields, line: PdfLineFie
     maxWidth: maxDescWidth,
     lineHeight: 11,
   });
-  const nameLineCount = wrappedLineCount(doc, fonts.regular, line.name, 9);
 
-  let descriptionLineCount = 0;
   if (line.description) {
     page.drawText(line.description, {
       x,
@@ -302,7 +316,6 @@ function drawLineRow(layout: Layout, fields: PdfDocumentFields, line: PdfLineFie
       maxWidth: maxDescWidth,
       lineHeight: 10,
     });
-    descriptionLineCount = wrappedLineCount(doc, fonts.regular, line.description, 8);
   }
   x += TABLE_COLUMNS.description;
 
@@ -346,8 +359,8 @@ function drawLineRow(layout: Layout, fields: PdfDocumentFields, line: PdfLineFie
     fonts.regular,
   );
 
-  // Row height grows with wrapped description text so subsequent rows don't overlap.
-  const rowHeight = 16 + (nameLineCount - 1) * 11 + descriptionLineCount * 10;
+  // rowHeight (computed above, before the page-break check) grows with wrapped description
+  // text so subsequent rows don't overlap.
   layout.y = rowTop - rowHeight;
 }
 
@@ -418,7 +431,17 @@ function drawTotalsBlock(layout: Layout, fields: PdfDocumentFields): void {
   );
 }
 
-function drawPaymentInfo(layout: Layout, fields: PdfDocumentFields): void {
+/**
+ * Draws the "Zahlungsinformationen" block (Verwendungszweck plus, when given, the account
+ * details) only when the invoice actually carries paymentMeans — a Verwendungszweck with no
+ * account to pay into isn't a usable payment block, so this must not print for an invoice
+ * with no paymentMeans at all (see the "empty optional fields" fixture).
+ */
+function drawPaymentDetails(
+  layout: Layout,
+  fields: PdfDocumentFields,
+  pm: NonNullable<PdfDocumentFields["paymentMeans"]>,
+): void {
   ensureSpace(layout, 82);
   const { page, fonts } = layout;
   layout.y -= 22;
@@ -431,14 +454,13 @@ function drawPaymentInfo(layout: Layout, fields: PdfDocumentFields): void {
   });
   layout.y -= 15;
 
-  const pm = fields.paymentMeans;
   // No dedicated payment-reference field exists on Invoice — fall back to the invoice ID as the
   // printed Verwendungszweck. This is a display choice made here, not a claim about what German
   // invoices legally require.
   const rows: [string, string][] = [
-    ...(pm?.accountName ? ([["Kontoinhaber", pm.accountName]] as [string, string][]) : []),
-    ...(pm?.iban ? ([["IBAN", pm.iban]] as [string, string][]) : []),
-    ...(pm?.bic ? ([["BIC", pm.bic]] as [string, string][]) : []),
+    ...(pm.accountName ? ([["Kontoinhaber", pm.accountName]] as [string, string][]) : []),
+    ...(pm.iban ? ([["IBAN", pm.iban]] as [string, string][]) : []),
+    ...(pm.bic ? ([["BIC", pm.bic]] as [string, string][]) : []),
     ["Verwendungszweck", fields.invoiceId],
   ];
   for (const [label, value] of rows) {
@@ -458,19 +480,29 @@ function drawPaymentInfo(layout: Layout, fields: PdfDocumentFields): void {
     });
     layout.y -= 13;
   }
+}
 
+function drawNote(layout: Layout, note: string): void {
+  ensureSpace(layout, 30);
+  layout.y -= 14;
+  layout.page.drawText(note, {
+    x: MARGIN,
+    y: layout.y,
+    size: 9,
+    font: layout.fonts.regular,
+    color: BLACK,
+    maxWidth: CONTENT_WIDTH,
+    lineHeight: 12,
+  });
+  layout.y -= 14;
+}
+
+function drawPaymentInfo(layout: Layout, fields: PdfDocumentFields): void {
+  if (fields.paymentMeans) {
+    drawPaymentDetails(layout, fields, fields.paymentMeans);
+  }
   if (fields.note) {
-    layout.y -= 8;
-    page.drawText(fields.note, {
-      x: MARGIN,
-      y: layout.y,
-      size: 9,
-      font: fonts.regular,
-      color: BLACK,
-      maxWidth: CONTENT_WIDTH,
-      lineHeight: 12,
-    });
-    layout.y -= 14;
+    drawNote(layout, fields.note);
   }
 }
 
