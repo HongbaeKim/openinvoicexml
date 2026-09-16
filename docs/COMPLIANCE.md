@@ -105,9 +105,9 @@ artifacts under `tools/facturx/` have no such script — see "Validating Factur-
 | `BR-O-02` | Outside scope (category `O`) | `validators/rules/14.outside-scope.ts` | Implemented |
 | `BR-57` | Deliver-to country (BT-80) | `validators/rules/11.delivery.ts` | Implemented |
 | `BT-25`/`BT-26` | Credit note / corrective invoice reference | `validators/rules/10.credit-note.ts` | Partial — no diff against the original document |
-| `BT-113`/`BT-25`/`BT-26` | Down-payment deduction reference | `validators/02.business-rules.ts` (inline) | Partial — single reference only |
+| `BT-113`/`BT-25`/`BT-26` | Down-payment deduction reference | `validators/engines/02.business-rules.ts` (inline) | Partial — single reference only |
 | `BT-118`/`BT-119` | VAT rate rules | `validators/rules/17.vat-rate.ts` | Implemented |
-| `BT-120`/`BT-121` | Exemption-reason presence | `validators/rules/17.vat-rate.ts` + `02.business-rules.ts` | Implemented |
+| `BT-120`/`BT-121` | Exemption-reason presence | `validators/rules/17.vat-rate.ts` + `engines/02.business-rules.ts` | Implemented |
 | `BR-DE-10`/`BR-DE-11` | Deliver-to city/postal code | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
 | `BR-DE-1` | Payment means (BG-16) mandatory under XRechnung | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
 | `BR-CO-25` | Due date (BT-9) or payment terms (BT-20) required when amount due is positive | — | Not implemented (and no BT-20 field exists) — see [`LIMITATIONS.md`](LIMITATIONS.md) |
@@ -146,8 +146,14 @@ Output looks like:
 Exits non-zero on any `error`-severity finding. `warning`/`information`-level findings don't fail
 the build; accepted ones are tracked in [`LIMITATIONS.md`](LIMITATIONS.md).
 
-`runKosit()` (`validators/90.kosit.ts`) shells out to the KoSIT jar and parses its per-file XML
+`runKosit()` (`validators/engines/90.kosit.ts`) shells out to the KoSIT jar and parses its per-file XML
 report into `{ file, valid, issues: [{ severity, message, location }] }` — see [`API.md`](API.md).
+
+`generateInvoice(invoice, { validateExternally: true })` runs this KoSIT check automatically
+against the XML it just generated and merges the findings with `validateBusinessRules()`'s own,
+normalized into one `ComplianceIssue[]` list (`source: "business-rules" | "kosit"`) — see
+[`API.md`](API.md#unified-compliance-diagnostics-complianceissue). Off by default; the plain
+`generateInvoice(invoice)` call above stays synchronous and Java-free.
 
 ### Hybrid PDF/A-3 (veraPDF)
 
@@ -178,7 +184,7 @@ Exits non-zero on any `error`-severity finding — veraPDF's PDF/A-3b conformanc
 (compliant/non-compliant), so every failed check is an error; there's no separate warning tier the
 way KoSIT's Schematron severities have.
 
-`runVeraPdf()` (`validators/91.vera-pdf.ts`) shells out to the installed veraPDF CLI and parses
+`runVeraPdf()` (`validators/engines/91.vera-pdf.ts`) shells out to the installed veraPDF CLI and parses
 its batch XML report into `{ file, valid, issues: [{ severity, message, location }] }` — see
 [`API.md`](API.md).
 
@@ -222,7 +228,7 @@ make mustang-setup      # one-time: downloads tools/mustang/mustang-cli.jar
 make validate-mustang   # regenerates hybrid PDFs, extracts+diffs, then validates each via Mustang
 ```
 
-`runMustang()`/`extractWithMustang()` (`validators/92.mustang.ts`) shell out to the Mustang CLI
+`runMustang()`/`extractWithMustang()` (`validators/engines/92.mustang.ts`) shell out to the Mustang CLI
 jar. Unlike KoSIT/veraPDF, Mustang's process exit code is a deliberate, meaningful validity signal
 (it exits non-zero exactly when its own report's status is `invalid`), so the wrapper cross-checks
 the exit code against the parsed report rather than ignoring it — see [`API.md`](API.md) for the

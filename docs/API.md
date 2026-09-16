@@ -89,7 +89,7 @@ if (result.content === null) {
 }
 ```
 
-## `generateInvoice(invoice)` — recommended entry point
+## `generateInvoice(invoice, options)` — recommended entry point
 
 ```ts
 import { generateInvoice } from "openinvoicexml/adapters";
@@ -97,15 +97,31 @@ import { generateInvoice } from "openinvoicexml/adapters";
 const result = generateInvoice(invoice);
 ```
 
-- **Input:** `Invoice` (a fully-populated internal invoice object — see `DATA-MODEL.md`)
+- **Input:** `Invoice` (a fully-populated internal invoice object — see `DATA-MODEL.md`), plus an
+  optional `GenerateInvoiceOptions`
 - **Output:** `GenerateInvoiceResult`
 
 ```ts
+interface GenerateInvoiceOptions {
+  /**
+   * Opt-in: additionally shells out to the real KoSIT validator (Java — see `make
+   * kosit-setup`) against the generated XML and merges its findings into
+   * `complianceIssues`. Off by default.
+   */
+  validateExternally?: boolean;
+}
+
 interface GenerateInvoiceResult {
   /** The generated XRechnung XML, or null if business-rule validation found an error. */
   xml: string | null;
   /** All business-rule issues found, including non-blocking warnings. */
   issues: ValidationIssue[];
+  /**
+   * `issues` above, plus real KoSIT findings against the generated XML, normalized to
+   * `ComplianceIssue` (see "Unified compliance diagnostics" below). Present only when
+   * called with `{ validateExternally: true }` — absent, not just empty, on the default call.
+   */
+  complianceIssues?: ComplianceIssue[];
 }
 ```
 
@@ -113,9 +129,8 @@ interface GenerateInvoiceResult {
 `severity: "error"`, `xml` is `null` and the errors are returned in `issues` — no XML is
 produced for a known-non-compliant invoice. Otherwise `xml` contains the generated UBL 2.1
 document (`issues` may still contain non-blocking `warning` entries). This is `generateInvoice`'s
-whole contract: compose validation + generation, gate output on error-severity issues, and
-return a result instead of throwing. Full XRechnung XSD/Schematron conformance should still be
-checked separately with KoSIT.
+default contract: compose validation + generation, gate output on error-severity issues, and
+return a result instead of throwing — synchronous and dependency-free, no Java required.
 
 ```ts
 const { xml, issues } = generateInvoice(invoice);
@@ -125,6 +140,21 @@ if (xml === null) {
   for (const issue of issues) console.error(`${issue.code}: ${issue.message}`);
 } else {
   writeFileSync("invoice.xml", xml);
+}
+```
+
+Pass `{ validateExternally: true }` to additionally run the real KoSIT validator against the
+generated XML and get every finding — this project's own plus KoSIT's — back as one normalized
+`ComplianceIssue[]` list. This is opt-in and requires Java/the KoSIT jar (`make kosit-setup`);
+the default call above never needs either:
+
+```ts
+const { xml, complianceIssues } = generateInvoice(invoice, { validateExternally: true });
+
+for (const issue of complianceIssues ?? []) {
+  // issue.source is "business-rules" or "kosit"; issue.suggestedFix is set only for
+  // this project's own (business-rules) codes — see "Unified compliance diagnostics" below
+  console.log(`[${issue.source}] ${issue.code}: ${issue.message}`);
 }
 ```
 
@@ -341,8 +371,65 @@ for humans. Almost every issue is `severity: "error"`; the one exception is
 | `VAT_EXEMPTION_REASON_REQUIRED`        | `error`   | Exemption category (`E`/`AE`/`K`/`G`/`O`) missing a reason (BT-120/BT-121)           |
 | `PLACE_OF_SUPPLY_CROSS_BORDER`         | `warning` | Seller/buyer countries differ — informational only                                   |
 
-Not exhaustive — see `validators/02.business-rules.ts` and `validators/rules/17.vat-rate.ts` for
+Not exhaustive — see `validators/engines/02.business-rules.ts` and `validators/rules/17.vat-rate.ts` for
 the full, current set.
+
+## Unified compliance diagnostics — `ComplianceIssue`
+
+`ValidationIssue` (above), `KositIssue`, `VeraPdfIssue`, and `MustangIssue` are four
+independently-shaped types — a caller who wants findings from more than one validator has to
+handle each shape separately. `ComplianceIssue` (`openinvoicexml/validators`) normalizes all four
+into one:
+
+```ts
+interface ComplianceIssue {
+  /** Machine-readable rule identifier — this project's own code, KoSIT's bracketed rule id
+   * (e.g. "BR-DE-14"), veraPDF's PDF/A clause number (e.g. "6.3.4"), or Mustang's Schematron
+   * rule test (e.g. "normalize-space(cbc:ID) != ''"). */
+  code: string;
+  severity: "error" | "warning";
+  message: string;
+  /** This project's own dot-path for a business-rules issue; the raw XPath/context location
+   * KoSIT/veraPDF/Mustang reported, or "" if the underlying issue had none. */
+  path: string;
+  /** Which validator this came from. */
+  source: "business-rules" | "kosit" | "vera-pdf" | "mustang";
+  /** Set only for "business-rules" issues with a known fix (see SUGGESTED_FIXES below) —
+   * never synthesized for KoSIT/veraPDF/Mustang's free-text, version-dependent messages. */
+  suggestedFix?: string;
+}
+```
+
+Four converter functions build a `ComplianceIssue[]` from each validator's own output:
+
+```ts
+import {
+  fromValidationIssue,
+  fromKositIssue,
+  fromVeraPdfIssue,
+  fromMustangIssue,
+} from "openinvoicexml/validators";
+
+const issues = [
+  ...validateBusinessRules(invoice).map(fromValidationIssue),
+  ...runKosit(["invoice.xml"])[0]!.issues.map(fromKositIssue),
+  ...runVeraPdf(["invoice.pdf"])[0]!.issues.map(fromVeraPdfIssue),
+  ...runMustang(["invoice.xml"])[0]!.issues.map(fromMustangIssue),
+];
+```
+
+`generateInvoice(invoice, { validateExternally: true })` (above) already does the
+`fromValidationIssue`/`fromKositIssue` half of this for you — call these converters directly only
+when composing your own validation pipeline (e.g. also including veraPDF, or validating a PDF this
+project didn't generate).
+
+`SUGGESTED_FIXES: Record<string, string>` covers every `code` this project's own
+`validateBusinessRules()` currently produces (kept complete by a regression test that greps
+`validators/engines/02.business-rules.ts` and `validators/rules/*.ts` for every `code:` literal and checks
+it has an entry). No equivalent lookup exists for KoSIT/veraPDF codes — their messages are
+free-text from external Java tools, version-dependent, and pattern-matching against them to guess
+a fix would be fragile and misleading when wrong; surfacing `source` plus the tool's own message
+honestly is more useful than a guessed-wrong suggestion.
 
 ## `runKosit(files, options)` — optional external validation
 

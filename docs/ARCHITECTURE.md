@@ -81,13 +81,17 @@ Three layers, each catching a different class of error:
 - **Schema validation** (`invoice.schema.json`) — structural errors: missing fields, wrong
   types, invalid formats. Not run automatically by this package; a consumer with untyped JSON
   input validates it themselves before constructing an `Invoice`.
-- **Business rule validation** (`validateBusinessRules()`, in `02.business-rules.ts` +
+- **Business rule validation** (`validateBusinessRules()`, in `engines/02.business-rules.ts` +
   `rules/*.ts`) — legal errors valid JSON can still contain: VAT rate/category consistency,
   reverse-charge/exemption requirements, line and document total arithmetic. Returns
   `ValidationIssue[]`, never throws.
-- **KoSIT validation** (`90.kosit.ts`) — a separate, external mechanism confirming the generated
+- **KoSIT validation** (`engines/90.kosit.ts`) — a separate, external mechanism confirming the generated
   XML conforms to the XRechnung XSD/Schematron. See
   [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output).
+- **Unified diagnostics** (`engines/99.compliance-issue.ts`) — normalizes `ValidationIssue`/`KositIssue`/
+  `VeraPdfIssue` into one `ComplianceIssue` shape (`source`, optional `suggestedFix`), consumed by
+  `generateInvoice(invoice, { validateExternally: true })`. See
+  [`API.md`](API.md#unified-compliance-diagnostics-complianceissue).
 
 ### `adapters/`
 

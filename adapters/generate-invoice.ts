@@ -1,5 +1,16 @@
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import type { Invoice } from "../core/index.js";
-import { validateBusinessRules, type ValidationIssue } from "../validators/02.business-rules.js";
+import { validateBusinessRules, type ValidationIssue } from "../validators/engines/02.business-rules.js";
+import { runKosit } from "../validators/engines/90.kosit.js";
+import type { KositIssue } from "../validators/engines/90.kosit.js";
+import {
+  fromValidationIssue,
+  fromKositIssue,
+  type ComplianceIssue,
+} from "../validators/engines/99.compliance-issue.js";
 import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
 import {
@@ -16,11 +27,59 @@ import {
  * generateInvoiceDocument() is always async so callers can use the same API for every format.
  */
 
+  export interface GenerateInvoiceOptions {
+  /**
+   * Optional: runs the real KoSIT validator on the generated XML.
+   *
+   * KoSIT issues are converted to ComplianceIssue and added together
+   * with this project's own validation issues.
+   *
+   * This is off by default.
+   * So `generateInvoice(invoice)` can still run normally without
+   * Java or KoSIT installed.
+   *
+   * External validation is only run when it is requested.
+   */
+  validateExternally?: boolean;
+}
+
 export interface GenerateInvoiceResult {
   /** The generated XRechnung XML, or null if business-rule validation found an error. */
   xml: string | null;
   /** All business-rule issues found, including non-blocking warnings. */
   issues: ValidationIssue[];
+  /**
+   * Contains this project's own issues plus KoSIT issues from the generated XML.
+   *
+   * All issues are converted to ComplianceIssue.
+   *
+   * This field only exists when `validateExternally: true` is used.
+   * If external validation is not requested, the field is not included.
+   *
+   * This helps tell the difference between:
+   * - external validation was not run
+   * - external validation was run and found no issues
+   */
+  complianceIssues?: ComplianceIssue[];
+}
+
+/**
+ * Saves the XML to a temporary file and checks it with KoSIT.
+ *
+ * The temporary file is deleted after the check,
+ * even if KoSIT returns an error.
+ *
+ * This only runs when `validateExternally` is enabled.
+ */
+function runKositAgainstXml(xml: string): KositIssue[] {
+  const dir = mkdtempSync(join(tmpdir(), "generate-invoice-kosit-"));
+  try {
+    const xmlPath = join(dir, "invoice.xml");
+    writeFileSync(xmlPath, xml, "utf8");
+    return runKosit([xmlPath])[0]?.issues ?? [];
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 /**
@@ -29,11 +88,22 @@ export interface GenerateInvoiceResult {
  * generateInvoice() = validate first, then convert to XML.
  * toXRechnung() can still be used directly if validation is done separately.
  */
-export function generateInvoice(invoice: Invoice): GenerateInvoiceResult {
+export function generateInvoice(
+  invoice: Invoice,
+  options: GenerateInvoiceOptions = {},
+): GenerateInvoiceResult {
   // Always genuine XRechnung UBL regardless of any profile option, so validate as XRECHNUNG.
   const issues = validateBusinessRules(invoice, "XRECHNUNG");
   const hasErrors = issues.some((issue) => issue.severity === "error");
-  return { xml: hasErrors ? null : toXRechnung(invoice), issues };
+  const xml = hasErrors ? null : toXRechnung(invoice);
+
+  if (!options.validateExternally) return { xml, issues };
+
+  const complianceIssues = issues.map(fromValidationIssue);
+  if (xml !== null) {
+    complianceIssues.push(...runKositAgainstXml(xml).map(fromKositIssue));
+  }
+  return { xml, issues, complianceIssues };
 }
 
 export interface GenerateCiiResult {

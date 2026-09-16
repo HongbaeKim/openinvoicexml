@@ -30,6 +30,7 @@ export {
   generateInvoiceDocument,
 } from "./generate-invoice.js";
 export type {
+  GenerateInvoiceOptions,
   GenerateInvoiceResult,
   GenerateHybridPdfResult,
   GenerateFacturXPdfResult,

@@ -1,4 +1,5 @@
-import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { writeFileSync, mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -22,6 +23,22 @@ import { allFixtures, reducedRate, domesticSimple } from "../fixtures/index.js";
 /** Deep-clones a fixture so mutations in one test don't leak into others. */
 function clone<T>(fixture: T): T {
   return JSON.parse(JSON.stringify(fixture)) as T;
+}
+
+/** Same availability check `validators/test/90.kosit.test.ts` uses — the `{ validateExternally:
+ * true }` tests below shell out to the real KoSIT jar, so they're skipped, not failed, when it
+ * (or Java) isn't set up locally. */
+function kositAvailable(): boolean {
+  const javaBin = existsSync("tools/jre/bin/java") ? "tools/jre/bin/java" : "java";
+  if (!existsSync("tools/kosit/validator.jar") || !existsSync("tools/kosit/config/scenarios.xml")) {
+    return false;
+  }
+  try {
+    execFileSync(javaBin, ["-version"], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 describe("generateInvoice", () => {
@@ -54,6 +71,55 @@ describe("generateInvoice", () => {
 
     expect(result.xml).toBeNull();
     expect(result.issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(true);
+  });
+
+  it("omits complianceIssues entirely on the default call (opt-in, not just empty)", () => {
+    const result = generateInvoice(domesticSimple as Invoice);
+    expect(result.complianceIssues).toBeUndefined();
+  });
+
+  describe.skipIf(!kositAvailable())("{ validateExternally: true }", () => {
+    it(
+      "merges real KoSIT findings (as ComplianceIssue) alongside this project's own issues",
+      () => {
+        const result = generateInvoice(domesticSimple as Invoice, { validateExternally: true });
+
+        expect(result.xml).not.toBeNull();
+        expect(result.complianceIssues).toBeDefined();
+        // This fixture has no issues from our own validator.
+        // If there were any, they would have source: "business-rules".
+        // KoSIT still reports BR-DE-TMP-32 because this fixture
+        // does not include a delivery date.
+        const bySource = new Set(result.complianceIssues!.map((i) => i.source));
+        expect(bySource.has("kosit")).toBe(true);
+        expect(
+          result.complianceIssues!.every((i) => i.source === "business-rules" || i.source === "kosit"),
+        ).toBe(true);
+      },
+      20000,
+    );
+
+    it(
+      "still reports a KoSIT-found error even when this project's own validator misses it",
+      () => {
+        // Fixture 41 passes our own business-rule checks.
+        // But KoSIT would fail if the seller had none of BT-29, BT-30, or BT-31.
+        // We test that KoSIT-only error directly instead of keeping a broken fixture just for this test.
+        const invoice = clone(domesticSimple) as Invoice;
+        delete invoice.seller.vatId;
+        delete invoice.seller.legalId;
+
+        const result = generateInvoice(invoice, { validateExternally: true });
+
+        expect(result.xml).not.toBeNull();
+        expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+        const kositErrors = result.complianceIssues!.filter(
+          (i) => i.source === "kosit" && i.severity === "error",
+        );
+        expect(kositErrors.some((i) => i.code === "BR-CO-26")).toBe(true);
+      },
+      20000,
+    );
   });
 });
 
