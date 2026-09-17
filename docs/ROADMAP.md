@@ -11,12 +11,12 @@ machine-readable e-invoice format (PDF with embedded XML).
 | WP1 – Architecture & Internal Schema   | Weeks 1–4              | Internal schema design, repo setup, modular architecture foundation | Done |
 | WP2 – XML Engine & Validation          | Weeks 5–8              | XRechnung generation + local validation                             | Done |
 | WP3 – Legal Compliance & Test Fixtures | Weeks 9–12             | VAT scenarios, invoice types, fixture validation                    | Done (through Week 11 — see below) |
-| WP4 – Hybrid PDF/A-3 Export            | Weeks 13–16            | Hybrid export + profile support                                     | Not started |
+| WP4 – Hybrid PDF/A-3 Export            | Weeks 13–16            | Hybrid export + profile support                                     | Done |
 | WP5 – Stabilization & Release Prep     | Weeks 17–26            | Testing, documentation, hardening, release prep                     | Not started |
 
 ---
 
-## Phases 1–3 — done
+## Phases 1–4 — done
 
 Current implemented state is documented where it actually lives, not repeated here:
 [`ARCHITECTURE.md`](ARCHITECTURE.md) (schema/module design), [`DATA-MODEL.md`](DATA-MODEL.md)
@@ -33,10 +33,14 @@ Current implemented state is documented where it actually lives, not repeated he
   delivery invoices. 21 fixtures, all passing KoSIT. Tagged v0.3.0. Remaining: 30+ fixture target
   and the broader edge-case sweep (mixed VAT rates, invoice with surcharge, PO reference, etc.)
   are not yet done.
+- **Phase 4 (Weeks 13–16):** Hybrid PDF/A-3b export, a CII adapter plus genuine Factur-X/ZUGFeRD
+  hybrid PDF (`EN16931`/`XRECHNUNG` profiles), Mustang cross-validation, unified `ComplianceIssue`
+  diagnostics, and edge-case hardening. 41 fixtures, all passing KoSIT + veraPDF + Mustang. Tagged
+  v0.4.0. Remaining: `MINIMUM`/`BASIC WL`/`BASIC` profiles, tracked in `.step/longtermplan.md`.
 
 ---
 
-## Phase 4 – Hybrid PDF/A-3 Export (Weeks 13–16, not started)
+## Phase 4 – Hybrid PDF/A-3 Export (Weeks 13–16, done)
 
 **Deliverable:** Stable hybrid PDF/A-3 export with Factur-X/ZUGFeRD profile support, validated
 across 40+ scenarios.
@@ -45,8 +49,9 @@ across 40+ scenarios.
   (`AFRelationship = Alternative`); correct XMP/ZUGFeRD metadata.
 - **Week 14:** Validate against veraPDF; fix conformance errors; confirm two independent tools
   can extract/re-validate the embedded XML.
-- **Week 15:** Support MINIMUM/BASIC WL/BASIC/EN 16931/XRECHNUNG profiles; profile as an API
-  parameter (EN 16931 default); validate 20+ fixtures with both veraPDF and KoSIT.
+- **Week 15:** Support EN 16931/XRECHNUNG profiles via a real CII adapter (needed for genuine
+  Factur-X/ZUGFeRD, not just an XMP parameter); validate 20+ fixtures with veraPDF and KoSIT.
+  MINIMUM/BASIC WL/BASIC deferred — see [`LIMITATIONS.md`](LIMITATIONS.md).
 - **Week 16:** Reach 40+ validated scenarios; test edge cases (long descriptions, umlauts, 50+
   line items); structured compliance-error diagnostics. Tag v0.4.0.
 

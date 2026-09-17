@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-09-17
+
+### Added
+
+- Hybrid PDF/A-3b export (`toHybridPdf()`), veraPDF-validated
+- CII XML adapter (`toCii()`) and genuine Factur-X/ZUGFeRD hybrid PDF (`toFacturXPdf()`) for the
+  `EN16931`/`XRECHNUNG` profiles, cross-validated against KoSIT, veraPDF, and Mustang
+- `generateInvoiceDocument(invoice, { format })`: one entry point for all four output formats
+- Unified `ComplianceIssue` diagnostics across business-rules/KoSIT/veraPDF/Mustang, with
+  suggested fixes for first-party rules; opt-in via `generateInvoice(invoice, { validateExternally: true })`
+- BT-10 (buyer reference) enforced as mandatory under XRechnung
+- Fixture library grown from 30 to 41, all validated with zero errors
+
+### Fixed
+
+- PDF line-item pagination across multiple pages; payment-info block rendering
+
+### Profile compatibility
+
+| Profile | Supported |
+|---|---|
+| XRECHNUNG | Yes |
+| EN 16931 | Yes |
+| BASIC WL / BASIC / MINIMUM | No — partial-data profiles, tracked in `.step/longtermplan.md` |
+
+See [`LIMITATIONS.md`](docs/LIMITATIONS.md) for detail.
+
+### Supported XRechnung Business Terms
+
+Only BT-11 (project reference), BT-17 (tender/lot reference), and BG-24 (additional supporting
+documents) remain unmapped — see [`DATA-MODEL.md`](docs/DATA-MODEL.md) for the full table and
+[`fixtures/README.md`](fixtures/README.md) for the complete fixture index.
+
 ## [0.3.0] - 2026-08-24
 
 ### Added

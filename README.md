@@ -24,7 +24,11 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 
 ## Status
 
-Early development — Phase 2 (XML Engine & Validation) in progress: XRechnung XML generation is implemented and validated locally against the official KoSIT validator (see [docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+Phase 4 (Hybrid PDF/A-3 Export) done, tagged v0.4.0 — XRechnung UBL XML, CII XML, hybrid PDF/A-3
+(UBL and genuine Factur-X/ZUGFeRD), and unified compliance diagnostics are all implemented and
+validated against KoSIT, veraPDF, and Mustang across 41 fixtures (see
+[docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
+(stabilization & release prep) is next. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 
 ## Prerequisites
 
