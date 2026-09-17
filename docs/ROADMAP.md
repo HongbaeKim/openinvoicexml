@@ -66,7 +66,10 @@ across 40+ scenarios.
 - **Week 20:** Finalize `API.md`, `ARCHITECTURE.md`, `LIMITATIONS.md`; German translation of key
   docs.
 - **Week 21:** Performance/stress testing (100/500/1000-line invoices, batch generation);
-  document baselines.
+  document baselines. In parallel, a disposable browser invoice-UI spike
+  (`src/frontend/src/700-invoicing/`) prototypes a stateless download/upload-XML workflow — a few
+  days of additive work, not part of Week 21's committed hours, de-risking the public-facing
+  invoice UI planned for the Second Stage.
 - **Week 22:** Code-quality pass — module boundaries, comments, naming. No new features.
 - **Week 23:** Final KoSIT/veraPDF verification across all fixtures and profiles.
 - **Week 24:** Finalize `DEVELOPMENT.md`, contributor onboarding, example usage docs, FAQ.
@@ -82,13 +85,13 @@ across 40+ scenarios.
 > signals (beta/developer signups, site traffic) and funding availability. Provisional, not a
 > commitment.
 
-| Phase                                            | Focus                                            | Period                        |
-| ------------------------------------------------ | ------------------------------------------------ | ------------------------------ |
-| Phase 6 – Deployment & Operational Setup         | Production deployment, monitoring, rate limiting | Weeks 27–29 (30 Nov – 20 Dec)  |
-| Phase 7 – Public Beta Preparation                | Documentation, tutorials                         | Weeks 30–32 (21 Dec – 10 Jan)  |
-| Phase 8 – Integrations & API Reuse               | API documentation, pilot integrations            | Weeks 33–35 (11 Jan – 31 Jan)  |
-| Phase 9 – Sustainability & Community Development | Community setup, hosting model, governance       | Weeks 36–39 (1 Feb – 28 Feb)   |
-| Phase 10 – Stabilization & Finalization          | Improvements, issue resolution, final reporting  | Weeks 40–42 (1 Mar – 21 Mar)   |
+| Phase                                                   | Focus                                                          | Period                        |
+| -------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------ |
+| Phase 6 – Public Service & Invoice UI                   | Build the browser invoice workflow, wire it to the engine, minimal deploy | Weeks 27–29 (30 Nov – 20 Dec)  |
+| Phase 7 – Sustainability & Community / Onboarding Refinement | Simplify existing guidance, short usage videos, refine FAQ      | Weeks 30–31 (21 Dec – 3 Jan)   |
+| Phase 8 – User Testing & Public Beta                    | Structured public beta, usability interviews, feedback-driven fixes | Weeks 32–38 (4 Jan – 21 Feb)   |
+| Phase 9 – API Reuse & Partnerships                      | API documentation, pilot integrations, partner outreach         | Weeks 39–42 (22 Feb – 21 Mar)  |
+| Phase 10 – Evaluation & Finalization                    | Evaluate beta results, document findings, final reporting       | Week 43 (22 Mar – 28 Mar)      |
 
 The beta program (`beta.html`) and developer feedback form (`developer.html`) collect early
 signups ahead of Phase 6; site traffic and signup volume are the demand-validation signal for
