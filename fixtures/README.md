@@ -120,7 +120,7 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   `19.down-payment.invoice.json`'s id/issueDate, so `duePayableAmount` correctly nets down to
   `16660.00` (`taxInclusiveAmount − prepaidAmount`, BT-115 = BT-112 − BT-113 — see [en16931] for the
   BT field definitions and rule text). Tests `INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH` and
-  `PRECEDING_INVOICE_REFERENCE_REQUIRED` (`validators/02.business-rules.ts`) together in a realistic
+  `PRECEDING_INVOICE_REFERENCE_REQUIRED` (`validators/engines/02.business-rules.ts`) together in a realistic
   scenario, not just isolated mutations.
 - **`21.partial-delivery.invoice.json`** — typeCode `380`, a Teilrechnung (`RE-2026-0060`) billing
   Phase 1 of a 3-phase EUR 50,000 net framework contract. Sets `contractReference` (BT-12,
@@ -160,7 +160,7 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
 - **`28.multiple-vat-rates.invoice.json`** — one invoice, two lines split across `S`/19%
   (consulting) and `S`/7% (technical books, reduced rate per §12 Abs. 2 UStG), each in its own
   `vatBreakdowns` entry. Tests that `VAT_TAXABLE_AMOUNT_MISMATCH` and the line-aggregation checks
-  (`validators/02.business-rules.ts`) work correctly per category/rate pair on the same document,
+  (`validators/engines/02.business-rules.ts`) work correctly per category/rate pair on the same document,
   not just across single-rate fixtures.
 - **`29.reverse-charge-real-estate.invoice.json`** — category `AE`, sale of a commercial property
   where the seller has opted into VAT liability under §9 UStG, making the transaction subject to
@@ -223,7 +223,7 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
 - **`40.document-mixed-allowance-and-charge.invoice.json`** — a document-level allowance
   (`Treuerabatt`) and a document-level charge (`Expresszuschlag`) in the same `allowancesCharges`
   array on one invoice, proving the mixed-sign case: `VAT_TAXABLE_AMOUNT_MISMATCH`'s
-  `netAllowanceChargeAdjustment` (`validators/02.business-rules.ts`) sums allowances and charges
+  `netAllowanceChargeAdjustment` (`validators/engines/02.business-rules.ts`) sums allowances and charges
   together correctly (`1000 − 100 + 40 = 940`) rather than only being exercised with same-sign
   entries, as every other allowance/charge fixture (`22`–`26`) is.
 - **`41.outside-scope-damages.invoice.json`** — the first fixture for VAT category `O` ("not

@@ -6,7 +6,7 @@ import { STANDARD_VAT_RATES } from "./17.vat-rate.js";
 /**
  * Checks BG-20/BG-21 (document-level) and BG-27/BG-28 (line-level) allowance/charge
  * requirements that go beyond what `LINE_AMOUNT_ROUNDING`/`VAT_TAXABLE_AMOUNT_MISMATCH`
- * (in `../02.business-rules.ts`) already verify about the resulting amounts: that a reason
+ * (in `../engines/02.business-rules.ts`) already verify about the resulting amounts: that a reason
  * is given, and — document-level only — that the VAT category/rate is present and consistent.
  *
  * @see ../../docs/DATA-MODEL.md's "Allowances and charges" section for the BT mapping.

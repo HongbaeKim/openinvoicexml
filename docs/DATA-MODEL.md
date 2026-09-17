@@ -271,7 +271,7 @@ Base amount (BT-93/BT-100/BT-137/BT-142) and percentage (BT-94/BT-101/BT-138/BT-
 alternative way to express an allowance/charge as a rate against a base rather than a flat
 amount — are not modeled; only the flat `amount` form is supported. `lines[i].lineAmount` (BT-131)
 must equal `quantity × unitPrice` adjusted by that line's own allowances/charges (subtract
-allowances, add charges); see `validators/02.business-rules.ts`'s `LINE_AMOUNT_ROUNDING` check.
+allowances, add charges); see `validators/engines/02.business-rules.ts`'s `LINE_AMOUNT_ROUNDING` check.
 
 ### Invoice lines (BG-25)
 

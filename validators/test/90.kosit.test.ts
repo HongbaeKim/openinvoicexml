@@ -11,8 +11,8 @@ import { join } from "node:path";
 // afterAll() → runs once after all tests are finished to clean up.
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
-import { runKosit } from "../90.kosit.js";
-import type { KositResult } from "../90.kosit.js";
+import { runKosit } from "../engines/90.kosit.js";
+import type { KositResult } from "../engines/90.kosit.js";
 import { toXRechnung } from "../../adapters/xrechnung.js";
 import { toCii } from "../../adapters/cii.js";
 import type { Invoice } from "../../core/index.js";

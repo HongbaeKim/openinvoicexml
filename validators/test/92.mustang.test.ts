@@ -11,7 +11,7 @@ import { join } from "node:path";
 // afterAll() → runs once after all tests are finished to clean up.
 import { describe, it, expect, afterAll } from "vitest";
 
-import { runMustang, extractWithMustang } from "../92.mustang.js";
+import { runMustang, extractWithMustang } from "../engines/92.mustang.js";
 import { toXRechnung } from "../../adapters/xrechnung.js";
 import { toHybridPdf, toFacturXPdf } from "../../adapters/hybrid-pdf.js";
 import { toCii } from "../../adapters/cii.js";
@@ -104,6 +104,9 @@ describe.skipIf(!available)("runMustang / extractWithMustang", () => {
     expect(results).toHaveLength(1);
     expect(results[0]!.valid).toBe(false);
     expect(results[0]!.issues.some((issue) => issue.severity === "error")).toBe(true);
+    // Schematron-sourced findings (e.g. missing BT-1 invoice number) carry the rule's own XPath
+    // test as `ruleTest` — confirms parseReport() actually captures it, not just location.
+    expect(results[0]!.issues.some((issue) => issue.ruleTest !== undefined)).toBe(true);
   }, 20000);
 
   it("accepts a hybrid PDF directly via --source (capability check, not the main round-trip claim)", async () => {

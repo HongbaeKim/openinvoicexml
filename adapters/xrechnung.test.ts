@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { toXRechnung } from "./xrechnung.js";
-import { validateBusinessRules } from "../validators/02.business-rules.js";
+import { validateBusinessRules } from "../validators/engines/02.business-rules.js";
 import type { Invoice } from "../core/index.js";
 
 import domesticSimple from "../fixtures/01.domestic-simple.invoice.json" with { type: "json" };

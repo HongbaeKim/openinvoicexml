@@ -11,7 +11,7 @@ import { join, resolve } from "node:path";
 // afterAll() → runs once after all tests are finished to clean up.
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
-import { runVeraPdf } from "../91.vera-pdf.js";
+import { runVeraPdf } from "../engines/91.vera-pdf.js";
 import { toHybridPdf, toFacturXPdf } from "../../adapters/hybrid-pdf.js";
 import type { Invoice } from "../../core/index.js";
 import { PDFDocument, StandardFonts } from "@cantoo/pdf-lib";

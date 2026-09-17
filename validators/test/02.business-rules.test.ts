@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { validateBusinessRules } from "../02.business-rules.js";
+import { validateBusinessRules } from "../engines/02.business-rules.js";
 import type { Invoice } from "../../core/types/invoice.js";
 
 import {
