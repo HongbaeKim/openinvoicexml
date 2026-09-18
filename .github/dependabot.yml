@@ -18,6 +18,12 @@ updates:
           - "patch"
     ignore:
       - dependency-name: "@cantoo/pdf-lib"
+      - dependency-name: "vitest"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@vitest/coverage-v8"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "npm"
     directory: "/src/backend"
