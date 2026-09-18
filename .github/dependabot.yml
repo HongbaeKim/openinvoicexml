@@ -6,12 +6,18 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 5
     groups:
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/coverage-v8"
       npm-minor-patch:
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "@cantoo/pdf-lib"
 
   - package-ecosystem: "npm"
     directory: "/src/backend"
