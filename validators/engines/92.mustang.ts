@@ -66,7 +66,10 @@ export function extractWithMustang(pdfPath: string, options: MustangOptions = {}
   try {
     execFileSync(
       resolveJavaBin(),
-      ["-jar", jarPath, "--action", "extract", "--source", pdfPath, "--out", outPath],
+      // -Xmx512m: limits Java to 512 MB of heap memory.
+      // On our 4 GB machine, that is about 1/8 of the total RAM.
+      // This leaves more memory for the Node/Vitest test workers running at the same time.
+      ["-Xmx512m", "-jar", jarPath, "--action", "extract", "--source", pdfPath, "--out", outPath],
       { stdio: "pipe" },
     );
   } catch (err) {
@@ -103,7 +106,8 @@ export function runMustang(paths: string[], options: MustangOptions = {}): Musta
     try {
       stdout = execFileSync(
         resolveJavaBin(),
-        ["-jar", jarPath, "--action", "validate", "--source", path],
+        // -Xmx512m: see the comment in extractWithMustang() above.
+        ["-Xmx512m", "-jar", jarPath, "--action", "validate", "--source", path],
         { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" },
       );
     } catch (err) {

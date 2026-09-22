@@ -56,7 +56,7 @@ identifier — falls back to the generic `AE` checks only.
 - **Hybrid PDF/A-3, UBL (`toHybridPdf()`)** — implemented (`adapters/hybrid-pdf.ts`). The current
   hybrid PDFs pass veraPDF's PDF/A-3b profile with zero errors across all fixtures.
   `make validate-mustang` independently confirms, via the Mustang Project CLI (a third-party
-  tool, not this project's own code), that all 41 fixtures' embedded XML extracts byte-for-byte
+  tool, not this project's own code), that all 50 fixtures' embedded XML extracts byte-for-byte
   identically to `toXRechnung()` and passes Mustang's own EN16931/XRechnung UBL validation with
   zero errors. Not a Factur-X/ZUGFeRD hybrid — it embeds UBL, and every ZUGFeRD/Factur-X
   conformance level requires CII.
@@ -64,7 +64,7 @@ identifier — falls back to the generic `AE` checks only.
   `adapters/cii.ts`), `EN16931`/`XRECHNUNG` profiles only (see "Not supported" above for
   MINIMUM/BASIC WL/BASIC). Sets `fx:ConformanceLevel`/`fx:DocumentFileName` XMP via
   `embedFacturX()` — a genuine conformance claim. `make validate-facturx` confirms, per profile
-  across all 41 fixtures: veraPDF PDF/A-3b conformance, KoSIT conformance of the extracted
+  across all 50 fixtures: veraPDF PDF/A-3b conformance, KoSIT conformance of the extracted
   `factur-x.xml`, and `runMustang()` validating the PDF directly (no extraction) with zero
   errors. See [`COMPLIANCE.md`](COMPLIANCE.md#validating-factur-xzugferd-output-cii).
 

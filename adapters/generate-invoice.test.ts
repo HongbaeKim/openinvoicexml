@@ -96,7 +96,7 @@ describe("generateInvoice", () => {
           result.complianceIssues!.every((i) => i.source === "business-rules" || i.source === "kosit"),
         ).toBe(true);
       },
-      20000,
+      60000,
     );
 
     it(
@@ -118,7 +118,7 @@ describe("generateInvoice", () => {
         );
         expect(kositErrors.some((i) => i.code === "BR-CO-26")).toBe(true);
       },
-      20000,
+      60000,
     );
   });
 });

@@ -58,8 +58,13 @@ export function runVeraPdf(pdfPaths: string[], options: VeraPdfOptions = {}): Ve
   }
 
   const env = { ...process.env };
-  if (existsSync(`${PORTABLE_JRE_HOME}/bin/java`)) 
+  if (existsSync(`${PORTABLE_JRE_HOME}/bin/java`))
     env.JAVA_HOME = PORTABLE_JRE_HOME;
+    // veraPDF starts Java inside its own script, so we cannot pass -Xmx512m directly.
+    // JAVA_TOOL_OPTIONS makes the JVM use the 512 MB heap limit anyway.
+    // On our 4 GB machine, this is about 1/8 of the total RAM and leaves more
+    // memory for the Node/Vitest test workers running at the same time.
+  env.JAVA_TOOL_OPTIONS = "-Xmx512m";
 
   let stdout: string;
   try {

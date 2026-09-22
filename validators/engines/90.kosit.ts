@@ -74,7 +74,10 @@ export function runKosit(xmlPaths: string[], options: KositOptions = {}): KositR
     // with pipe : Capture the program's output instead of printing it directly to the terminal
     execFileSync(
       resolveJavaBin(),
-      ["-jar", jarPath, "-s", scenariosPath, "-o", outDir, ...xmlPaths],
+      // -Xmx512m: limits Java to 512 MB of heap memory.
+      // On our 4 GB machine, that is about 1/8 of the total RAM.
+      // This leaves more memory for the Node/Vitest test workers running at the same time.
+      ["-Xmx512m", "-jar", jarPath, "-s", scenariosPath, "-o", outDir, ...xmlPaths],
       { stdio: "pipe" },
     );
   } catch (err) {

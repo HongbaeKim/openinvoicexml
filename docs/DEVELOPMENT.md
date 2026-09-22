@@ -21,7 +21,7 @@ Prerequisites: Node.js ≥ 20.0.0, npm, git.
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `npm test`              | Run all tests (Vitest)                                                                                                                                                                                                                                                               |
 | `npm run test:watch`    | Run tests in watch mode                                                                                                                                                                                                                                                              |
-| `npm run test:coverage` | Run tests with coverage report                                                                                                                                                                                                                                                       |
+| `npm run test:coverage` | Run tests with v8 coverage; fails if below the thresholds in `vitest.config.ts` (CI runs this instead of `npm test`)                                                                                                                                                                                                                                                       |
 | `npm run typecheck`     | Type-check without emitting files                                                                                                                                                                                                                                                    |
 | `npm run lint`          | Check for lint errors (ESLint)                                                                                                                                                                                                                                                       |
 | `npm run lint:fix`      | Auto-fix lint errors                                                                                                                                                                                                                                                                 |
@@ -95,10 +95,13 @@ not a change in policy for the rest of the engine.
 
 1. Create `fixtures/NN.<name>.invoice.json`, where `NN` is the next unused two-digit number. It
    must validate against `schemas/invoice.schema.json`.
-2. Add it to `validators/test/00.invoice-schema.test.ts`'s valid-fixture array.
-3. Add it to `validators/test/02.business-rules.test.ts`'s valid-fixture array.
-4. Run `npm test` to confirm everything passes.
-5. Document the scenario in [`fixtures/README.md`](../fixtures/README.md).
+2. Add it to `fixtures/index.ts`: a static `import ... with { type: "json" }`, an entry in the
+   `export { ... }` list, and a numbered `[label, data]` entry in `allFixtures`. That single list
+   drives the business-rules, XRechnung/CII/hybrid-PDF, KoSIT, veraPDF and Mustang regression
+   tests, so nothing else needs editing. `fixtures/index.test.ts` fails if a `*.invoice.json`
+   file and its `allFixtures` entry drift apart.
+3. Run `npm test` to confirm everything passes.
+4. Document the scenario in [`fixtures/README.md`](../fixtures/README.md).
 
 **Naming convention:** `<scenario>.invoice.json` — e.g. `08.intra-eu-supply.invoice.json`.
 

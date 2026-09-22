@@ -47,4 +47,6 @@ jobs:
       # setup steps above if one was installed.
       - run: bash scripts/setup-mustang.sh
 
-      - run: npm test
+      # Runs the full suite (KoSIT/veraPDF/Mustang gates included) with v8 coverage and fails
+      # if it drops below the thresholds in vitest.config.ts — replaces a separate `npm test`.
+      - run: npm run test:coverage
