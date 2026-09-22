@@ -26,9 +26,9 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 
 Phase 4 (Hybrid PDF/A-3 Export) done, tagged v0.4.0 — XRechnung UBL XML, CII XML, hybrid PDF/A-3
 (UBL and genuine Factur-X/ZUGFeRD), and unified compliance diagnostics are all implemented and
-validated against KoSIT, veraPDF, and Mustang across 41 fixtures (see
+validated against KoSIT, veraPDF, and Mustang across 50 fixtures (see
 [docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
-(stabilization & release prep) is next. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+(stabilization & release prep) is in progress — CI now enforces test coverage thresholds. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 
 ## Prerequisites
 
@@ -65,14 +65,20 @@ and PR to `main`.
 
 | Document                                                                                                      | Status |
 | ------------------------------------------------------------------------------------------------------------- | ------ |
-| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow, backend/frontend folder conventions        | Done   |
+| `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow                                             | Done   |
 | `DEVELOPMENT.md` — Local setup, available commands, TypeScript/dependency config, coding & commit conventions | Done   |
 | `COMPLIANCE.md` — Index of compliance sources, rule → file → status map, KoSIT validation setup and usage     | Done   |
-| `DATA-MODEL.md` — Internal invoice schema, full XRechnung BT mapping table, hosted-platform DB schema         | Done   |
+| `DATA-MODEL.md` — Internal invoice schema, full XRechnung BT mapping table                                    | Done   |
 | `API.md` — API usage: `generateInvoiceDocument`, `generateInvoice`, `toXRechnung`, error codes                | Done   |
 | `ROADMAP.md` — Phase goals, non-goals, open questions                                                         | Done   |
 | `LIMITATIONS.md` — What is not supported and why                                                              | Done   |
 | `SECURITY.md` — Security considerations and responsible disclosure                                            | Done   |
+
+## Companion repo
+
+The hosted website, beta/developer signup backend, and deploy tooling live in a separate repo,
+[`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web), which consumes this
+engine rather than the other way around.
 
 ## License
 

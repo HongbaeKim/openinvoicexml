@@ -35,7 +35,7 @@ Current implemented state is documented where it actually lives, not repeated he
   are not yet done.
 - **Phase 4 (Weeks 13–16):** Hybrid PDF/A-3b export, a CII adapter plus genuine Factur-X/ZUGFeRD
   hybrid PDF (`EN16931`/`XRECHNUNG` profiles), Mustang cross-validation, unified `ComplianceIssue`
-  diagnostics, and edge-case hardening. 41 fixtures, all passing KoSIT + veraPDF + Mustang. Tagged
+  diagnostics, and edge-case hardening. 50 fixtures, all passing KoSIT + veraPDF + Mustang. Tagged
   v0.4.0. Remaining: `MINIMUM`/`BASIC WL`/`BASIC` profiles, tracked in `.step/longtermplan.md`.
 
 ---
@@ -55,21 +55,23 @@ across 40+ scenarios.
 - **Week 16:** Reach 40+ validated scenarios; test edge cases (long descriptions, umlauts, 50+
   line items); structured compliance-error diagnostics. Tag v0.4.0.
 
-## Phase 5 – Stabilization & Release Prep (Weeks 17–26, not started)
+## Phase 5 – Stabilization & Release Prep (Weeks 17–26, in progress)
 
 **Deliverable:** Production-ready open-source prototype.
 
 - **Weeks 17–18:** Unified test suite (schema/XML/hybrid), 50+ fixture regression coverage,
-  rounding/edge-VAT-case stabilization.
+  rounding/edge-VAT-case stabilization. Week 17 done: 50 fixtures wired into every "all fixtures"
+  test via `fixtures/index.ts`, KoSIT validation batched into one JVM call, and v8 coverage
+  thresholds enforced in CI (`npm run test:coverage`). Rounding/edge-VAT hardening (Week 18) remains.
 - **Week 19:** Security pass — file handling, input sanitization, malformed-input handling,
   dependency audit. Feeds into `SECURITY.md`.
 - **Week 20:** Finalize `API.md`, `ARCHITECTURE.md`, `LIMITATIONS.md`; German translation of key
   docs.
 - **Week 21:** Performance/stress testing (100/500/1000-line invoices, batch generation);
-  document baselines. In parallel, a disposable browser invoice-UI spike
-  (`src/frontend/src/700-invoicing/`) prototypes a stateless download/upload-XML workflow — a few
-  days of additive work, not part of Week 21's committed hours, de-risking the public-facing
-  invoice UI planned for the Second Stage.
+  document baselines. In parallel, a disposable browser invoice-UI spike (in
+  [`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web)) prototypes a
+  stateless download/upload-XML workflow — a few days of additive work, not part of Week 21's
+  committed hours, de-risking the public-facing invoice UI planned for the Second Stage.
 - **Week 22:** Code-quality pass — module boundaries, comments, naming. No new features.
 - **Week 23:** Final KoSIT/veraPDF verification across all fixtures and profiles.
 - **Week 24:** Finalize `DEVELOPMENT.md`, contributor onboarding, example usage docs, FAQ.
@@ -93,6 +95,7 @@ across 40+ scenarios.
 | Phase 9 – API Reuse & Partnerships                      | API documentation, pilot integrations, partner outreach         | Weeks 39–42 (22 Feb – 21 Mar)  |
 | Phase 10 – Evaluation & Finalization                    | Evaluate beta results, document findings, final reporting       | Week 43 (22 Mar – 28 Mar)      |
 
-The beta program (`beta.html`) and developer feedback form (`developer.html`) collect early
-signups ahead of Phase 6; site traffic and signup volume are the demand-validation signal for
-whether the hosted service is worth the funded build-out.
+The beta program (`beta.html`) and developer feedback form (`developer.html`), both in
+[`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web), collect early signups
+ahead of Phase 6; site traffic and signup volume are the demand-validation signal for whether
+the hosted service is worth the funded build-out.

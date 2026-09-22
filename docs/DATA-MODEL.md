@@ -298,42 +298,12 @@ credit notes).
 
 ---
 
-## Planned hosted-platform database
+## Hosted-platform database
 
-Applies to the future hosted application (beta/developer signup forms, `src/backend`) — **not**
-required by the core OpenInvoiceXML library, which is stateless (see [`ARCHITECTURE.md`](ARCHITECTURE.md)).
-
-Two independent tables, one per signup form, plain Postgres, no separate migration tool
-(`src/db/*.sql` auto-runs on first boot).
-
-### `beta_signups`
-
-| Column          | Type          | Constraint                   | Notes                                         |
-| ---------------- | -------------- | ------------------------------ | ---------------------------------------------- |
-| `id`            | `SERIAL`      | `PRIMARY KEY`                |                                                |
-| `name`          | `TEXT`        | required (API-level, not DB) |                                                |
-| `email`         | `TEXT`        | `NOT NULL UNIQUE`            | the only uniqueness constraint on this table  |
-| `role`          | `TEXT`        | `NOT NULL`                   | e.g. `freelancer`, `small-business`, `other`  |
-| `role_other`    | `TEXT`        | nullable                     | only set when `role = 'other'`                |
-| `message`       | `TEXT`        | nullable                     | optional "anything else?" field               |
-| `consent`       | `BOOLEAN`     | `NOT NULL`                   | GDPR consent checkbox                         |
-| `wants_contact` | `BOOLEAN`     | `NOT NULL DEFAULT false`     |                                                |
-| `created_at`    | `TIMESTAMPTZ` | `NOT NULL DEFAULT now()`     |                                                |
-
-### `developer_signups`
-
-Same shape as `beta_signups`, with `what_to_build` in place of `message`.
-
-A duplicate `email` on either table returns HTTP `200` with `{ status: "already_signed_up" }`
-(Postgres `23505` unique-violation, caught in `repository.ts`/`routes.ts`) rather than an error —
-a repeat signup is treated as a successful outcome from the client's perspective. Field length
-limits are enforced by each route's `ajv` `bodySchema` (`name` 200, `email` 320, `role` 50,
-`roleOther` 100, `message`/`whatToBuild` 2000); the frontend's `maxLength` attributes mirror these
-for UX only.
-
-```sh
-make db-sql   # drops into psql (make db for a plain shell instead)
-```
+The beta/developer signup database (`beta_signups`/`developer_signups` tables) lives in the
+[`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web) repo now — see that
+repo's `docs/DATA-MODEL.md` for the schema. It's **not** required by this library, which is
+stateless (see [`ARCHITECTURE.md`](ARCHITECTURE.md)).
 
 [ustg-12]: https://www.gesetze-im-internet.de/ustg_1980/__12.html
 [ustg-13b]: https://www.gesetze-im-internet.de/ustg_1980/__13b.html

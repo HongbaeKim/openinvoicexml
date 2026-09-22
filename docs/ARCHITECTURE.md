@@ -153,31 +153,11 @@ than a default.
 
 ---
 
-## Backend & Frontend structure
+## Website and hosted backend
 
-Both `src/backend/src/` and `src/frontend/src/` use the same numbered-prefix convention:
-
-- `000`–`200` = shared infrastructure and app-level composition (config, middleware, routing on
-  the backend; API client, layout, top-level pages on the frontend) — technical layers, not
-  feature slices.
-- `300` and above = domain-oriented **feature slices**, each keeping its routes/pages,
-  components, and logic together rather than split globally by file type.
-- Numbers step by 100, leaving room to insert a slice later without renumbering.
-- `300`–`600` are reserved but unused today — there's no accounts/auth/billing system planned;
-  the near-term scope is just the invoicing feature plus the existing beta/developer signups.
-- This is a convention for predictable ordering and 1:1 backend/frontend parity, not a standard
-  architecture — plain names would work fine at this project's size.
-
-| #           | Slice                                         | Status                                              |
-| ----------- | --------------------------------------------- | --------------------------------------------------- |
-| 000/100/200 | core / middleware-or-layout / routes-or-pages | Implemented (infra)                                 |
-| 300–600     | _(reserved)_                                  | Not planned                                         |
-| 700         | `invoicing`                                   | Planned — next feature, wraps the root-level engine |
-| 800         | `beta`                                        | Implemented — beta-program signup                   |
-| 900         | `developer`                                   | Implemented — developer feedback signup             |
-
-The root-level `core/`, `adapters/`, and `validators/` (documented above) are the standalone
-invoice engine — no dependency on `src/backend` or any web-service concern. `700-invoicing` is
-where the future hosted API/UI will call into that engine. `800-beta` and `900-developer` each
-own their own Postgres connection (no shared pool in `000-core`) — see
-[`DATA-MODEL.md`](DATA-MODEL.md#planned-hosted-platform-database) for their table schemas.
+The website, beta/developer signup backend, and deploy tooling that used to live under `src/`
+in this repo now live in a separate repo,
+[`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web) — see that repo's
+`docs/ARCHITECTURE.md` for its backend/frontend structure. The root-level `core/`, `adapters/`,
+and `validators/` documented above are the standalone invoice engine with no dependency on that
+web layer; `openinvoicexml-web` consumes this repo, not the other way around.
