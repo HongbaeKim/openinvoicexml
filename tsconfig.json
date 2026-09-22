@@ -19,5 +19,6 @@
     "esModuleInterop": true
   },
   "include": ["core/**/*", "adapters/**/*", "validators/**/*"],
-  "exclude": ["node_modules", "dist", "fixtures"]
+  "exclude": ["node_modules", "dist", "fixtures"],
+  "files": ["fixtures/index.test.ts"]
 }

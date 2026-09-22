@@ -1,0 +1,93 @@
+{
+  "id": "RE-2026-0107",
+  "typeCode": "384",
+  "issueDate": "2026-08-10",
+  "dueDate": "2026-09-09",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "precedingInvoiceReference": {
+    "id": "RE-2026-0052",
+    "issueDate": "2026-07-15"
+  },
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Lumiere SARL",
+    "vatId": "FR12345678901",
+    "address": {
+      "line1": "Rue de Rivoli 10",
+      "city": "Paris",
+      "postalCode": "75001",
+      "countryCode": "FR"
+    },
+    "electronicAddress": "compta@lumiere.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "2",
+      "name": "Büromöbel-Lieferung (Nachträgliche Position)",
+      "description": "Correction to invoice RE-2026-0052: 5 additional units shipped in the same delivery but mistakenly omitted from the original line item",
+      "quantity": 5,
+      "unitCode": "C62",
+      "unitPrice": 150.0,
+      "lineAmount": 750.0,
+      "vatCategoryCode": "K",
+      "vatRate": 0
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "K",
+      "rate": 0,
+      "taxableAmount": 750.0,
+      "taxAmount": 0.0,
+      "exemptionReason": "Steuerfreie innergemeinschaftliche Lieferung gem. §6a UStG",
+      "exemptionReasonCode": "VATEX-EU-IC"
+    }
+  ],
+
+  "taxExclusiveAmount": 750.0,
+  "taxAmount": 0.0,
+  "taxInclusiveAmount": 750.0,
+  "duePayableAmount": 750.0,
+
+  "delivery": {
+    "actualDeliveryDate": "2026-07-14",
+    "deliverTo": {
+      "city": "Paris",
+      "postalCode": "75001",
+      "countryCode": "FR"
+    }
+  },
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Berichtigungsrechnung zu Rechnung RE-2026-0052 vom 15.07.2026: 5 zusätzliche Einheiten derselben innergemeinschaftlichen Lieferung, die in der ursprünglichen Rechnung versehentlich nicht abgerechnet wurden. Alle übrigen Positionen der Originalrechnung bleiben unverändert bestehen."
+}

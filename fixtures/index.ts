@@ -39,6 +39,15 @@ import reverseChargeQualifyingGold from "./38.reverse-charge-qualifying-gold.inv
 import reverseChargeIndustrialMetals from "./39.reverse-charge-industrial-metals.invoice.json" with { type: "json" };
 import documentMixedAllowanceAndCharge from "./40.document-mixed-allowance-and-charge.invoice.json" with { type: "json" };
 import outsideScopeDamages from "./41.outside-scope-damages.invoice.json" with { type: "json" };
+import mixedCategoryVat from "./42.mixed-category-vat.invoice.json" with { type: "json" };
+import reverseChargeConstructionWithDiscount from "./43.reverse-charge-construction-with-discount.invoice.json" with { type: "json" };
+import intraEuSupplyMultiLine from "./44.intra-eu-supply-multi-line.invoice.json" with { type: "json" };
+import exportWithLineDiscount from "./45.export-with-line-discount.invoice.json" with { type: "json" };
+import reverseChargeEuServiceWithSurcharge from "./46.reverse-charge-eu-service-with-surcharge.invoice.json" with { type: "json" };
+import creditNoteMixedVatRates from "./47.credit-note-mixed-vat-rates.invoice.json" with { type: "json" };
+import downPaymentReducedRate from "./48.down-payment-reduced-rate.invoice.json" with { type: "json" };
+import partialDeliveryWithDiscount from "./49.partial-delivery-with-discount.invoice.json" with { type: "json" };
+import correctiveInvoiceIntraEu from "./50.corrective-invoice-intra-eu.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -82,12 +91,25 @@ export {
   reverseChargeIndustrialMetals,
   documentMixedAllowanceAndCharge,
   outsideScopeDamages,
+  mixedCategoryVat,
+  reverseChargeConstructionWithDiscount,
+  intraEuSupplyMultiLine,
+  exportWithLineDiscount,
+  reverseChargeEuServiceWithSurcharge,
+  creditNoteMixedVatRates,
+  downPaymentReducedRate,
+  partialDeliveryWithDiscount,
+  correctiveInvoiceIntraEu,
 };
 
 /**
- * All 41 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
+ * All 50 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
  * (matching the fixture's filename prefix) and annotated with its VAT category, so it shows
  * up that way in every test runner's output, wherever this list is consumed.
+ *
+ * Kept in sync with the actual fixture files on disk by fixtures/index.test.ts — see that
+ * file's comment for why this stays a manually-maintained static-import list instead of a
+ * `readdirSync` loader.
  */
 export const allFixtures: [string, unknown][] = [
   ["1. domestic-simple (19% S)", domesticSimple],
@@ -131,4 +153,13 @@ export const allFixtures: [string, unknown][] = [
   ["39. reverse-charge-industrial-metals (AE)", reverseChargeIndustrialMetals],
   ["40. document-mixed-allowance-and-charge (19% S)", documentMixedAllowanceAndCharge],
   ["41. outside-scope-damages (O)", outsideScopeDamages],
+  ["42. mixed-category-vat (19% S + 0% Z)", mixedCategoryVat],
+  ["43. reverse-charge-construction-with-discount (AE)", reverseChargeConstructionWithDiscount],
+  ["44. intra-eu-supply-multi-line (K)", intraEuSupplyMultiLine],
+  ["45. export-with-line-discount (G)", exportWithLineDiscount],
+  ["46. reverse-charge-eu-service-with-surcharge (AE)", reverseChargeEuServiceWithSurcharge],
+  ["47. credit-note-mixed-vat-rates (381)", creditNoteMixedVatRates],
+  ["48. down-payment-reduced-rate (7% S)", downPaymentReducedRate],
+  ["49. partial-delivery-with-discount (19% S)", partialDeliveryWithDiscount],
+  ["50. corrective-invoice-intra-eu (384)", correctiveInvoiceIntraEu],
 ];

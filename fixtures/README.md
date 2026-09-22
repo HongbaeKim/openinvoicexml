@@ -48,6 +48,15 @@ expected XRechnung XML output once Phase 2 is complete.
 | `39.reverse-charge-industrial-metals.invoice.json` | §13b subcase: industrial metals, Anlage 4 (category AE) | Implemented |
 | `40.document-mixed-allowance-and-charge.invoice.json` | Document-level allowance and charge combined in one invoice | Implemented |
 | `41.outside-scope-damages.invoice.json` | Outside the scope of VAT (category O) — genuine damages compensation | Implemented |
+| `42.mixed-category-vat.invoice.json` | Cross-category VAT mix: 19% (category S) and 0% (category Z) lines on one invoice | Implemented |
+| `43.reverse-charge-construction-with-discount.invoice.json` | §13b construction subcase (category AE) combined with a document-level discount | Implemented |
+| `44.intra-eu-supply-multi-line.invoice.json` | Intra-EU supply (category K) with two line items in the same shipment | Implemented |
+| `45.export-with-line-discount.invoice.json` | Export outside EU (category G) with a line-level discount | Implemented |
+| `46.reverse-charge-eu-service-with-surcharge.invoice.json` | Cross-border EU service reverse charge (category AE) combined with a document-level surcharge | Implemented |
+| `47.credit-note-mixed-vat-rates.invoice.json` | Credit note (typeCode 381), partial credit spanning both a 19% and a 7% VAT breakdown | Implemented |
+| `48.down-payment-reduced-rate.invoice.json` | Down payment invoice (Anzahlungsrechnung) at the reduced 7% rate instead of 19% | Implemented |
+| `49.partial-delivery-with-discount.invoice.json` | Partial delivery invoice (Teilrechnung) combined with a document-level discount | Implemented |
+| `50.corrective-invoice-intra-eu.invoice.json` | Corrective invoice (typeCode 384) for an intra-EU supply (category K) original | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -235,6 +244,50 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   favor of `legalId` (BT-30, Handelsregisternummer) instead — real KoSIT's `BR-CO-26` independently
   requires at least one seller identifier (BT-29/BT-30/BT-31), which `taxRegistrationId` (BT-32,
   a different element) doesn't satisfy on its own.
+- **`42.mixed-category-vat.invoice.json`** — `ROADMAP.md` Week 17's "0% + 19%" cross-category VAT
+  mix: one line at category `S`/19% and one at category `Z`/0%, each in its own `vatBreakdowns`
+  entry, present *simultaneously* on the same document. Distinct from
+  `28.multiple-vat-rates.invoice.json` (different *rates* within category `S` only) and from
+  every single-category fixture elsewhere — exercises `validateBusinessRules`'s per-category
+  `vatBreakdowns` loop with genuinely different category codes competing for the same document
+  totals, not just different rates or different categories one invoice at a time.
+- **`43.reverse-charge-construction-with-discount.invoice.json`** — combines the `construction`
+  §13b Abs. 2 Nr. 4 UStG subcase (as `10.reverse-charge-construction.invoice.json`) with a
+  document-level discount (BG-20) assigned to category `AE`/0%, proving
+  `checkReverseChargeSubcaseRequirements` and `checkAllowanceChargeRequirements`/
+  `VAT_TAXABLE_AMOUNT_MISMATCH` compose correctly rather than only being exercised in isolation.
+- **`44.intra-eu-supply-multi-line.invoice.json`** — the same category `K` intra-Community
+  mechanism as `08.intra-eu-supply.invoice.json`, but with two line items (desks, chairs) in one
+  shipment to France instead of one, so the single `K`/0% `vatBreakdowns` entry sums two lines —
+  proving `checkIntraEuSupplyRequirements` and the line-aggregation math work together on a
+  multi-line cross-border document, the candidate `.step/17.md` named explicitly.
+- **`45.export-with-line-discount.invoice.json`** — the same category `G` export-outside-EU
+  mechanism as `09.export.invoice.json`, with a line-level discount (BG-27, `Mengenrabatt`)
+  bringing `lineAmount` below the raw quantity × unit price. Proves `checkExportRequirements`
+  and the line-level allowance math (`LINE_AMOUNT_ROUNDING`) compose correctly together.
+- **`46.reverse-charge-eu-service-with-surcharge.invoice.json`** — combines the
+  `eu-cross-border-service` §13b Abs. 1 UStG subcase (as
+  `27.reverse-charge-intra-eu-services.invoice.json`) with a document-level charge (BG-21,
+  `Express-Zuschlag`) assigned to category `AE`/0%, the charge counterpart to `43`'s discount.
+- **`47.credit-note-mixed-vat-rates.invoice.json`** — a partial credit note (typeCode `381`)
+  against a fictional multi-rate original (`RE-2026-0050`, same shape as
+  `28.multiple-vat-rates.invoice.json`): partially credits the 19% consulting line and fully
+  credits the 7% books line, producing two negative `vatBreakdowns` entries at different
+  category/rate pairs on the same credit note — unlike `17.credit-note-partial.invoice.json`,
+  which only ever credits within a single rate.
+- **`48.down-payment-reduced-rate.invoice.json`** — the same Anzahlungsrechnung mechanism as
+  `19.down-payment.invoice.json`, but for a bulk book delivery taxed at the reduced 7% rate
+  (§12 Abs. 2 Nr. 1 UStG i.V.m. Anlage 2 UStG) instead of the standard 19% every other down
+  payment/final invoice fixture uses.
+- **`49.partial-delivery-with-discount.invoice.json`** — Phase 2 of the same Rahmenvertrag
+  `VERTRAG-2026-0200` as `21.partial-delivery.invoice.json`'s Phase 1, with a document-level
+  discount (BG-20, contractual volume rebate) applied to the phase total.
+- **`50.corrective-invoice-intra-eu.invoice.json`** — a corrective invoice (typeCode `384`) for
+  `08.intra-eu-supply.invoice.json`'s intra-EU delivery (`RE-2026-0052`): 5 additional units
+  shipped in the same delivery but omitted from the original line item. Combines
+  `checkCreditNoteAndCorrectionRequirements`'s preceding-invoice-reference requirement with
+  category `K`'s delivery/VAT-ID requirements, unlike `18.corrective-invoice.invoice.json`
+  and `35.corrective-invoice-multi-line.invoice.json`, which both correct category `S` originals.
 
 ## References
 
