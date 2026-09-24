@@ -6,13 +6,15 @@ machine-readable e-invoice format (PDF with embedded XML).
 
 ## Work Packages
 
-| Work Package                           | Period                 | Focus                                                               | Status |
-| -------------------------------------- | ---------------------- | -------------------------------------------------------------------- | ------ |
-| WP1 – Architecture & Internal Schema   | Weeks 1–4              | Internal schema design, repo setup, modular architecture foundation | Done |
-| WP2 – XML Engine & Validation          | Weeks 5–8              | XRechnung generation + local validation                             | Done |
-| WP3 – Legal Compliance & Test Fixtures | Weeks 9–12             | VAT scenarios, invoice types, fixture validation                    | Done (through Week 11 — see below) |
-| WP4 – Hybrid PDF/A-3 Export            | Weeks 13–16            | Hybrid export + profile support                                     | Done |
-| WP5 – Stabilization & Release Prep     | Weeks 17–26            | Testing, documentation, hardening, release prep                     | Not started |
+First Stage (Phases 1–5) completes by end of November 2026.
+
+| Work Package                           | Period      | Focus                                                               | Done by    | Status  |
+| -------------------------------------- | ----------- | ------------------------------------------------------------------- | ---------- | ------- |
+| WP1 – Architecture & Internal Schema   | Weeks 1–4   | Internal schema design, repo setup, modular architecture foundation | 28-06-2026 | Done    |
+| WP2 – XML Engine & Validation          | Weeks 5–8   | XRechnung generation + local validation                             | 26-07-2026 | Done    |
+| WP3 – Legal Compliance & Test Fixtures | Weeks 9–12  | VAT scenarios, invoice types, fixture validation                    | 23-08-2026 | Done    |
+| WP4 – Hybrid PDF/A-3 Export            | Weeks 13–16 | Hybrid export + profile support                                     | 20-09-2026 | Done    |
+| WP5 – Stabilization & Release Prep     | Weeks 17–26 | Testing, documentation, hardening, release prep                     | 29-11-2026 | Ongoing |
 
 ---
 
@@ -87,13 +89,13 @@ across 40+ scenarios.
 > signals (beta/developer signups, site traffic) and funding availability. Provisional, not a
 > commitment.
 
-| Phase                                                   | Focus                                                          | Period                        |
-| -------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------ |
-| Phase 6 – Public Service & Invoice UI                   | Build the browser invoice workflow, wire it to the engine, minimal deploy | Weeks 27–29 (30 Nov – 20 Dec)  |
-| Phase 7 – Sustainability & Community / Onboarding Refinement | Simplify existing guidance, short usage videos, refine FAQ      | Weeks 30–31 (21 Dec – 3 Jan)   |
-| Phase 8 – User Testing & Public Beta                    | Structured public beta, usability interviews, feedback-driven fixes | Weeks 32–38 (4 Jan – 21 Feb)   |
-| Phase 9 – API Reuse & Partnerships                      | API documentation, pilot integrations, partner outreach         | Weeks 39–42 (22 Feb – 21 Mar)  |
-| Phase 10 – Evaluation & Finalization                    | Evaluate beta results, document findings, final reporting       | Week 43 (22 Mar – 28 Mar)      |
+| Phase                                                        | Focus                                                                     | Period                        | Done by    | Status  |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------- | ----------------------------- | ---------- | ------- |
+| Phase 6 – Public Service & Invoice UI                        | Build the browser invoice workflow, wire it to the engine, minimal deploy | Weeks 27–29 (30 Nov – 20 Dec) | 20-12-2026 | Planned |
+| Phase 7 – Sustainability & Community / Onboarding Refinement | Simplify existing guidance, short usage videos, refine FAQ                | Weeks 30–31 (21 Dec – 3 Jan)  | 03-01-2027 | Planned |
+| Phase 8 – User Testing & Public Beta                         | Structured public beta, usability interviews, feedback-driven fixes       | Weeks 32–38 (4 Jan – 21 Feb)  | 21-02-2027 | Planned |
+| Phase 9 – API Reuse & Partnerships                           | API documentation, pilot integrations, partner outreach                   | Weeks 39–42 (22 Feb – 21 Mar) | 21-03-2027 | Planned |
+| Phase 10 – Evaluation & Finalization                         | Evaluate beta results, document findings, final reporting                 | Week 43 (22 Mar – 28 Mar)     | 28-03-2027 | Planned |
 
 The beta program (`beta.html`) and developer feedback form (`developer.html`), both in
 [`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web), collect early signups
