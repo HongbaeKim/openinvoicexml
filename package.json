@@ -6,6 +6,15 @@
   "type": "module",
   "main": "./dist/core/index.js",
   "types": "./dist/core/index.d.ts",
+  "files": [
+    "dist/core",
+    "dist/adapters",
+    "dist/validators",
+    "!dist/**/*.test.*",
+    "!dist/validators/test",
+    "adapters/assets/fonts/LICENSE",
+    "NOTICE"
+  ],
   "exports": {
     ".": {
       "import": "./dist/core/index.js",

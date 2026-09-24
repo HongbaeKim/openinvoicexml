@@ -84,6 +84,10 @@ engine rather than the other way around.
 
 Apache-2.0
 
+Optional external validators (KoSIT, Mustangproject, veraPDF) are independent projects under
+their own licenses and are not bundled — see 
+[docs/COMPLIANCE.md](docs/COMPLIANCE.md#third-party-validation-tools).
+
 ---
 
 <p>

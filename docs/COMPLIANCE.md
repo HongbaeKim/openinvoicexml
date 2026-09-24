@@ -121,6 +121,23 @@ artifacts under `tools/facturx/` have no such script — see "Validating Factur-
 Every output format this project generates is checked against an external reference validator,
 not just this project's own adapter logic.
 
+### Third-party validation tools
+
+OpenInvoiceXML uses independent open-source tools for validation and testing, including KoSIT
+Validator (Apache-2.0), Mustangproject (Apache-2.0), and veraPDF (GPLv3+ OR MPLv2+). These
+projects are developed and licensed independently from OpenInvoiceXML and are not bundled with the OpenInvoiceXML package.
+
+These tools are downloaded for local validation/testing and are not vendored or distributed with OpenInvoiceXML; `scripts/setup-*.sh` downloads them from their upstream releases into the
+gitignored `tools/` directory. Versions are the ones the setup scripts pin, not necessarily the newest upstream releases.
+
+| Tool | Version pinned | License | Upstream | Installed by |
+| --- | --- | --- | --- | --- |
+| KoSIT Validator | 1.6.2 (standalone jar) | Apache-2.0 | [itplr-kosit/validator](https://github.com/itplr-kosit/validator) | `make kosit-setup` (`scripts/setup-kosit.sh`) |
+| XRechnung validator configuration | release 2026-01-31, for XRechnung 3.0.2 | Apache-2.0 | [itplr-kosit/validator-configuration-xrechnung](https://github.com/itplr-kosit/validator-configuration-xrechnung) | `make kosit-setup` (`scripts/setup-kosit.sh`) |
+| Mustangproject (Mustang CLI) | 2.26.0 | Apache-2.0 | [ZUGFeRD/mustangproject][mustang-tool] | `make mustang-setup` (`scripts/setup-mustang.sh`) |
+| veraPDF (greenfield) | 1.30.2 | GPLv3+ OR MPLv2+ | [verapdf.org][verapdf] | `make verapdf-setup` (`scripts/setup-verapdf.sh`) |
+| Eclipse Temurin JRE | 17.0.19+10 | GPLv2 with the Classpath Exception | [Eclipse Adoptium](https://adoptium.net/) | any of the three setup targets, only if no `java` is found |
+
 ### XRechnung XML (KoSIT)
 
 `adapters/xrechnung.ts` produces XML by construction, but the generated document must still be
