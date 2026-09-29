@@ -1,18 +1,16 @@
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
 import type { Invoice } from "../core/index.js";
-import { validateBusinessRules, type ValidationIssue } from "../validators/engines/02.business-rules.js";
-import { runKosit } from "../validators/engines/90.kosit.js";
-import type { KositIssue } from "../validators/engines/90.kosit.js";
+import { 
+  validateBusinessRules, 
+  type ValidationIssue,
+} from "../validators/engines/02.business-rules.js";
 import {
   fromValidationIssue,
   fromKositIssue,
   type ComplianceIssue,
 } from "../validators/engines/99.compliance-issue.js";
-import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
+import { generateInvoiceXml } from "./browser.js";
+import { runKositAgainstXml } from "./external-validation.js";
 import {
   toHybridPdf,
   toFacturXPdf,
@@ -39,6 +37,9 @@ import {
    * Java or KoSIT installed.
    *
    * External validation is only run when it is requested.
+   *
+   * KoSIT only, deliberately: this option's meaning doesn't change. For KoSIT + Mustang, with
+   * each validator's outcome reported separately, use validateXmlExternally().
    */
   validateExternally?: boolean;
 }
@@ -64,25 +65,6 @@ export interface GenerateInvoiceResult {
 }
 
 /**
- * Saves the XML to a temporary file and checks it with KoSIT.
- *
- * The temporary file is deleted after the check,
- * even if KoSIT returns an error.
- *
- * This only runs when `validateExternally` is enabled.
- */
-function runKositAgainstXml(xml: string): KositIssue[] {
-  const dir = mkdtempSync(join(tmpdir(), "generate-invoice-kosit-"));
-  try {
-    const xmlPath = join(dir, "invoice.xml");
-    writeFileSync(xmlPath, xml, "utf8");
-    return runKosit([xmlPath])[0]?.issues ?? [];
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-/**
  * Checks the invoice against EN 16931 rules.
  * If there are no errors, it creates XRechnung XML.
  * generateInvoice() = validate first, then convert to XML.
@@ -92,10 +74,8 @@ export function generateInvoice(
   invoice: Invoice,
   options: GenerateInvoiceOptions = {},
 ): GenerateInvoiceResult {
-  // Always genuine XRechnung UBL regardless of any profile option, so validate as XRECHNUNG.
-  const issues = validateBusinessRules(invoice, "XRECHNUNG");
-  const hasErrors = issues.some((issue) => issue.severity === "error");
-  const xml = hasErrors ? null : toXRechnung(invoice);
+  // The browser-safe validate-then-convert step; only the KoSIT branch below is Node-only.
+  const { xml, issues } = generateInvoiceXml(invoice);
 
   if (!options.validateExternally) return { xml, issues };
 

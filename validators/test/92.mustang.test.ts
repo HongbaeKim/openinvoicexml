@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { describe, it, expect, afterAll } from "vitest";
 
 import { runMustang, extractWithMustang } from "../engines/92.mustang.js";
-import { toXRechnung } from "../../adapters/xrechnung.js";
+import { generateInvoiceXml } from "../../adapters/browser.js";
 import { toHybridPdf, toFacturXPdf } from "../../adapters/hybrid-pdf.js";
 import { toCii } from "../../adapters/cii.js";
 import type { Invoice } from "../../core/index.js";
@@ -23,8 +23,7 @@ const JAVA_BIN = existsSync("tools/jre/bin/java") ? "tools/jre/bin/java" : "java
 const JAR_PATH = "tools/mustang/mustang-cli.jar";
 
 function mustangAvailable(): boolean {
-  if (!existsSync(JAR_PATH)) 
-    return false;
+  if (!existsSync(JAR_PATH)) return false;
   try {
     execFileSync(JAVA_BIN, ["-version"], { stdio: "ignore" });
     return true;
@@ -43,10 +42,25 @@ afterAll(() => {
 });
 
 /**
+ * The exact XML the browser entry returns for a fixture. Throws (naming the fixture and the
+ * business-rule error codes) if generateInvoiceXml() withholds it, so a withheld fixture fails
+ * loudly instead of never reaching the validator.
+ */
+function browserXml(label: string, invoice: Invoice): string {
+  const { xml, issues } = generateInvoiceXml(invoice);
+  if (xml === null) {
+    const codes = issues.filter((i) => i.severity === "error").map((i) => i.code);
+    throw new Error(`generateInvoiceXml() withheld the XML for ${label}: ${codes.join(", ")}`);
+  }
+  return xml;
+}
+
+/**
  * What's tested here (real Mustang Project CLI — an independent, third-party e-invoicing tool):
  *
  * - One test per current fixture: generates a hybrid PDF, confirms Mustang's own `--action
- *   extract` recovers XML byte-identical to `toXRechnung()`'s direct output, then confirms
+ *   extract` recovers XML byte-identical to the browser entry's `generateInvoiceXml()` output
+ *   (`toXRechnung()`'s XML unchanged, checked in `adapters/browser.test.ts`), then confirms
  *   Mustang's own `--action validate` on that *extracted* XML reports zero error-severity
  *   findings — the main claim this validator exists for (see docs/COMPLIANCE.md for why the
  *   extracted XML, not the PDF directly, is what gets validated).
@@ -62,7 +76,7 @@ describe.skipIf(!available)("runMustang / extractWithMustang", () => {
   describe.each(allFixtures)("%s", (label, fixture) => {
     it("extracts byte-identical XML and passes Mustang's own validation with zero errors", async () => {
       const invoice = fixture as Invoice;
-      const expected = toXRechnung(invoice);
+      const expected = browserXml(label, invoice);
       const slug = label.replace(/^\d+\.\s*/, "").replace(/\s*\(.*\)$/, "");
       const pdfPath = join(workDir, `${slug}.pdf`);
       writeFileSync(pdfPath, await toHybridPdf(invoice));
@@ -74,7 +88,7 @@ describe.skipIf(!available)("runMustang / extractWithMustang", () => {
       writeFileSync(xmlPath, extracted);
 
       const results = runMustang([xmlPath], {
-        jarPath: JAR_PATH
+        jarPath: JAR_PATH,
       });
       // Check that the results array contains exactly 1 item.
       expect(results).toHaveLength(1);

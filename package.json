@@ -11,6 +11,7 @@
     "dist/adapters",
     "dist/validators",
     "!dist/**/*.test.*",
+    "!dist/**/*.test-helpers.*",
     "!dist/validators/test",
     "adapters/assets/fonts/LICENSE",
     "NOTICE"
@@ -27,6 +28,10 @@
     "./validators": {
       "import": "./dist/validators/index.js",
       "types": "./dist/validators/index.d.ts"
+    },
+    "./browser": {
+      "types": "./dist/adapters/browser.d.ts",
+      "import": "./dist/adapters/browser.js"
     }
   },
   "scripts": {

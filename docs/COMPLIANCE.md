@@ -164,7 +164,43 @@ Exits non-zero on any `error`-severity finding. `warning`/`information`-level fi
 the build; accepted ones are tracked in [`LIMITATIONS.md`](LIMITATIONS.md).
 
 `runKosit()` (`validators/engines/90.kosit.ts`) shells out to the KoSIT jar and parses its per-file XML
-report into `{ file, valid, issues: [{ severity, message, location }] }` — see [`API.md`](API.md).
+report into `{ file, valid, issues: [{ severity, message, location }], scenarioName? }` — see [`API.md`](API.md).
+`scenarioName` is the KoSIT scenario the document matched, read from the report.
+
+#### Check the matched scenario, not just `valid`
+
+KoSIT selects an applicable scenario based on the document, including its guideline ID
+(`CustomizationID` in UBL, the guideline URN in CII). Scenarios are defined in
+`tools/kosit/config/scenarios.xml`, e.g. `EN16931 (UBL Invoice)`, `EN16931 XRechnung (UBL Invoice)`,
+`EN16931 (CII)` and `EN16931 XRechnung (CII)`. `valid` only says whether the document passed the
+rules of the scenario KoSIT selected. So `valid: true` alone doesn't prove XRechnung conformance:
+an invoice meant to be XRechnung but carrying a plain EN 16931 guideline ID is checked against
+EN 16931 only, and can still pass.
+
+The library doesn't know the intended scenario. The caller compares `scenarioName` to what they
+expected:
+
+| KoSIT selected expected scenario? | `valid` | Meaning |
+| --- | --- | --- |
+| Yes | `true` | KoSIT used the expected rule set and the invoice passed it. |
+| Yes | `false` | KoSIT used the expected rule set, but the invoice failed validation. |
+| No | `true` | The invoice passed, but under a different rule set. This does not prove conformance with the intended profile. |
+| No | `false` | KoSIT used a different rule set and the invoice also failed that validation. |
+| No scenario matched | `false` | KoSIT could not find an applicable scenario for the document. `scenarioName` is absent. |
+
+```ts
+import { runKosit } from "openinvoicexml/validators";
+
+const [result] = runKosit(["invoice.xml"]);
+if (result.valid && result.scenarioName === "EN16931 XRechnung (CII)") {
+  // Passed under the expected XRechnung CII scenario
+}
+```
+
+`validateXmlExternally()` and `validateFileExternally()` return the same value as
+`kositScenario`. For a file from other software there is usually no expected profile, so the
+selected scenario is neither "correct" nor "incorrect". Report it next to the result instead,
+e.g. `KoSIT validation: PASS`, `Scenario: EN16931 XRechnung (CII)`.
 
 `generateInvoice(invoice, { validateExternally: true })` runs this KoSIT check automatically
 against the XML it just generated and merges the findings with `validateBusinessRules()`'s own,
@@ -202,8 +238,10 @@ Exits non-zero on any `error`-severity finding — veraPDF's PDF/A-3b conformanc
 way KoSIT's Schematron severities have.
 
 `runVeraPdf()` (`validators/engines/91.vera-pdf.ts`) shells out to the installed veraPDF CLI and parses
-its batch XML report into `{ file, valid, issues: [{ severity, message, location }] }` — see
-[`API.md`](API.md).
+its batch XML report into `{ file, valid, issues: [{ severity, message, location }], profileName? }`
+— see [`API.md`](API.md). `profileName` is the validation profile veraPDF applied. With
+`flavour: "0"` veraPDF detects the flavour from the PDF's metadata (`defaultFlavour` sets its
+fallback); this project's own PDFs are always checked with an explicit `3b`.
 
 **`toHybridPdf()` specifically is not a Factur-X/ZUGFeRD hybrid.** The embedded XML is XRechnung
 UBL, not CII — every Factur-X/ZUGFeRD conformance level (including the `XRECHNUNG` profile name)
@@ -258,7 +296,9 @@ Factur-X/ZUGFeRD hybrid PDF (unlike `toHybridPdf()` above). Same three validator
 
 - **KoSIT**, against CII instead of UBL. `tools/kosit/config/scenarios.xml` defines
   `EN16931 (CII)` and `EN16931 XRechnung (CII)` scenarios; KoSIT self-selects per file from its
-  guideline URN. All 50 fixtures pass, both profiles.
+  guideline URN. All 50 fixtures pass, both profiles, and the tests also assert each profile
+  matches its expected scenario (see
+  [Check the matched scenario](#check-the-matched-scenario-not-just-valid)).
 - **veraPDF**, same PDF/A-3b check as `toHybridPdf()` — confirms `embedFacturX()`'s own PDF/A-3
   conversion is genuinely conformant.
 - **Mustang**, direct against the PDF, no extraction — this is the gating claim (unlike the
@@ -287,6 +327,26 @@ FeRD's own D22B EN16931 artifacts (vendored under `tools/facturx/schema/en16931/
 checked one-off against `toCii()`'s D16B output — 31/31 fixtures valid, 0 Schematron errors (see
 "Versions currently targeted" above for scope). No `make` target yet: FeRD gates the download
 behind a lead-capture form, so re-vendoring is manual.
+
+### Browser-generated XML (`openinvoicexml/browser`)
+
+`generateInvoiceXml()` checks the invoice with OpenInvoiceXML's own business rules and creates the XML. KoSIT and Mustang do not run in the browser because they require Java.
+
+CI tests the XML from `generateInvoiceXml()` with KoSIT and Mustang for all scenarios in the browser-validation test suite. This shows that the tested scenarios pass, but it does not validate every invoice a user may create.
+
+To validate a user's exact XML, send it to a Node backend and call `validateXmlExternally(xml)`. This checks the XML with KoSIT and Mustang. See [`API.md`](API.md#validatexmlexternallyxml-options--kosit--mustang).
+
+### Validating an existing invoice file (`validateFileExternally()`)
+
+`validateFileExternally(bytes)` checks an existing XML or PDF file, including invoices created by other software. The format is detected from the file content, not its name.
+
+- **UBL or CII XML:** KoSIT + Mustang
+- **Factur-X/ZUGFeRD PDF:** veraPDF + KoSIT + Mustang
+- **Hybrid PDF with UBL:** veraPDF + KoSIT + Mustang
+
+A PASS means the file passed all applicable format checks. It does not confirm that invoice details such as amounts, VAT treatment, or parties are correct.
+
+Tests cover the supported formats with the real validators, as well as malformed XML, unreadable PDFs, invalid embedded invoices, and other error cases. See [`API.md`](API.md#validatefileexternallybytes-options--validate-an-existing-invoice-file).
 
 [en16931]: https://github.com/ConnectingEurope/eInvoicing-EN16931
 [en16931-artefacts]: https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Registry+of+supporting+artefacts+to+implement+EN16931

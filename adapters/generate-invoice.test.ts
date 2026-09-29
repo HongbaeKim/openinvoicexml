@@ -16,6 +16,8 @@ import {
 import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
 import { extractEmbeddedXml } from "./hybrid-pdf.js";
+import * as adaptersEntry from "./index.js";
+import * as browserEntry from "./browser.js";
 import type { Invoice } from "../core/index.js";
 
 import { allFixtures, reducedRate, domesticSimple } from "../fixtures/index.js";
@@ -41,85 +43,85 @@ function kositAvailable(): boolean {
   }
 }
 
-describe("generateInvoice", () => {
-  describe.each(allFixtures)("valid fixtures (%s)", (_label, fixture) => {
-    it("generates XML with no error-severity issues", () => {
-      const result = generateInvoice(fixture as Invoice);
-
-      expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
-      expect(result.xml).not.toBeNull();
-      expect(result.xml!.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
-    });
+describe("generateInvoiceXml from openinvoicexml/adapters", () => {
+  it("is the same function as openinvoicexml/browser's (two import paths, one implementation)", () => {
+    expect(adaptersEntry.generateInvoiceXml).toBe(browserEntry.generateInvoiceXml);
   });
 
-  it("withholds XML and reports issues for an invoice with a business-rule error", () => {
-    const invoice = clone(reducedRate) as Invoice;
-    // 15% is not a valid category 'S' rate (only 19% or 7% are allowed)
-    invoice.lines[0]!.vatRate = 15;
-
-    const result = generateInvoice(invoice);
-
-    expect(result.xml).toBeNull();
-    expect(result.issues.some((issue) => issue.severity === "error")).toBe(true);
+  // Documented API guarantee: generateInvoice(invoice) without options returns the same result.
+  it("matches generateInvoice() without options for a valid invoice", () => {
+    const invoice = domesticSimple as Invoice;
+    expect(generateInvoice(invoice)).toEqual(adaptersEntry.generateInvoiceXml(invoice));
   });
 
-  it("withholds XML when buyer reference is missing (always validated as XRechnung)", () => {
+  it("matches generateInvoice() without options when XML is withheld", () => {
     const invoice = clone(domesticSimple) as Invoice;
     delete invoice.buyerReference;
 
-    const result = generateInvoice(invoice);
-
+    const result = adaptersEntry.generateInvoiceXml(invoice);
     expect(result.xml).toBeNull();
-    expect(result.issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(true);
+    expect(generateInvoice(invoice)).toEqual(result);
   });
+});
 
+describe("generateInvoice", () => {
   it("omits complianceIssues entirely on the default call (opt-in, not just empty)", () => {
     const result = generateInvoice(domesticSimple as Invoice);
     expect(result.complianceIssues).toBeUndefined();
   });
 
+  // Not behind kositAvailable(): with xml null, KoSIT is never invoked, so this runs everywhere.
+  it("still returns complianceIssues (business-rules only) when validateExternally is set but XML is withheld", () => {
+    const invoice = clone(domesticSimple) as Invoice;
+    delete invoice.buyerReference;
+
+    const result = generateInvoice(invoice, { validateExternally: true });
+
+    expect(result.xml).toBeNull();
+    expect(result.complianceIssues).toBeDefined();
+    expect(result.complianceIssues!.length).toBe(result.issues.length);
+    expect(result.complianceIssues!.every((i) => i.source === "business-rules")).toBe(true);
+    expect(
+      result.complianceIssues!.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED"),
+    ).toBe(true);
+  });
+
   describe.skipIf(!kositAvailable())("{ validateExternally: true }", () => {
-    it(
-      "merges real KoSIT findings (as ComplianceIssue) alongside this project's own issues",
-      () => {
-        const result = generateInvoice(domesticSimple as Invoice, { validateExternally: true });
+    it("merges real KoSIT findings (as ComplianceIssue) alongside this project's own issues", () => {
+      const result = generateInvoice(domesticSimple as Invoice, { validateExternally: true });
 
-        expect(result.xml).not.toBeNull();
-        expect(result.complianceIssues).toBeDefined();
-        // This fixture has no issues from our own validator.
-        // If there were any, they would have source: "business-rules".
-        // KoSIT still reports BR-DE-TMP-32 because this fixture
-        // does not include a delivery date.
-        const bySource = new Set(result.complianceIssues!.map((i) => i.source));
-        expect(bySource.has("kosit")).toBe(true);
-        expect(
-          result.complianceIssues!.every((i) => i.source === "business-rules" || i.source === "kosit"),
-        ).toBe(true);
-      },
-      60000,
-    );
+      expect(result.xml).not.toBeNull();
+      expect(result.complianceIssues).toBeDefined();
+      // This fixture has no issues from our own validator.
+      // If there were any, they would have source: "business-rules".
+      // KoSIT still reports BR-DE-TMP-32 because this fixture
+      // does not include a delivery date.
+      const bySource = new Set(result.complianceIssues!.map((i) => i.source));
+      expect(bySource.has("kosit")).toBe(true);
+      expect(
+        result.complianceIssues!.every(
+          (i) => i.source === "business-rules" || i.source === "kosit",
+        ),
+      ).toBe(true);
+    }, 60000);
 
-    it(
-      "still reports a KoSIT-found error even when this project's own validator misses it",
-      () => {
-        // Fixture 41 passes our own business-rule checks.
-        // But KoSIT would fail if the seller had none of BT-29, BT-30, or BT-31.
-        // We test that KoSIT-only error directly instead of keeping a broken fixture just for this test.
-        const invoice = clone(domesticSimple) as Invoice;
-        delete invoice.seller.vatId;
-        delete invoice.seller.legalId;
+    it("still reports a KoSIT-found error even when this project's own validator misses it", () => {
+      // Fixture 41 passes our own business-rule checks.
+      // But KoSIT would fail if the seller had none of BT-29, BT-30, or BT-31.
+      // We test that KoSIT-only error directly instead of keeping a broken fixture just for this test.
+      const invoice = clone(domesticSimple) as Invoice;
+      delete invoice.seller.vatId;
+      delete invoice.seller.legalId;
 
-        const result = generateInvoice(invoice, { validateExternally: true });
+      const result = generateInvoice(invoice, { validateExternally: true });
 
-        expect(result.xml).not.toBeNull();
-        expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
-        const kositErrors = result.complianceIssues!.filter(
-          (i) => i.source === "kosit" && i.severity === "error",
-        );
-        expect(kositErrors.some((i) => i.code === "BR-CO-26")).toBe(true);
-      },
-      60000,
-    );
+      expect(result.xml).not.toBeNull();
+      expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+      const kositErrors = result.complianceIssues!.filter(
+        (i) => i.source === "kosit" && i.severity === "error",
+      );
+      expect(kositErrors.some((i) => i.code === "BR-CO-26")).toBe(true);
+    }, 60000);
   });
 });
 

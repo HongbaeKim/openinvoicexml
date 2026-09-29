@@ -69,7 +69,7 @@ All three are implemented. The hybrid PDF/A-3 adapter's two entry points (`toHyb
 | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `core/`       | TypeScript types for the internal invoice model — no dependencies on any other module                                    |
 | `schemas/`    | `invoice.schema.json` (JSON Schema, Draft-07) — the language-independent structural contract                             |
-| `validators/` | `validateBusinessRules()` + per-scenario `rules/*.ts`, plus `runKosit()` for external XML validation                     |
+| `validators/` | `validateBusinessRules()` + per-scenario `rules/*.ts`, plus `runKosit()`/`runVeraPdf()`/`runMustang()` (Node-only, Java) |
 | `adapters/`   | Output adapters — XRechnung UBL XML, CII XML, and two hybrid PDF/A-3 entry points, all implemented                       |
 | `fixtures/`   | Example invoice JSON files, one per legal scenario — see [`fixtures/README.md`](../fixtures/README.md) for the full list |
 | `docs/`       | Project documentation                                                                                                    |
@@ -85,9 +85,12 @@ Three layers, each catching a different class of error:
   `rules/*.ts`) — legal errors valid JSON can still contain: VAT rate/category consistency,
   reverse-charge/exemption requirements, line and document total arithmetic. Returns
   `ValidationIssue[]`, never throws.
-- **KoSIT validation** (`engines/90.kosit.ts`) — a separate, external mechanism confirming the generated
-  XML conforms to the XRechnung XSD/Schematron. See
-  [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output).
+- **External validators** — wrappers around third-party Java tools, a separate check of the
+  generated output: KoSIT (`engines/90.kosit.ts`, XSD/Schematron for XRechnung and EN 16931),
+  veraPDF (`engines/91.vera-pdf.ts`, PDF/A conformance), and Mustang
+  (`engines/92.mustang.ts`, Factur-X/ZUGFeRD and XRechnung). They start Java child processes,
+  so they're Node-only: `openinvoicexml/browser` never reaches them, and they run only through
+  `openinvoicexml/adapters`. See [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output).
 - **Unified diagnostics** (`engines/99.compliance-issue.ts`) — normalizes `ValidationIssue`/`KositIssue`/
   `VeraPdfIssue` into one `ComplianceIssue` shape (`source`, optional `suggestedFix`), consumed by
   `generateInvoice(invoice, { validateExternally: true })`. See
@@ -105,6 +108,19 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
   `xrechnung-mapping.ts` handles BT-to-field resolution, `xrechnung.ts` handles serialization,
   and `generate-invoice.ts` composes `validateBusinessRules()` with `toXRechnung()` behind the
   `generateInvoice()` entry point (see [`API.md`](API.md)).
+- **Browser entry** — `browser.ts`, exported as `openinvoicexml/browser`: `generateInvoiceXml()`
+  (the validate-then-convert step) plus `toXRechnung()`/`validateBusinessRules()`, with an import
+  graph that never reaches Node-only code (enforced by `browser.test.ts`). The dependency is
+  one-way: `generate-invoice.ts` imports `browser.ts` and adds the Node-only KoSIT step on top,
+  and `browser.ts` never imports anything Node-side.
+- **External validation** — Node-only, kept separate from generation (Invoice → XML), in three
+  files:
+  - `external-validation.ts`: XML → KoSIT/Mustang result (`validateXmlExternally()`), plus the
+    temp-file handling and validator runners the other two reuse. `generate-invoice.ts` reuses
+    its KoSIT-only helper for `{ validateExternally: true }`.
+  - `external-validation-detect.ts`: the content-only format detector `detectInvoiceFormat()`.
+  - `external-validation-file.ts`: an existing XML/PDF file → KoSIT/Mustang/veraPDF report
+    (`validateFileExternally()`).
 - **CII XML adapter** — implemented: UN/CEFACT Cross Industry Invoice XML, profile-aware
   (`EN16931`/`XRECHNUNG`, selecting which `GuidelineSpecifiedDocumentContextParameter` URN gets
   written). `cii-mapping.ts` + `cii.ts` mirror the XRechnung adapter's own split. Required because
@@ -161,3 +177,10 @@ in this repo now live in a separate repo,
 `docs/ARCHITECTURE.md` for its backend/frontend structure. The root-level `core/`, `adapters/`,
 and `validators/` documented above are the standalone invoice engine with no dependency on that
 web layer; `openinvoicexml-web` consumes this repo, not the other way around.
+
+Browser applications use `openinvoicexml/browser` to run business-rule validation and generate
+XML locally with `generateInvoiceXml()`. External validators are Node-only: a backend can pass
+the exact generated XML to `validateXmlExternally()` (from `openinvoicexml/adapters`) for KoSIT
+and Mustang validation. A future `openinvoicexml-web` flow (Roadmap Phase 6) is planned to
+connect these steps: generate locally, optionally validate the exact XML on the backend, then
+download the same XML.

@@ -149,8 +149,17 @@ function parseReport(file: string, report: string, exitedNonZero: boolean): Must
   // <error type="24" location="..." criterion="...">message</error> / <warning ...> / <notice ...>
   // type="18" (raw XSD schema validation) carries neither location nor criterion — only the
   // Schematron-sourced types (24, 27, ...) do — so both stay optional on MustangIssue.
-  const messageRe = /<(error|warning|notice)\b([^>]*)>([\s\S]*?)<\/\1>/g;
-  const severityByTag = { error: "error", warning: "warning", notice: "information" } as const;
+  // <exception> is how Mustang reports a file it couldn't process at all (e.g. type="8", "File
+  // does not look like PDF nor XML", which is also what a DOCTYPE-bearing XML gets). It comes
+  // with status="invalid", so it's recorded as an error; otherwise such a report would be
+  // invalid with no issue explaining why.
+  const messageRe = /<(error|warning|notice|exception)\b([^>]*)>([\s\S]*?)<\/\1>/g;
+  const severityByTag = {
+    error: "error",
+    warning: "warning",
+    notice: "information",
+    exception: "error",
+  } as const;
   const issues: MustangIssue[] = [];
   for (const match of report.matchAll(messageRe)) {
     const tag = match[1] as keyof typeof severityByTag;

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 // Gets the operating system's temporary directory.
 import { tmpdir } from "node:os";
 // Join files paths
@@ -13,7 +13,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 import { runKosit } from "../engines/90.kosit.js";
 import type { KositResult } from "../engines/90.kosit.js";
-import { toXRechnung } from "../../adapters/xrechnung.js";
+import { generateInvoiceXml } from "../../adapters/browser.js";
 import { toCii } from "../../adapters/cii.js";
 import type { Invoice } from "../../core/index.js";
 
@@ -54,6 +54,20 @@ const BROKEN_XML = `<?xml version="1.0" encoding="UTF-8"?>
   <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>
 </ubl:Invoice>`;
 
+/**
+ * The exact XML the browser entry returns for a fixture. Throws (naming the fixture and the
+ * business-rule error codes) if generateInvoiceXml() withholds it, so a withheld fixture fails
+ * loudly instead of never reaching the validator.
+ */
+function browserXml(label: string, invoice: Invoice): string {
+  const { xml, issues } = generateInvoiceXml(invoice);
+  if (xml === null) {
+    const codes = issues.filter((i) => i.severity === "error").map((i) => i.code);
+    throw new Error(`generateInvoiceXml() withheld the XML for ${label}: ${codes.join(", ")}`);
+  }
+  return xml;
+}
+
 // example) 1. domestic-simple (19% S) -> domestic-simple
 function slugify(label: string): string {
   return label.replace(/^\d+\.\s*/, "").replace(/\s*\(.*\)$/, "");
@@ -62,9 +76,12 @@ function slugify(label: string): string {
 /**
  * What's tested here (real KoSIT validator — XSD + Schematron, via the Java jar):
  *
- * - One test per current fixture (all 30 in `fixtures` above): generates XML via
- *   toXRechnung() and confirms KoSIT reports zero error-severity findings — the strongest
- *   check available, since it's the same validator XRechnung recipients actually run.
+ * - One test per fixture in the browser-validation CI suite (`allFixtures`): generates XML via
+ *   the browser entry's generateInvoiceXml() — the exact bytes a browser user downloads — and
+ *   confirms KoSIT reports zero error-severity findings. That's the strongest check available,
+ *   since it's the same validator XRechnung recipients actually run. generateInvoiceXml()
+ *   returns toXRechnung()'s XML unchanged (checked in `adapters/browser.test.ts`), so this also
+ *   covers the Node API.
  * - One negative control ("rejects an invoice missing mandatory fields"): a deliberately
  *   incomplete document is confirmed to fail, proving this harness actually catches errors
  *   rather than rubber-stamping anything handed to it.
@@ -79,18 +96,18 @@ function slugify(label: string): string {
  * `kositAvailable()` above.
  */
 // if Java isn't installed, tests are skipped instead of failing.
-describe.skipIf(!available)("runKosit", () => {
+describe.skipIf(!available)("runKosit (XRechnung UBL via generateInvoiceXml())", () => {
   let resultsByPath: Map<string, KositResult>;
   let brokenPath: string;
 
   beforeAll(() => {
     const allPaths: string[] = [];
     for (const [label, fixture] of allFixtures) {
-      // toXRechnung(invoice: Invoice)
+      // generateInvoiceXml(invoice: Invoice)
       // This function only accepts data shaped like Invoice.
       // so we added as unknown and say Typescript, stop checking
       // as unknown as Invoice: this JSON really matches Invoice"
-      const xml = toXRechnung(fixture as Invoice);
+      const xml = browserXml(label, fixture as Invoice);
       const xmlPath = join(workDir, `${slugify(label)}.xml`);
       // Writes the XML to disk because KoSIT validates files, not strings.
       writeFileSync(xmlPath, xml);
@@ -142,7 +159,7 @@ const CII_PROFILES = [
  * matched the wrong scenario would still likely report zero errors while silently proving the
  * wrong thing, so this also asserts on the scenario name each file's report actually recorded.
  *
- * 30 fixtures x 2 profiles = 60 documents. As in the UBL suite above, all of them are generated
+ * Every fixture x 2 profiles. As in the UBL suite above, all of them are generated
  * and validated together in ONE runKosit() call inside beforeAll rather than one JVM cold-start
  * per test.
  *
@@ -155,10 +172,13 @@ describe.skipIf(!available)("runKosit (CII, toCii())", () => {
     rmSync(outDir, { recursive: true, force: true });
   });
 
-  let resultsByKey: Map<string, { 
-    result: KositResult; 
-    scenarioName: string | undefined 
-  }>;
+  let resultsByKey: Map<
+    string,
+    {
+      result: KositResult;
+      scenarioName: string | undefined;
+    }
+  >;
 
   beforeAll(() => {
     const allPaths: string[] = [];
@@ -244,24 +264,8 @@ describe.skipIf(!available)("runKosit (CII, toCii())", () => {
         // }
         const result = byPath.get(xmlPath);
         if (!result) throw new Error(`No KoSIT result found for CII fixture: ${key}`);
-        // Change:
-        // "domestic-simple:EN16931"
+        // runKosit() reads the matched scenario from the report itself.
         //
-        // into:
-        // "domestic-simple-EN16931-report.xml"
-        const reportName = `${key.replace(":", "-")}-report.xml`;
-        // Read the KoSIT report file as text.
-        //
-        // Example:
-        // report =
-        // "<rep:scenarioMatched>...</rep:scenarioMatched>"
-        const report = readFileSync(join(outDir, reportName), "utf8");
-        // Find the scenario name inside the report.
-        //
-        // Example:
-        // matched?.[1] =
-        // "EN16931 (CII)"
-        const matched = /<rep:scenarioMatched><s:scenario><s:name>([^<]*)<\/s:name>/.exec(report);
         // Final value stored in resultsByKey:
         //
         // "domestic-simple:EN16931"
@@ -269,7 +273,7 @@ describe.skipIf(!available)("runKosit (CII, toCii())", () => {
         //        result: { valid: true, ... },
         //        scenarioName: "EN16931 (CII)"
         //      }
-        return [key, { result, scenarioName: matched?.[1] }];
+        return [key, { result, scenarioName: result.scenarioName }];
       }),
     );
   }, 180000);

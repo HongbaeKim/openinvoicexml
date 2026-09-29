@@ -18,13 +18,21 @@ export interface VeraPdfResult {
   file: string;
   valid: boolean;
   issues: VeraPdfIssue[];
+  /** The validation profile veraPDF actually applied (e.g. "PDF/A-3b validation profile"), read
+   * from the report. Useful with `flavour: "0"`, where veraPDF picks the flavour itself. Absent
+   * when veraPDF couldn't parse the PDF. */
+  profileName?: string;
 }
 
 export interface VeraPdfOptions {
   /** Path to the installed veraPDF CLI script. Defaults to tools/verapdf/verapdf. */
   cliPath?: string;
-  /** PDF/A flavour flag passed via -f. Defaults to "3b" (this project only produces PDF/A-3b). */
+  /** PDF/A flavour flag passed via -f. Defaults to "3b" (this project only produces PDF/A-3b).
+   * "0" makes veraPDF detect the flavour from each PDF's own XMP metadata. */
   flavour?: string;
+  /** Passed via -df: the flavour veraPDF falls back to when `flavour: "0"` can't detect one from
+   * the metadata (veraPDF's own default is 1b). Not passed unless set. */
+  defaultFlavour?: string;
 }
 
 const DEFAULT_CLI = "tools/verapdf/verapdf";
@@ -77,7 +85,9 @@ export function runVeraPdf(pdfPaths: string[], options: VeraPdfOptions = {}): Ve
     // ]
     // veraPDF supports a batch of paths in one call, returning one <report> with one
     // <jobs><job> per input file — unlike KoSIT there's no per-file report file to read.
-    stdout = execFileSync(cliPath, ["-f", flavour, "--format", "xml", ...pdfPaths], {
+    const flavourArgs = ["-f", flavour];
+    if (options.defaultFlavour !== undefined) flavourArgs.push("-df", options.defaultFlavour);
+    stdout = execFileSync(cliPath, [...flavourArgs, "--format", "xml", ...pdfPaths], {
       // stdio[0] = stdin -> ignore, do not send anything to veraPDF
       // stdio[1] = stdout -> capture the XML validation report
       // stdio[2] = stderr -> capture reasons in case the process fails
@@ -205,7 +215,10 @@ function parseReport(pdfPath: string, report: string): VeraPdfResult {
       });
     }
 
-    return { file: pdfPath, valid: isCompliant, issues };
+    const profileName = /<validationReport\b[^>]*\bprofileName="([^"]*)"/.exec(job)?.[1];
+    return profileName === undefined
+      ? { file: pdfPath, valid: isCompliant, issues }
+      : { file: pdfPath, valid: isCompliant, issues, profileName };
   }
 
   throw new Error(

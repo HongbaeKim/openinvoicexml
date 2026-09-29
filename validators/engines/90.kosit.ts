@@ -14,6 +14,9 @@ export interface KositResult {
   file: string;
   valid: boolean;
   issues: KositIssue[];
+  /** The KoSIT scenario the document matched (e.g. "EN16931 XRechnung (CII)"), read from the
+   * report's `<rep:scenarioMatched>`. Absent when no scenario matched. */
+  scenarioName?: string;
 }
 
 export interface KositOptions {
@@ -206,7 +209,14 @@ function parseReport(xmlPath: string, outDir: string): KositResult {
   }
 
   const valid = /<rep:assessment>\s*<rep:accept\b/.test(report);
-  return { file: xmlPath, valid, issues };
+  // Which scenario KoSIT actually treated the document as. A document accepted under the wrong
+  // scenario would still report zero errors, so callers can check this separately.
+  const scenarioName = /<rep:scenarioMatched><s:scenario><s:name>([^<]*)<\/s:name>/.exec(
+    report,
+  )?.[1];
+  return scenarioName === undefined
+    ? { file: xmlPath, valid, issues }
+    : { file: xmlPath, valid, issues, scenarioName };
 }
 
 // defines a function that checks whether err is a Node.js error,

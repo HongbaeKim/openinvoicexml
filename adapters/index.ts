@@ -22,6 +22,10 @@ export { toCii } from "./cii.js";
 export { toHybridPdf, toFacturXPdf, extractEmbeddedXml } from "./hybrid-pdf.js";
 export type { EInvoiceProfile, HybridPdfOptions } from "./hybrid-pdf.js";
 
+// Same function as openinvoicexml/browser's, re-exported so Node callers never import /browser.
+export { generateInvoiceXml } from "./browser.js";
+export type { GenerateInvoiceXmlResult } from "./browser.js";
+
 export {
   generateInvoice,
   generateHybridPdf,
@@ -29,6 +33,24 @@ export {
   generateCii,
   generateInvoiceDocument,
 } from "./generate-invoice.js";
+export { validateXmlExternally } from "./external-validation.js";
+export { validateFileExternally } from "./external-validation-file.js";
+export { detectInvoiceFormat } from "./external-validation-detect.js";
+export type {
+  ExternalValidationOptions,
+  ExternalValidationResult,
+  ExternalValidatorResult,
+  ApplicableValidatorResult,
+} from "./external-validation.js";
+export type { InvoiceFileFormat } from "./external-validation-detect.js";
+export type {
+  FileValidationStatus,
+  FileFinding,
+  PdfAttachmentSummary,
+  EmbeddedInvoiceXml,
+  FileValidationResult,
+  FileValidationOptions,
+} from "./external-validation-file.js";
 export type {
   GenerateInvoiceOptions,
   GenerateInvoiceResult,

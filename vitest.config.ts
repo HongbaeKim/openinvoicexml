@@ -22,7 +22,7 @@ export default defineConfig({
       // fixtures/ contains test data and scripts/ contains development tooling, 
       // so they should not affect the coverage percentage.
       include: ["core/**/*.ts", "adapters/**/*.ts", "validators/**/*.ts"],
-      exclude: ["**/*.test.ts", "**/test/**", "**/dist/**"],
+      exclude: ["**/*.test.ts", "**/*.test-helpers.ts", "**/test/**", "**/dist/**"],
 
       // Still print the coverage table when a test fails. 
       // This helps us see whether coverage changed during a flaky or failed run.

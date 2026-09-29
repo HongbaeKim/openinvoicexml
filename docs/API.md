@@ -1,7 +1,7 @@
 # API
 
 Usage reference for the generation modules: the unified `generateInvoiceDocument` entry point,
-`generateInvoice`/`toXRechnung` (UBL XML), `generateCii`/`toCii` (CII XML), the hybrid PDF/A-3
+`generateInvoice`/`toXRechnung` (UBL XML), `generateInvoiceXml` (also available from the browser-safe `openinvoicexml/browser`), `validateXmlExternally` (KoSIT + Mustang on existing XML), `validateFileExternally`/`detectInvoiceFormat` (validate an existing XML or PDF invoice file), `generateCii`/`toCii` (CII XML), the hybrid PDF/A-3
 counterparts `generateHybridPdf`/`toHybridPdf` (UBL attachment, no Factur-X/ZUGFeRD claim) and
 `generateFacturXPdf`/`toFacturXPdf` (CII embedded via `embedFacturX()`, a genuine Factur-X/ZUGFeRD
 conformance claim), and the `ValidationIssue` error-code contract shared between them. `runKosit`,
@@ -157,6 +157,46 @@ for (const issue of complianceIssues ?? []) {
   console.log(`[${issue.source}] ${issue.code}: ${issue.message}`);
 }
 ```
+
+## `generateInvoiceXml(invoice)` — validated XRechnung XML
+
+```ts
+// Node.js
+import { generateInvoiceXml } from "openinvoicexml/adapters";
+
+// Browser
+import { generateInvoiceXml } from "openinvoicexml/browser";
+
+const { xml, issues } = generateInvoiceXml(invoice);
+```
+
+Both imports are the same function.
+
+- **Input:** `Invoice`
+- **Output:** `{ xml, issues }`
+
+`generateInvoiceXml()` checks the invoice with OpenInvoiceXML's business rules and creates XRechnung UBL XML. Errors stop XML creation; warnings do not. For CII XML, use [`generateCii()`](#generateciiinvoice-options--recommended-entry-point).
+
+`generateInvoice(invoice)` without options returns the same result. Use `generateInvoice()` when you need its Node-specific options, such as `validateExternally`; use `generateInvoiceXml()` when you specifically want validated XRechnung UBL XML.
+
+### Browser entry (`openinvoicexml/browser`)
+
+`openinvoicexml/browser` is made for browser apps such as React, Vue, and browser extensions. It does not use Node.js.
+
+Available from `openinvoicexml/browser`:
+
+- `generateInvoiceXml`
+- `toXRechnung`
+- `validateBusinessRules`
+- Related TypeScript types
+
+PDF generation and external validators are not available in the browser. KoSIT, Mustang, and veraPDF need Java and must run on a Node backend.
+
+CI checks the XML created by `generateInvoiceXml()` with KoSIT and Mustang for all scenarios in the browser-validation test suite.
+
+To check a user's actual XML with KoSIT and Mustang, send it to a Node backend and call [`validateXmlExternally()`](#validatexmlexternallyxml-options--kosit--mustang).
+
+See [`COMPLIANCE.md`](COMPLIANCE.md#browser-generated-xml-openinvoicexmlbrowser) for more details.
 
 ## `toXRechnung(invoice)` — low-level building block
 
@@ -431,6 +471,74 @@ free-text from external Java tools, version-dependent, and pattern-matching agai
 a fix would be fragile and misleading when wrong; surfacing `source` plus the tool's own message
 honestly is more useful than a guessed-wrong suggestion.
 
+## `validateXmlExternally(xml, options)` — KoSIT + Mustang
+
+```ts
+import { validateXmlExternally } from "openinvoicexml/adapters";
+
+const result = validateXmlExternally(xmlBytes);
+```
+
+- **Input:** XML as `string` or `Uint8Array`
+- **Output:** KoSIT and Mustang results
+
+Node-only because KoSIT and Mustang require Java.
+
+Use this to check XML that already exists, including the exact XML created by `generateInvoiceXml()` in a browser.
+
+KoSIT and Mustang are reported separately:
+
+- **Passed:** validator ran and accepted the XML.
+- **Failed:** validator ran and found errors.
+- **Unavailable:** validator could not run, for example because Java or the validator is missing.
+
+When `Uint8Array` is used, the exact bytes are validated without changing them. Temporary files are deleted after validation.
+
+`kositScenario` is the KoSIT scenario the XML was checked under. A KoSIT pass only means it passed that scenario's rules — see [`COMPLIANCE.md`](COMPLIANCE.md#check-the-matched-scenario-not-just-valid).
+
+`generateInvoice(invoice, { validateExternally: true })` is different and runs KoSIT only.
+
+---
+
+## `validateFileExternally(bytes, options)` — validate an existing file
+
+```ts
+import { validateFileExternally } from "openinvoicexml/adapters";
+
+const report = await validateFileExternally(uploadedBytes);
+// PASS | FAIL | UNAVAILABLE | UNSUPPORTED
+```
+
+- **Input:** exact file bytes as `Uint8Array`
+- **Output:** `FileValidationResult`
+
+Node-only. Use this to check an existing XML or PDF, including files created by other software. The file is not changed.
+
+The format is detected from its content, not its file name:
+
+| File | Checks |
+| --- | --- |
+| UBL / CII XML | KoSIT + Mustang |
+| Factur-X/ZUGFeRD PDF | veraPDF + KoSIT + Mustang |
+| Hybrid PDF with UBL | veraPDF + KoSIT + Mustang |
+| Invalid XML/PDF | Reported as failed |
+| Other file | Unsupported |
+
+For PDFs, the embedded invoice XML is detected by its content. If no invoice XML or more than one is found, validation fails instead of guessing which one to use.
+
+### Result
+
+- **PASS:** all applicable checks passed.
+- **FAIL:** the file or one of its checks failed.
+- **UNAVAILABLE:** a required validator could not run.
+- **UNSUPPORTED:** the file is neither a supported XML nor PDF.
+
+A PASS means the **file format** passed the applicable KoSIT, Mustang and veraPDF checks. It does not confirm that invoice information such as amounts, VAT treatment or parties is correct.
+
+`kositScenario` is the KoSIT scenario the invoice XML was checked under. Show it next to the result; a KoSIT pass only means it passed that scenario's rules — see [`COMPLIANCE.md`](COMPLIANCE.md#check-the-matched-scenario-not-just-valid).
+
+Temporary files are deleted after validation.
+
 ## `runKosit(files, options)` — optional external validation
 
 ```ts
@@ -445,6 +553,10 @@ full XRechnung Schematron/XSD conformance — it isn't part of the in-process
 `generateInvoice`/`toXRechnung` pipeline and requires a local Java + KoSIT jar setup
 (`make kosit-setup`). See [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output) for
 setup and the `KositResult`/`KositIssue` shapes.
+
+Each result has an optional `scenarioName`: the KoSIT scenario the file was checked under. Check
+it against the scenario you expected, not just `valid` — see
+[`COMPLIANCE.md`](COMPLIANCE.md#check-the-matched-scenario-not-just-valid).
 
 [kosit-validator]: https://github.com/itplr-kosit/validator
 

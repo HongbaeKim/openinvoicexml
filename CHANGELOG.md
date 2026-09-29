@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `openinvoicexml/browser` entry point with `generateInvoiceXml()`: browser-safe XRechnung XML
+  generation, no Node.js dependencies; `generateInvoiceXml()` is also exported from
+  `openinvoicexml/adapters` (same function)
+- `validateXmlExternally()`: checks XML with KoSIT and Mustang, reporting each validator
+  separately (Node-only)
+- `validateFileExternally()` / `detectInvoiceFormat()`: validate an existing XML or hybrid/
+  Factur-X PDF invoice file with KoSIT, Mustang and veraPDF (Node-only)
+- `runKosit()` reports the matched scenario; `runVeraPdf()` reports the applied profile and can
+  auto-detect the PDF/A flavour
+- CI validates the browser entry's exact output with KoSIT and Mustang
+
+### Fixed
+
+- `generateInvoice({ validateExternally: true })` no longer leaves KoSIT reports in the temp dir
+- `runMustang()` reports Mustang's `<exception>` entries as errors
+
 ## [0.4.0] - 2026-09-17
 
 ### Added
