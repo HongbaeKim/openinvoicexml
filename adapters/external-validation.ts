@@ -339,7 +339,7 @@ export function runMustangAttempt(
   options: ExternalValidationOptions,
 ): ApplicableValidatorResult {
   // This function will run Mustang and prepare its result.
-  const runMustangValidator = () => {
+  const runMustangValidator = (): { valid: boolean; issues: ComplianceIssue[] } => { 
     // Mustang accepts a list of files, so put our one file into a list.
     const files = [path];
 
