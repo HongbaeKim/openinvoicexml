@@ -64,7 +64,8 @@ across 40+ scenarios.
 - **Weeks 17–18:** Unified test suite (schema/XML/hybrid), 50+ fixture regression coverage,
   rounding/edge-VAT-case stabilization. Week 17 done: 50 fixtures wired into every "all fixtures"
   test via `fixtures/index.ts`, KoSIT validation batched into one JVM call, and v8 coverage
-  thresholds enforced in CI (`npm run test:coverage`). Rounding/edge-VAT hardening (Week 18) remains.
+  thresholds enforced in CI (`npm run test:coverage`). Week 18 done: unit prices with more than
+  2 decimals, BT-114 rounding amount, fractional-quantity fixtures (54 fixtures in total).
 - **Week 19:** Security pass — file handling, input sanitization, malformed-input handling,
   dependency audit. Feeds into `SECURITY.md`.
 - **Week 20:** Finalize `API.md`, `ARCHITECTURE.md`, `LIMITATIONS.md`; German translation of key

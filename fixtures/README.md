@@ -57,6 +57,10 @@ expected XRechnung XML output once Phase 2 is complete.
 | `48.down-payment-reduced-rate.invoice.json` | Down payment invoice (Anzahlungsrechnung) at the reduced 7% rate instead of 19% | Implemented |
 | `49.partial-delivery-with-discount.invoice.json` | Partial delivery invoice (Teilrechnung) combined with a document-level discount | Implemented |
 | `50.corrective-invoice-intra-eu.invoice.json` | Corrective invoice (typeCode 384) for an intra-EU supply (category K) original | Implemented |
+| `51.high-precision-unit-price.invoice.json` | Unit price with more than 2 decimals (0.0055 per piece) | Implemented |
+| `52.rounding-amount.invoice.json` | Explicit rounding amount (BT-114) adjusting the amount due from 312.02 to 312.00 | Implemented |
+| `53.fractional-quantity.invoice.json` | Fractional quantity (7.25 hours) at a 2-decimal unit price | Implemented |
+| `54.fractional-quantity-high-precision-price.invoice.json` | Fractional quantity (1523.5 litres) and a 4-decimal unit price on one line | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -288,6 +292,23 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   `checkCreditNoteAndCorrectionRequirements`'s preceding-invoice-reference requirement with
   category `K`'s delivery/VAT-ID requirements, unlike `18.corrective-invoice.invoice.json`
   and `35.corrective-invoice-multi-line.invoice.json`, which both correct category `S` originals.
+- **`51.high-precision-unit-price.invoice.json`** — 20,000 screws at `unitPrice: 0.0055`
+  (BT-146), `lineAmount: 110.00`. A unit price is a price per unit, not a currency total, so
+  EN 16931 ([en16931]) sets no decimal limit on it. Guards that `validateBusinessRules()` doesn't
+  reject it and that the XML/PDF write `0.0055`, not a rounded `0.01` (which would make the line
+  total look like 200.00). Duplicated from `01.domestic-simple.invoice.json`; only id, dates, line item and totals changed.
+- **`52.rounding-amount.invoice.json`** — 6,000 labels at `0.0437`, total with VAT `312.02`,
+  an explicit `roundingAmount: -0.02` (BT-114) adjusts the amount due from `312.02` to
+  `duePayableAmount: 312.00`. Exercises BR-CO-16 (BT-115 = BT-112 − BT-113 + BT-114) and BT-114's placement in
+  both syntaxes (`cbc:PayableRoundingAmount` after `cbc:PrepaidAmount` in UBL,
+  `ram:RoundingAmount` before `ram:GrandTotalAmount` in CII). Duplicated from `01.domestic-simple.invoice.json`; only id, dates, line item, totals and `roundingAmount` changed.
+- **`53.fractional-quantity.invoice.json`** — 7.25 HUR (7 hours 15 minutes) × `95.00` =
+  `688.75`, the VAT (`130.8625`) rounded to `130.86`. Confirms `LINE_AMOUNT_ROUNDING` handles a
+  non-integer quantity. Duplicated from `01.domestic-simple.invoice.json`; only id, dates, line item and totals changed.
+- **`54.fractional-quantity-high-precision-price.invoice.json`** — a heating-oil delivery:
+  1523.5 LTR × `0.8749` = `1332.91015`, rounded to `lineAmount: 1332.91`. Combines 51's and 53's
+  cases on one line, so the product itself has more than 2 decimals and only the rounded line
+  amount is a currency total. Duplicated from `01.domestic-simple.invoice.json`; only id, dates, line item, totals and note changed.
 
 ## References
 

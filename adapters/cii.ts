@@ -1,5 +1,5 @@
 import type { Invoice } from "../core/index.js";
-import { esc, amt } from "../core/utils/xml.js";
+import { esc, amt, price } from "../core/utils/xml.js";
 import type { EInvoiceProfile } from "../core/types/profile.js";
 import {
   mapInvoice,
@@ -225,7 +225,7 @@ function renderLine(line: LineFields): string {
     </ram:SpecifiedTradeProduct>
     <ram:SpecifiedLineTradeAgreement>
       <ram:NetPriceProductTradePrice>
-        <ram:ChargeAmount>${amt(line.unitPrice)}</ram:ChargeAmount>
+        <ram:ChargeAmount>${price(line.unitPrice)}</ram:ChargeAmount>
       </ram:NetPriceProductTradePrice>
     </ram:SpecifiedLineTradeAgreement>
     <ram:SpecifiedLineTradeDelivery>
@@ -304,6 +304,12 @@ export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } =
   const prepaidAmount = fields.prepaidAmount
     ? `\n      <ram:TotalPrepaidAmount>${amt(fields.prepaidAmount)}</ram:TotalPrepaidAmount>`
     : "";
+  // BT-114: unlike UBL, CII puts RoundingAmount *before* GrandTotalAmount — between
+  // TaxTotalAmount and GrandTotalAmount in TradeSettlementHeaderMonetarySummationType, even
+  // though BR-CO-16 still adds it after the grand total (BT-115 = BT-112 − BT-113 + BT-114).
+  const roundingAmount = fields.roundingAmount
+    ? `\n        <ram:RoundingAmount>${amt(fields.roundingAmount)}</ram:RoundingAmount>`
+    : "";
   const invoiceReferencedDocument = fields.precedingInvoiceReference
     ? `\n${renderInvoiceReferencedDocument(fields.precedingInvoiceReference)}`
     : "";
@@ -348,7 +354,7 @@ ${vatSubtotals}${documentAllowancesCharges}${paymentTerms}
         <ram:ChargeTotalAmount>${amt(fields.chargeTotalAmount)}</ram:ChargeTotalAmount>
         <ram:AllowanceTotalAmount>${amt(fields.allowanceTotalAmount)}</ram:AllowanceTotalAmount>
         <ram:TaxBasisTotalAmount>${amt(fields.taxExclusiveAmount)}</ram:TaxBasisTotalAmount>
-        <ram:TaxTotalAmount currencyID="${currency}">${amt(fields.taxAmount)}</ram:TaxTotalAmount>
+        <ram:TaxTotalAmount currencyID="${currency}">${amt(fields.taxAmount)}</ram:TaxTotalAmount>${roundingAmount}
         <ram:GrandTotalAmount>${amt(fields.taxInclusiveAmount)}</ram:GrandTotalAmount>${prepaidAmount}
         <ram:DuePayableAmount>${amt(fields.duePayableAmount)}</ram:DuePayableAmount>
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>${invoiceReferencedDocument}

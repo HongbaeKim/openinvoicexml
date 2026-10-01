@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDateDE, formatAmountDE } from "./format-de.js";
+import { formatDateDE, formatAmountDE, formatUnitPriceDE } from "./format-de.js";
 
 describe("formatDateDE", () => {
   it("converts YYYY-MM-DD to DD.MM.YYYY", () => {
@@ -33,5 +33,15 @@ describe("formatAmountDE", () => {
 
   it("rounds to two decimal places", () => {
     expect(formatAmountDE(1000.005, "EUR")).toBe(`1.000,01${NBSP}€`);
+  });
+});
+
+describe("formatUnitPriceDE", () => {
+  it("keeps decimals beyond the second instead of rounding them away", () => {
+    expect(formatUnitPriceDE(0.0055, "EUR")).toBe(`0,0055${NBSP}€`);
+  });
+
+  it("still pads an ordinary price to two decimal places", () => {
+    expect(formatUnitPriceDE(1250, "EUR")).toBe(`1.250,00${NBSP}€`);
   });
 });

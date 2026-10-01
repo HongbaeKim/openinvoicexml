@@ -1,0 +1,78 @@
+{
+  "id": "RE-2026-0111",
+  "typeCode": "380",
+  "issueDate": "2026-09-15",
+  "dueDate": "2026-10-15",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Etiketten 50x30 mm, selbstklebend",
+      "description": "Thermodirekt-Etiketten, Abrechnung per Stück",
+      "quantity": 6000,
+      "unitCode": "C62",
+      "unitPrice": 0.0437,
+      "lineAmount": 262.2,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 262.2,
+      "taxAmount": 49.82
+    }
+  ],
+
+  "taxExclusiveAmount": 262.2,
+  "taxAmount": 49.82,
+  "taxInclusiveAmount": 312.02,
+  "roundingAmount": -0.02,
+  "duePayableAmount": 312.0,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Zahlbetrag auf volle Euro gerundet (Rundungsbetrag -0,02 EUR). Zahlbar innerhalb von 30 Tagen nach Rechnungsdatum."
+}

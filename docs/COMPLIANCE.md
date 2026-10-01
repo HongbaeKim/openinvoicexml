@@ -106,6 +106,7 @@ artifacts under `tools/facturx/` have no such script — see "Validating Factur-
 | `BR-57` | Deliver-to country (BT-80) | `validators/rules/11.delivery.ts` | Implemented |
 | `BT-25`/`BT-26` | Credit note / corrective invoice reference | `validators/rules/10.credit-note.ts` | Partial — no diff against the original document |
 | `BT-113`/`BT-25`/`BT-26` | Down-payment deduction reference | `validators/engines/02.business-rules.ts` (inline) | Partial — single reference only |
+| `BR-CO-16`/`BR-DEC-17` | Amount due (BT-115) = total with VAT − prepaid (BT-113) + rounding amount (BT-114) | `validators/engines/02.business-rules.ts` (inline) | Implemented — no project-specific range limit on BT-114 |
 | `BT-118`/`BT-119` | VAT rate rules | `validators/rules/17.vat-rate.ts` | Implemented |
 | `BT-120`/`BT-121` | Exemption-reason presence | `validators/rules/17.vat-rate.ts` + `engines/02.business-rules.ts` | Implemented |
 | `BR-DE-10`/`BR-DE-11` | Deliver-to city/postal code | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
@@ -251,7 +252,7 @@ Factur-X conformance. `toFacturXPdf()` (see ["Validating Factur-X/ZUGFeRD output
 hybrid — the two coexist as separate entry points, not a replacement of one by the other. All 50
 fixtures pass veraPDF's PDF/A-3b profile with zero errors.
 
-`make validate-hybrid` automates a round-trip check across all 50 fixtures: it runs veraPDF
+`make validate-hybrid` automates a round-trip check across all 54 fixtures: it runs veraPDF
 against every generated hybrid PDF, then extracts each one's embedded XML
 (`extractEmbeddedXml()`, `adapters/hybrid-pdf.ts`) and runs *that* through KoSIT — proving what a
 real recipient would actually extract from the PDF is itself a conformant XRechnung document, not
@@ -296,7 +297,7 @@ Factur-X/ZUGFeRD hybrid PDF (unlike `toHybridPdf()` above). Same three validator
 
 - **KoSIT**, against CII instead of UBL. `tools/kosit/config/scenarios.xml` defines
   `EN16931 (CII)` and `EN16931 XRechnung (CII)` scenarios; KoSIT self-selects per file from its
-  guideline URN. All 50 fixtures pass, both profiles, and the tests also assert each profile
+  guideline URN. All 54 fixtures pass, both profiles, and the tests also assert each profile
   matches its expected scenario (see
   [Check the matched scenario](#check-the-matched-scenario-not-just-valid)).
 - **veraPDF**, same PDF/A-3b check as `toHybridPdf()` — confirms `embedFacturX()`'s own PDF/A-3

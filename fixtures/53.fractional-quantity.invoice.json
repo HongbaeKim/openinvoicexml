@@ -1,0 +1,77 @@
+{
+  "id": "RE-2026-0112",
+  "typeCode": "380",
+  "issueDate": "2026-09-16",
+  "dueDate": "2026-10-16",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "IT-Support vor Ort",
+      "description": "Fehleranalyse und Einrichtung, 7 Stunden 15 Minuten",
+      "quantity": 7.25,
+      "unitCode": "HUR",
+      "unitPrice": 95.0,
+      "lineAmount": 688.75,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 688.75,
+      "taxAmount": 130.86
+    }
+  ],
+
+  "taxExclusiveAmount": 688.75,
+  "taxAmount": 130.86,
+  "taxInclusiveAmount": 819.61,
+  "duePayableAmount": 819.61,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Zahlbar innerhalb von 30 Tagen nach Rechnungsdatum."
+}

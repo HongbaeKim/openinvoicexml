@@ -48,6 +48,10 @@ import creditNoteMixedVatRates from "./47.credit-note-mixed-vat-rates.invoice.js
 import downPaymentReducedRate from "./48.down-payment-reduced-rate.invoice.json" with { type: "json" };
 import partialDeliveryWithDiscount from "./49.partial-delivery-with-discount.invoice.json" with { type: "json" };
 import correctiveInvoiceIntraEu from "./50.corrective-invoice-intra-eu.invoice.json" with { type: "json" };
+import highPrecisionUnitPrice from "./51.high-precision-unit-price.invoice.json" with { type: "json" };
+import roundingAmount from "./52.rounding-amount.invoice.json" with { type: "json" };
+import fractionalQuantity from "./53.fractional-quantity.invoice.json" with { type: "json" };
+import fractionalQuantityHighPrecisionPrice from "./54.fractional-quantity-high-precision-price.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -100,10 +104,14 @@ export {
   downPaymentReducedRate,
   partialDeliveryWithDiscount,
   correctiveInvoiceIntraEu,
+  highPrecisionUnitPrice,
+  roundingAmount,
+  fractionalQuantity,
+  fractionalQuantityHighPrecisionPrice,
 };
 
 /**
- * All 50 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
+ * All 54 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
  * (matching the fixture's filename prefix) and annotated with its VAT category, so it shows
  * up that way in every test runner's output, wherever this list is consumed.
  *
@@ -162,4 +170,8 @@ export const allFixtures: [string, unknown][] = [
   ["48. down-payment-reduced-rate (7% S)", downPaymentReducedRate],
   ["49. partial-delivery-with-discount (19% S)", partialDeliveryWithDiscount],
   ["50. corrective-invoice-intra-eu (384)", correctiveInvoiceIntraEu],
+  ["51. high-precision-unit-price (19% S)", highPrecisionUnitPrice],
+  ["52. rounding-amount (19% S)", roundingAmount],
+  ["53. fractional-quantity (19% S)", fractionalQuantity],
+  ["54. fractional-quantity-high-precision-price (19% S)", fractionalQuantityHighPrecisionPrice],
 ];

@@ -10,6 +10,8 @@ import creditNoteFull from "../fixtures/16.credit-note-full.invoice.json" with {
 import documentLevelDiscount from "../fixtures/22.document-level-discount.invoice.json" with { type: "json" };
 import lineLevelDiscount from "../fixtures/23.line-level-discount.invoice.json" with { type: "json" };
 import combinedLineAndDocumentDiscount from "../fixtures/24.combined-line-and-document-discount.invoice.json" with { type: "json" };
+import highPrecisionUnitPrice from "../fixtures/51.high-precision-unit-price.invoice.json" with { type: "json" };
+import roundingAmount from "../fixtures/52.rounding-amount.invoice.json" with { type: "json" };
 
 import { allFixtures } from "../fixtures/index.js";
 
@@ -332,6 +334,30 @@ describe("toCii", () => {
       const monetarySummation = xml.slice(start, end);
       expect(monetarySummation).toContain("<ram:TaxBasisTotalAmount>850.00</ram:TaxBasisTotalAmount>");
       expect(monetarySummation).toContain("<ram:GrandTotalAmount>1011.50</ram:GrandTotalAmount>");
+    });
+  });
+
+  describe("unit price precision (BT-146)", () => {
+    it("writes a unit price with more than 2 decimals unrounded", () => {
+      const xml = toCii(highPrecisionUnitPrice as unknown as Invoice);
+      expect(xml).toContain("<ram:ChargeAmount>0.0055</ram:ChargeAmount>");
+    });
+  });
+
+  describe("ram:RoundingAmount (BT-114)", () => {
+    it("skips ram:RoundingAmount when roundingAmount is absent", () => {
+      const xml = toCii(domesticSimple as unknown as Invoice);
+      expect(xml).not.toContain("<ram:RoundingAmount>");
+    });
+
+    it("renders ram:RoundingAmount between TaxTotalAmount and GrandTotalAmount (CII sequence, unlike UBL)", () => {
+      const xml = toCii(roundingAmount as unknown as Invoice);
+      expect(xml).toContain(
+        `<ram:TaxTotalAmount currencyID="EUR">49.82</ram:TaxTotalAmount>
+        <ram:RoundingAmount>-0.02</ram:RoundingAmount>
+        <ram:GrandTotalAmount>312.02</ram:GrandTotalAmount>`,
+      );
+      expect(xml).toContain("<ram:DuePayableAmount>312.00</ram:DuePayableAmount>");
     });
   });
 

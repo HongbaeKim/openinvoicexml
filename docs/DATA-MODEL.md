@@ -214,9 +214,14 @@ One `cac:TaxSubtotal` per entry in `vatBreakdowns`.
 | BT-110 | Total VAT amount        | `taxAmount`                  | §14 Abs. 4 Nr. 8 UStG | `cbc:TaxAmount[@currencyID]` (in TaxTotal) |
 | BT-112 | Invoice total incl. VAT | `taxInclusiveAmount`        | —                      | `cbc:TaxInclusiveAmount[@currencyID]`      |
 | BT-113 | Prepaid amount (optional) | `prepaidAmount`            | —                      | `cbc:PrepaidAmount[@currencyID]`           |
+| BT-114 | Rounding amount (optional) | `roundingAmount`          | —                      | `cbc:PayableRoundingAmount[@currencyID]`   |
 | BT-115 | Amount due for payment  | `duePayableAmount`          | —                      | `cbc:PayableAmount[@currencyID]`           |
 
-`duePayableAmount` must equal `taxInclusiveAmount - prepaidAmount`.
+`duePayableAmount` must equal `taxInclusiveAmount - prepaidAmount + roundingAmount` (BR-CO-16).
+`roundingAmount` is optional and only written when supplied; it is never calculated. It may be negative (e.g. `-0.02` to round `312.02` down to `312.00`) and, like every
+other document total, has at most 2 decimals. The validator applies no project-specific
+range limit to it: BR-CO-16 and the 2-decimal check are what is enforced. In CII it is `ram:RoundingAmount`, which sits
+*before* `ram:GrandTotalAmount` in the XSD sequence even though it is added after it.
 
 `taxExclusiveAmount` (BT-109) = Σ VAT breakdown taxable amounts (BT-116). Each breakdown's
 taxable amount is the sum of matching line amounts (already net of that line's own BG-27/28
@@ -289,6 +294,11 @@ credit notes).
 | BT-151 | Line VAT category    | `lines[i].vatCategoryCode`        | EN 16931 §6.4.5        | `cac:Item/cac:ClassifiedTaxCategory/cbc:ID`      |
 | BT-152 | Line VAT rate        | `lines[i].vatRate`                | §14 Abs. 4 Nr. 8 UStG | `cac:Item/cac:ClassifiedTaxCategory/cbc:Percent` |
 | BT-146 | Item net price       | `lines[i].unitPrice`              | —                      | `cac:Price/cbc:PriceAmount[@currencyID]`         |
+
+`lines[i].unitPrice` (BT-146) is a price per unit, not a currency total, so it is not limited to 2
+decimals (e.g. `0.0055` per piece) and is written to the XML and PDF unrounded. `lineAmount`
+(BT-131) is still limited to 2 decimals (BR-DEC-23) and must equal `round2(quantity × unitPrice)`
+adjusted for line allowances/charges.
 
 ### Not yet mapped (deferred)
 

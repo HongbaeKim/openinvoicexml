@@ -1,5 +1,5 @@
 import type { Invoice } from "../core/index.js";
-import { esc, amt } from "../core/utils/xml.js";
+import { esc, amt, price } from "../core/utils/xml.js";
 import {
   mapInvoice,
   type PartyFields,
@@ -180,7 +180,7 @@ function renderLine(line: LineFields, currency: string, isCreditNote: boolean): 
       </cac:ClassifiedTaxCategory>
     </cac:Item>
     <cac:Price>
-      <cbc:PriceAmount currencyID="${currency}">${amt(line.unitPrice)}</cbc:PriceAmount>
+      <cbc:PriceAmount currencyID="${currency}">${price(line.unitPrice)}</cbc:PriceAmount>
     </cac:Price>
   </cac:${lineTag}>`;
 }
@@ -234,6 +234,11 @@ export function toXRechnung(invoice: Invoice): string {
   const prepaidAmount = fields.prepaidAmount
     ? `\n    <cbc:PrepaidAmount currencyID="${currency}">${amt(fields.prepaidAmount)}</cbc:PrepaidAmount>`
     : "";
+  // BT-114: UBL MonetaryTotalType requires this order:
+  // PrepaidAmount → PayableRoundingAmount → PayableAmount.
+  const roundingAmount = fields.roundingAmount
+    ? `\n    <cbc:PayableRoundingAmount currencyID="${currency}">${amt(fields.roundingAmount)}</cbc:PayableRoundingAmount>`
+    : "";
   // Line-level discounts/charges change BT-131.
   //
   // BT-106 = sum of all line net amounts.
@@ -286,7 +291,7 @@ ${vatSubtotals}
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="${currency}">${lineExtension}</cbc:LineExtensionAmount>
     <cbc:TaxExclusiveAmount currencyID="${currency}">${amt(fields.taxExclusiveAmount)}</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="${currency}">${amt(fields.taxInclusiveAmount)}</cbc:TaxInclusiveAmount>${allowanceTotalAmount}${chargeTotalAmount}${prepaidAmount}
+    <cbc:TaxInclusiveAmount currencyID="${currency}">${amt(fields.taxInclusiveAmount)}</cbc:TaxInclusiveAmount>${allowanceTotalAmount}${chargeTotalAmount}${prepaidAmount}${roundingAmount}
     <cbc:PayableAmount currencyID="${currency}">${amt(fields.duePayableAmount)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
 ${invoiceLines}

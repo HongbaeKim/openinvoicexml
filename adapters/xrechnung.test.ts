@@ -10,6 +10,8 @@ import creditNoteFull from "../fixtures/16.credit-note-full.invoice.json" with {
 // XRechnung already proved both allowance levels work through one combined test. 
 import combinedLineAndDocumentDiscount from "../fixtures/24.combined-line-and-document-discount.invoice.json" with { type: "json" };
 import minimalRequiredFields from "../fixtures/33.minimal-required-fields.invoice.json" with { type: "json" };
+import highPrecisionUnitPrice from "../fixtures/51.high-precision-unit-price.invoice.json" with { type: "json" };
+import roundingAmount from "../fixtures/52.rounding-amount.invoice.json" with { type: "json" };
 
 import { allFixtures } from "../fixtures/index.js";
 
@@ -392,6 +394,45 @@ describe("toXRechnung", () => {
     it("passes business-rule validation with zero errors as XRECHNUNG", () => {
       const issues = validateBusinessRules(minimalRequiredFields as unknown as Invoice, "XRECHNUNG");
       expect(issues.filter((i) => i.severity === "error")).toEqual([]);
+    });
+  });
+
+  describe("unit price precision (BT-146)", () => {
+    it("writes a unit price with more than 2 decimals unrounded", () => {
+      const xml = toXRechnung(highPrecisionUnitPrice as unknown as Invoice);
+      expect(xml).toContain('<cbc:PriceAmount currencyID="EUR">0.0055</cbc:PriceAmount>');
+    });
+
+    it("still writes an ordinary unit price with 2 decimals", () => {
+      const xml = toXRechnung(domesticSimple as unknown as Invoice);
+      expect(xml).toContain('<cbc:PriceAmount currencyID="EUR">125.00</cbc:PriceAmount>');
+    });
+  });
+
+  describe("cbc:PayableRoundingAmount (BT-114)", () => {
+    it("skips cbc:PayableRoundingAmount when roundingAmount is absent", () => {
+      const xml = toXRechnung(domesticSimple as unknown as Invoice);
+      expect(xml).not.toContain("<cbc:PayableRoundingAmount");
+    });
+
+    it("renders cbc:PayableRoundingAmount right before cbc:PayableAmount (MonetaryTotalType order)", () => {
+      const xml = toXRechnung(roundingAmount as unknown as Invoice);
+      expect(xml).toContain(
+        `<cbc:TaxInclusiveAmount currencyID="EUR">312.02</cbc:TaxInclusiveAmount>
+    <cbc:PayableRoundingAmount currencyID="EUR">-0.02</cbc:PayableRoundingAmount>
+    <cbc:PayableAmount currencyID="EUR">312.00</cbc:PayableAmount>`,
+      );
+    });
+
+    it("places cbc:PayableRoundingAmount after cbc:PrepaidAmount when both are set", () => {
+      const invoice: Invoice = {
+        ...(roundingAmount as unknown as Invoice),
+        prepaidAmount: 100,
+        duePayableAmount: 212,
+      };
+      const xml = toXRechnung(invoice);
+      expect(xml.indexOf("<cbc:PrepaidAmount")).toBeLessThan(xml.indexOf("<cbc:PayableRoundingAmount"));
+      expect(xml.indexOf("<cbc:PayableRoundingAmount")).toBeLessThan(xml.indexOf("<cbc:PayableAmount"));
     });
   });
 

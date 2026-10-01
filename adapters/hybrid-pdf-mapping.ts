@@ -120,6 +120,7 @@ export interface PdfDocumentFields {
   taxInclusiveAmount: number;
   duePayableAmount: number;
   prepaidAmount?: number | undefined;
+  roundingAmount?: number | undefined;
   paymentMeans?: PdfPaymentMeansFields | undefined;
 }
 
@@ -141,6 +142,7 @@ export function mapInvoiceToPdfFields(invoice: Invoice): PdfDocumentFields {
     taxInclusiveAmount: invoice.taxInclusiveAmount,
     duePayableAmount: invoice.duePayableAmount,
     prepaidAmount: invoice.prepaidAmount,
+    roundingAmount: invoice.roundingAmount,
     paymentMeans: invoice.paymentMeans
       ? mapPaymentMeansToPdfFields(invoice.paymentMeans)
       : undefined,

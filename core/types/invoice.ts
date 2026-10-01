@@ -51,6 +51,12 @@ export interface Invoice {
   duePayableAmount: number;
   /** BT-113: Prepaid amount (e.g. a prior down payment) deducted from this invoice. */
   prepaidAmount?: number;
+  /**
+   * BT-114: Rounds the final amount due.
+   * Example: 208.01 + (-0.01) = 208.00
+   * BR-CO-16: amount due = total with VAT - prepaid + rounding
+   */
+  roundingAmount?: number;
 
   /** BG-16: Payment means. */
   paymentMeans?: {

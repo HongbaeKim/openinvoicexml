@@ -90,11 +90,15 @@
     },
     "duePayableAmount": {
       "type": "number",
-      "description": "BT-115: Amount due for payment. Usually equals taxInclusiveAmount unless prepayment has been made."
+      "description": "BT-115: Amount due for payment. Usually equals taxInclusiveAmount unless a prepaidAmount or roundingAmount is set."
     },
     "prepaidAmount": {
       "type": "number",
-      "description": "BT-113: Prepaid amount (e.g. a prior down payment) deducted from this invoice. duePayableAmount = taxInclusiveAmount - prepaidAmount."
+      "description": "BT-113: Prepaid amount (e.g. a prior down payment) deducted from this invoice. duePayableAmount = taxInclusiveAmount - prepaidAmount + roundingAmount."
+    },
+    "roundingAmount": {
+      "type": "number",
+      "description": "BT-114: Rounding amount added to the invoice total to round the amount due (may be negative, e.g. -0.01). duePayableAmount = taxInclusiveAmount - prepaidAmount + roundingAmount (BR-CO-16)."
     },
     "paymentMeans": {
       "type": "object",
@@ -324,7 +328,7 @@
         },
         "unitPrice": {
           "type": "number",
-          "description": "BT-146: Item net price per unit (before line-level discounts)."
+          "description": "BT-146: Item net price per unit (before line-level discounts). Not limited to 2 decimal places, e.g. 0.0055 for a bulk per-piece price."
         },
         "lineAmount": {
           "type": "number",

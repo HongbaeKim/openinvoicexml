@@ -18,7 +18,7 @@ import * as fontkit from "fontkit";
 // import type { Invoice, VatBreakdown } from "../core/index.js";
 import type { Invoice } from "../core/index.js";
 import type { EInvoiceProfile } from "../core/types/profile.js";
-import { formatDateDE, formatAmountDE } from "../core/utils/format-de.js";
+import { formatDateDE, formatAmountDE, formatUnitPriceDE } from "../core/utils/format-de.js";
 import {
   mapInvoiceToPdfFields,
   type PdfDocumentFields,
@@ -332,7 +332,7 @@ function drawLineRow(layout: Layout, fields: PdfDocumentFields, line: PdfLineFie
 
   drawTextRightAligned(
     layout,
-    formatAmountDE(line.unitPrice, fields.currencyCode),
+    formatUnitPriceDE(line.unitPrice, fields.currencyCode),
     x + TABLE_COLUMNS.unitPrice,
     rowTop,
     9,
@@ -421,6 +421,10 @@ function drawTotalsBlock(layout: Layout, fields: PdfDocumentFields): void {
 
   if (fields.prepaidAmount !== undefined) {
     drawTotalsRow(layout, "Bereits gezahlt", formatAmountDE(-fields.prepaidAmount, currency));
+  }
+
+  if (fields.roundingAmount !== undefined) {
+    drawTotalsRow(layout, "Rundungsbetrag", formatAmountDE(fields.roundingAmount, currency));
   }
 
   drawTotalsRow(

@@ -26,7 +26,7 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 
 Phase 4 (Hybrid PDF/A-3 Export) done, tagged v0.4.0 — XRechnung UBL XML, CII XML, hybrid PDF/A-3
 (UBL and genuine Factur-X/ZUGFeRD), and unified compliance diagnostics are all implemented and
-validated against KoSIT, veraPDF, and Mustang across 50 fixtures (see
+validated against KoSIT, veraPDF, and Mustang across 54 fixtures (see
 [docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
 (stabilization & release prep) is in progress — CI now enforces test coverage thresholds. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 

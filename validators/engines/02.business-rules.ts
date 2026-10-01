@@ -51,7 +51,11 @@ export function validateBusinessRules(
     const path = `lines[${index}]`;
 
     checkVatRateForCategory(line.vatCategoryCode, line.vatRate, `${path}.vatRate`, issues);
-    checkDecimalPrecision(line.unitPrice, `${path}.unitPrice`, issues);
+    // BT-146 = unit price and can have more than 2 decimals.
+    // BT-131 = line total (quantity × unit price) and BR-DEC-23 limits it to 2 decimals.
+    //
+    // Example: 0.0055 € × 1000 = 5.50 €
+    // Keep the precise unit price, then round the line total to 2 decimals.
     checkDecimalPrecision(line.lineAmount, `${path}.lineAmount`, issues);
 
     // BT-131 = quantity × unitPrice, adjusted by this line's own allowances/charges
@@ -229,6 +233,9 @@ export function validateBusinessRules(
   checkDecimalPrecision(invoice.taxAmount, "taxAmount", issues);
   checkDecimalPrecision(invoice.taxInclusiveAmount, "taxInclusiveAmount", issues);
   checkDecimalPrecision(invoice.duePayableAmount, "duePayableAmount", issues);
+  if (invoice.roundingAmount !== undefined) {
+    checkDecimalPrecision(invoice.roundingAmount, "roundingAmount", issues);
+  }
 
   // BT-109 taxExclusiveAmount = sum of all breakdown taxableAmounts. Each taxableAmount
   // (BT-116) already folds in that category's document-level allowances/charges via the
@@ -263,14 +270,15 @@ export function validateBusinessRules(
     });
   }
 
-  // BT-115 = BT-112 − BT-113 + BT-114 (BT-114 rounding amount is out of scope — nothing
-  // today produces a rounding-amount value to plug in there).
-  const expectedDuePayableAmount = round2(invoice.taxInclusiveAmount - (invoice.prepaidAmount ?? 0));
+  // BR-CO-16: BT-115 = BT-112 − BT-113 + BT-114.
+  const expectedDuePayableAmount = round2(
+    invoice.taxInclusiveAmount - (invoice.prepaidAmount ?? 0) + (invoice.roundingAmount ?? 0),
+  );
   if (!isClose(invoice.duePayableAmount, expectedDuePayableAmount)) {
     issues.push({
       code: "INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH",
       severity: "error",
-      message: `duePayableAmount: BT-115 amount ${invoice.duePayableAmount} does not match taxInclusiveAmount minus prepaidAmount (${expectedDuePayableAmount}).`,
+      message: `duePayableAmount: BT-115 amount ${invoice.duePayableAmount} does not match taxInclusiveAmount minus prepaidAmount plus roundingAmount (${expectedDuePayableAmount}).`,
       path: "duePayableAmount",
     });
   }

@@ -1,0 +1,77 @@
+{
+  "id": "RE-2026-0113",
+  "typeCode": "380",
+  "issueDate": "2026-09-17",
+  "dueDate": "2026-10-17",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Heizöl EL schwefelarm",
+      "description": "Lieferung laut Zählerstand, Preis je Liter",
+      "quantity": 1523.5,
+      "unitCode": "LTR",
+      "unitPrice": 0.8749,
+      "lineAmount": 1332.91,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 1332.91,
+      "taxAmount": 253.25
+    }
+  ],
+
+  "taxExclusiveAmount": 1332.91,
+  "taxAmount": 253.25,
+  "taxInclusiveAmount": 1586.16,
+  "duePayableAmount": 1586.16,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "Literpreis 0,8749 EUR. Zahlbar innerhalb von 30 Tagen nach Rechnungsdatum."
+}

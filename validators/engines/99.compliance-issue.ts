@@ -59,7 +59,7 @@ export const SUGGESTED_FIXES: Record<string, string> = {
   INVOICE_TAX_INCLUSIVE_AMOUNT_MISMATCH:
     "Set taxInclusiveAmount (BT-112) to taxExclusiveAmount plus taxAmount.",
   INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH:
-    "Set duePayableAmount (BT-115) to taxInclusiveAmount minus prepaidAmount.",
+    "Set duePayableAmount (BT-115) to taxInclusiveAmount minus prepaidAmount plus roundingAmount.",
   MONETARY_AMOUNT_DECIMAL_PRECISION: "Round the amount to at most 2 decimal places.",
   PLACE_OF_SUPPLY_CROSS_BORDER:
     "Warning only, no field is necessarily wrong — verify by hand whether the seller's or buyer's country governs place of supply for this cross-border transaction.",

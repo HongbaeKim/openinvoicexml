@@ -16,11 +16,18 @@ All notable changes to this project will be documented in this file.
 - `runKosit()` reports the matched scenario; `runVeraPdf()` reports the applied profile and can
   auto-detect the PDF/A flavour
 - CI validates the browser entry's exact output with KoSIT and Mustang
+- `roundingAmount` (BT-114): optional, explicit payable adjustment (never applied automatically), written as `cbc:PayableRoundingAmount` (UBL)
+  / `ram:RoundingAmount` (CII) and shown on the PDF; `duePayableAmount` is checked against
+  `taxInclusiveAmount − prepaidAmount + roundingAmount` (BR-CO-16)
+- Fixtures 51–54: high-precision unit price, rounding amount, fractional quantity, and both
+  combined
 
 ### Fixed
 
 - `generateInvoice({ validateExternally: true })` no longer leaves KoSIT reports in the temp dir
 - `runMustang()` reports Mustang's `<exception>` entries as errors
+- Unit prices (BT-146) with more than 2 decimals (e.g. `0.0055`) are no longer rejected, and are
+  written to the XML and PDF unrounded instead of rounded to 2 decimals
 
 ## [0.4.0] - 2026-09-17
 

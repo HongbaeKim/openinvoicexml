@@ -187,6 +187,7 @@ export interface DocumentFields {
   taxInclusiveAmount: number;
   duePayableAmount: number;
   prepaidAmount?: number | undefined;
+  roundingAmount?: number | undefined;
   lines: LineFields[];
 }
 
@@ -234,6 +235,7 @@ export function mapInvoice(invoice: Invoice): DocumentFields {
     taxInclusiveAmount: invoice.taxInclusiveAmount,
     duePayableAmount: invoice.duePayableAmount,
     prepaidAmount: invoice.prepaidAmount,
+    roundingAmount: invoice.roundingAmount,
     lines: invoice.lines.map(mapLine),
   };
 }

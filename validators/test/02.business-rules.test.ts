@@ -29,7 +29,7 @@ function clone<T>(fixture: T): T {
 /**
  * What's tested here (full business-rule validation pipeline):
  *
- * Every test below is numbered 1-60, in the same top-to-bottom order they appear in the
+ * Every test below is numbered 1-64, in the same top-to-bottom order they appear in the
  * file, so a row here can be matched to its `it(...)` by searching for "N." in either
  * place — useful if you didn't write this file and the describe/it nesting alone isn't
  * enough to navigate by.
@@ -140,6 +140,15 @@ function clone<T>(fixture: T): T {
  * | 55 | Line-level charge (surcharge) correctly reflected in lineAmount and totals | no error-severity issues              |
  * | 56 | Document-level allowance correctly reflected in the matching VAT breakdown | no error-severity issues              |
  * | 57 | Document-level allowance/charge missing its VAT category/rate         | DOCUMENT_ALLOWANCE_CHARGE_VAT_CATEGORY_REQUIRED |
+ *
+ * Unit price precision and rounding amount (BT-146, BT-114)
+ *
+ * | #  | Test case                                                            | Expected result                          |
+ * |----|------------------------------------------------------------------------|-------------------------------------------|
+ * | 61 | unitPrice has 4 decimals, lineAmount = round2(quantity × unitPrice) | no error-severity issues                 |
+ * | 62 | duePayableAmount = taxInclusiveAmount + roundingAmount               | no INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH   |
+ * | 63 | roundingAmount set but duePayableAmount ignores it                   | INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH      |
+ * | 64 | roundingAmount has more than two decimal places (BR-DEC-17)          | MONETARY_AMOUNT_DECIMAL_PRECISION        |
  *
  * Exhaustive edge-case coverage for small-business invoices, outside-scope invoices,
  * intra-EU supplies, delivery addresses, exports, reverse-charge subcases, and credit
@@ -561,6 +570,59 @@ describe("validateBusinessRules", () => {
       const issues = validateBusinessRules(invoice, "XRECHNUNG");
 
       expect(issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(true);
+    });
+  });
+
+  describe("unit price precision and rounding amount (BT-146, BT-114)", () => {
+    it("61. accepts a unit price with more than 2 decimals when the line amount multiplies out", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      invoice.lines[0]!.quantity = 20000;
+      invoice.lines[0]!.unitPrice = 0.0055;
+      invoice.lines[0]!.lineAmount = 110; // round2(20000 × 0.0055)
+      invoice.vatBreakdowns[0]!.taxableAmount = 110;
+      invoice.vatBreakdowns[0]!.taxAmount = 20.9;
+      invoice.taxExclusiveAmount = 110;
+      invoice.taxAmount = 20.9;
+      invoice.taxInclusiveAmount = 130.9;
+      invoice.duePayableAmount = 130.9;
+
+      const issues = validateBusinessRules(invoice);
+
+      expect(issues.filter((i) => i.severity === "error")).toEqual([]);
+    });
+
+    it("62. accepts a duePayableAmount adjusted by roundingAmount (BT-115 = BT-112 − BT-113 + BT-114)", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      invoice.roundingAmount = -0.5;
+      invoice.duePayableAmount = 1189.5; // 1190 - 0.5
+
+      const issues = validateBusinessRules(invoice);
+
+      expect(issues.some((i) => i.code === "INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH")).toBe(false);
+    });
+
+    it("63. flags a duePayableAmount that ignores roundingAmount", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      invoice.roundingAmount = -0.5;
+      // still the full 1190; should be 1189.5 once the rounding amount is added
+
+      const issues = validateBusinessRules(invoice);
+
+      expect(issues.some((i) => i.code === "INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH")).toBe(true);
+    });
+
+    it("64. flags a roundingAmount with more than 2 decimal places (BR-DEC-17)", () => {
+      const invoice = clone(domesticSimple) as Invoice;
+      invoice.roundingAmount = -0.005;
+      invoice.duePayableAmount = 1189.995;
+
+      const issues = validateBusinessRules(invoice);
+
+      expect(
+        issues.some(
+          (i) => i.code === "MONETARY_AMOUNT_DECIMAL_PRECISION" && i.path === "roundingAmount",
+        ),
+      ).toBe(true);
     });
   });
 });
