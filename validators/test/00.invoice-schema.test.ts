@@ -1,29 +1,25 @@
-// Loads the AJV validator class. AJV is the engine that reads a JSON Schema and checks
-// whether a data object follows its rules.
-import { Ajv } from "ajv";
-
-// Loads the three Json files as plain Javascript objects at import time.
+// The schema checks run through validateInvoiceSchema(), the same exported function
+// generateInvoice() uses, so these tests cover the real runtime path instead of a private copy of
+// the AJV setup. It returns [] for a valid invoice and ValidationIssue[] otherwise.
+//
 // with { type: "json" } tells Node.js and TypeScript "this is JSON data, not executable code".
-// After this, schema, simpleFixture, and multiLineFixture are just plain objects in memory.
-import schema from "../../schemas/invoice.schema.json" with { type: "json" };
 import simpleFixture from "../../fixtures/01.domestic-simple.invoice.json" with { type: "json" };
 import multiLineFixture from "../../fixtures/02.domestic-multi-line.invoice.json" with { type: "json" };
 // describe() → groups related tests together.
 // it() → runs one test.
 // expect() → checks if the result is correct.
-// afterAll() → runs once after all tests are finished to clean up.
-import { describe, it, expect, beforeAll } from "vitest";
-import type { ValidateFunction } from "ajv";
+import { describe, it, expect } from "vitest";
+import { validateInvoiceSchema } from "../engines/01.schema.js";
 
-// Use require() because ajv-formats is a CommonJS package
-import { createRequire } from "module";
+/** True when the schema accepts `data`; the tests below read it like a yes/no check. */
+function validate(data: unknown): boolean {
+  return validateInvoiceSchema(data).length === 0;
+}
 
-// Create a local require() function
-const require = createRequire(import.meta.url);
-
-// Load format validators (date, email, uri, uuid, etc.)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const addFormats: (ajv: InstanceType<typeof Ajv>) => void = require("ajv-formats");
+/** True when a missing-property error was reported for the given path (e.g. "id", "seller"). */
+function reportsMissing(data: unknown, path: string): boolean {
+  return validateInvoiceSchema(data).some((i) => i.code === "SCHEMA_REQUIRED" && i.path === path);
+}
 
 // Shared shape for both fixtures, used so generic mutation tests can run against either one.
 type Invoice = typeof simpleFixture;
@@ -46,32 +42,13 @@ const fixtures: [string, Invoice][] = [
  * | multi-line specific checks         | domestic-multi-line only               | schema violations on non-first lines (index 1, 2) are caught too, not just line 0                 |
  */
 describe("Invoice JSON Schema", () => {
-  let validate: ValidateFunction;
-
-  beforeAll(() => {
-    // creates the validator. do not stop at the first error, collect all of them
-    const ajv = new Ajv({ allErrors: true });
-    // registers format checkers (date, email, uri, etc.) into the AJV instance.
-    addFormats(ajv);
-    // reads the entire invoice.schema.json and compiles it
-    // into a reusable validate function.
-    // Compiling is slow; running the compiled function is fast.
-    // That's why this is done once in beforeAll, and the same validate function is
-    // reused by all tests.
-    validate = ajv.compile(schema as object);
-  });
-
   describe("valid fixtures", () => {
     it("accepts 01.domestic-simple.invoice.json", () => {
-      const valid = validate(simpleFixture);
-      expect(validate.errors).toBeNull();
-      expect(valid).toBe(true);
+      expect(validateInvoiceSchema(simpleFixture)).toEqual([]);
     });
 
     it("accepts 02.domestic-multi-line.invoice.json", () => {
-      const valid = validate(multiLineFixture);
-      expect(validate.errors).toBeNull();
-      expect(valid).toBe(true);
+      expect(validateInvoiceSchema(multiLineFixture)).toEqual([]);
     });
   });
 
@@ -88,33 +65,26 @@ describe("Invoice JSON Schema", () => {
       const { id: _id, ...noId } = fixture;
       // Validate the invoice without an id.
       expect(validate(noId)).toBe(false);
-      // validate.errors = [
-      //   {
-      //     keyword: "required",
-      //     params: {
-      //       missingProperty: "id",
-      //     },
-      //   },
-      // ];
-      expect(validate.errors?.some((e) => e.params?.missingProperty === "id")).toBe(true);
+      // The issue is { code: "SCHEMA_REQUIRED", path: "id", severity: "error", ... }.
+      expect(reportsMissing(noId, "id")).toBe(true);
     });
 
     it("rejects an invoice missing 'issueDate'", () => {
       const { issueDate: _d, ...noDate } = fixture;
       expect(validate(noDate)).toBe(false);
-      expect(validate.errors?.some((e) => e.params?.missingProperty === "issueDate")).toBe(true);
+      expect(reportsMissing(noDate, "issueDate")).toBe(true);
     });
 
     it("rejects an invoice missing 'seller'", () => {
       const { seller: _s, ...noSeller } = fixture;
       expect(validate(noSeller)).toBe(false);
-      expect(validate.errors?.some((e) => e.params?.missingProperty === "seller")).toBe(true);
+      expect(reportsMissing(noSeller, "seller")).toBe(true);
     });
 
     it("rejects an invoice missing 'buyer'", () => {
       const { buyer: _b, ...noBuyer } = fixture;
       expect(validate(noBuyer)).toBe(false);
-      expect(validate.errors?.some((e) => e.params?.missingProperty === "buyer")).toBe(true);
+      expect(reportsMissing(noBuyer, "buyer")).toBe(true);
     });
 
     it("rejects an invoice with an empty 'lines' array", () => {

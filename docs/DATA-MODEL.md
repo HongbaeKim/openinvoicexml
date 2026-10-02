@@ -4,8 +4,8 @@
 
 Internal invoice schema v0.1 — the single source of truth for all output adapters. Adapters
 consume an internal `Invoice` object, never raw external input. A consumer with untyped JSON
-input should validate it against `schemas/invoice.schema.json` themselves first (this package
-uses AJV only in its own test suite — see [`ARCHITECTURE.md`](ARCHITECTURE.md#no-runtime-dependencies)).
+input can validate it with `validateInvoiceSchema()` (AJV against `schemas/invoice.schema.json`),
+which `generateInvoice()` also runs first — see [`API.md`](API.md#validateinvoiceschemadata--structural-validation).
 Business-rule validation (VAT arithmetic, §13b buyer-VAT-ID requirement, etc.) is a separate
 layer — `validateBusinessRules()` (see [`ARCHITECTURE.md`](ARCHITECTURE.md#validators)).
 

@@ -135,6 +135,10 @@ export const SUGGESTED_FIXES: Record<string, string> = {
   // --- validators/rules/19.xrechnung-mandatory-fields.ts --------------------------------------
   XRECHNUNG_BUYER_REFERENCE_REQUIRED:
     "Set buyerReference (BT-10) — mandatory under the XRechnung 3.0 CIUS even though EN 16931 itself leaves it optional.",
+
+  // --- validators/rules/20.issue-date.ts -------------------------------------------------------
+  ISSUE_DATE_IN_FUTURE:
+    "Check issueDate (BT-2) for a typo (wrong year or swapped day/month). A future date is legal, so ignore this warning if it is intended.",
 };
 
 /** Converts Openinvoicexml's own `ValidationIssue` into a `ComplianceIssue`, looking up a fix by code. */

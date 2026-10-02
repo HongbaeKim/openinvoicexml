@@ -347,3 +347,221 @@ describe("generateInvoiceDocument", () => {
     }
   });
 });
+
+/**
+ * Checks that invalid input never crashes the generate*() functions.
+ * They should return errors and no XML/PDF.
+ */
+describe("malformed input never throws", () => {
+  // BadInputTest contains two things:
+  // [name of problem, function that creates the problem]
+  type BadInputTest = [string, (invoice: Record<string, unknown>) => void];
+
+  const badInputTests: BadInputTest[] = [
+    // missing mandatory fields
+    [
+      "missing id",
+      (invoice): void => {
+        delete invoice.id;
+      },
+    ],
+    [
+      "missing seller",
+      (invoice): void => {
+        delete invoice.seller;
+      },
+    ],
+    [
+      "missing buyer",
+      (invoice): void => {
+        delete invoice.buyer;
+      },
+    ],
+    [
+      "missing lines",
+      (invoice): void => {
+        delete invoice.lines;
+      },
+    ],
+    [
+      "missing vatBreakdowns",
+      (invoice): void => {
+        delete invoice.vatBreakdowns;
+      },
+    ],
+    [
+      "missing duePayableAmount",
+      (invoice): void => {
+        delete invoice.duePayableAmount;
+      },
+    ],
+    // wrong data types
+    [
+      "lines is a string",
+      (invoice): void => {
+        invoice.lines = "not an array";
+      },
+    ],
+    [
+      "vatBreakdowns is an object",
+      (invoice): void => {
+        invoice.vatBreakdowns = {};
+      },
+    ],
+    [
+      "issueDate is a number",
+      (invoice): void => {
+        invoice.issueDate = 20260609;
+      },
+    ],
+    [
+      "seller is a string",
+      (invoice): void => {
+        invoice.seller = "ACME";
+      },
+    ],
+    [
+      "quantity is a string",
+      (invoice): void => {
+        (invoice.lines as Record<string, unknown>[])[0]!.quantity = "8";
+      },
+    ],
+    [
+      "taxAmount is a string",
+      (invoice): void => {
+        invoice.taxAmount = "190";
+      },
+    ],
+    // null in required fields
+    [
+      "id is null",
+      (invoice): void => {
+        invoice.id = null;
+      },
+    ],
+    [
+      "seller is null",
+      (invoice): void => {
+        invoice.seller = null;
+      },
+    ],
+    [
+      "lines is null",
+      (invoice): void => {
+        invoice.lines = null;
+      },
+    ],
+    [
+      "a line is null",
+      (invoice): void => {
+        invoice.lines = [null];
+      },
+    ],
+    [
+      "seller.address is null",
+      (invoice): void => {
+        (invoice.seller as Record<string, unknown>).address = null;
+      },
+    ],
+    // excessively long strings
+    [
+      "10,001-char note",
+      (invoice): void => {
+        invoice.note = "x".repeat(10_001);
+      },
+    ],
+    [
+      "1 MB invoice id",
+      (invoice): void => {
+        invoice.id = "x".repeat(1_000_000);
+      },
+    ],
+    [
+      "501-char party name",
+      (invoice): void => {
+        (invoice.seller as Record<string, unknown>).name = "x".repeat(501);
+      },
+    ],
+  ];
+
+  describe.each(badInputTests)("%s", (_label, mutate) => {
+    function malformed(): Invoice {
+      const invoice = clone(domesticSimple) as unknown as Record<string, unknown>;
+      mutate(invoice);
+      return invoice as unknown as Invoice;
+    }
+
+    it("generateInvoice returns error issues and no XML", () => {
+      const result = generateInvoice(malformed());
+      expect(result.xml).toBeNull();
+      expect(result.issues.length).toBeGreaterThan(0);
+      expect(result.issues.every((i) => i.code && i.message && typeof i.path === "string")).toBe(
+        true,
+      );
+      expect(result.issues.some((i) => i.severity === "error")).toBe(true);
+    });
+
+    it("generateCii returns error issues and no XML", () => {
+      const result = generateCii(malformed());
+      expect(result.xml).toBeNull();
+      expect(result.issues.some((i) => i.severity === "error")).toBe(true);
+    });
+
+    it("generateHybridPdf returns error issues and no PDF", async () => {
+      const result = await generateHybridPdf(malformed());
+      expect(result.pdf).toBeNull();
+      expect(result.issues.some((i) => i.severity === "error")).toBe(true);
+    });
+
+    it("generateFacturXPdf returns error issues and no PDF", async () => {
+      const result = await generateFacturXPdf(malformed());
+      expect(result.pdf).toBeNull();
+      expect(result.issues.some((i) => i.severity === "error")).toBe(true);
+    });
+  });
+
+  it("returns issues for non-object input (null, string, array)", () => {
+    for (const input of [null, undefined, "invoice", 42, []]) {
+      const result = generateInvoice(input as unknown as Invoice);
+      expect(result.xml).toBeNull();
+      expect(result.issues.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("schema errors short-circuit the business rules", () => {
+    const invoice = clone(domesticSimple) as unknown as Record<string, unknown>;
+    delete invoice.lines;
+    const { issues } = generateInvoice(invoice as unknown as Invoice);
+    expect(issues.every((i) => i.code.startsWith("SCHEMA_"))).toBe(true);
+  });
+
+  it("passes schema errors into complianceIssues when external validation is requested", () => {
+    const invoice = clone(domesticSimple) as unknown as Record<string, unknown>;
+    delete invoice.lines;
+    // KoSIT never runs (xml is null), so this works without Java installed.
+    const result = generateInvoice(invoice as unknown as Invoice, { validateExternally: true });
+    expect(result.xml).toBeNull();
+    expect(result.complianceIssues?.length).toBe(result.issues.length);
+  });
+
+  describe("amounts and dates that pass the schema but break the rules", () => {
+    it("negative amounts yield structured issues, never a throw", () => {
+      const invoice = clone(domesticSimple) as unknown as Record<string, unknown>;
+      invoice.duePayableAmount = -1190;
+      invoice.taxInclusiveAmount = -1190;
+      let result: ReturnType<typeof generateInvoice> | undefined;
+      expect(() => (result = generateInvoice(invoice as unknown as Invoice))).not.toThrow();
+      expect(result!.issues.some((i) => i.severity === "error")).toBe(true);
+      expect(result!.xml).toBeNull();
+    });
+
+    it("a future issueDate still generates, with a warning", () => {
+      const invoice = { ...clone(domesticSimple), issueDate: "2999-01-01", dueDate: "2999-02-01" };
+      const result = generateInvoice(invoice as Invoice);
+      expect(result.issues.find((i) => i.code === "ISSUE_DATE_IN_FUTURE")?.severity).toBe(
+        "warning",
+      );
+      expect(result.xml).not.toBeNull();
+    });
+  });
+});

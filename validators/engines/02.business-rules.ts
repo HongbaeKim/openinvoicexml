@@ -18,6 +18,7 @@ import { checkReverseChargeSubcaseRequirements } from "../rules/15.reverse-charg
 import { checkCreditNoteAndCorrectionRequirements } from "../rules/10.credit-note.js";
 import { checkAllowanceChargeRequirements } from "../rules/18.allowance-charge.js";
 import { checkXRechnungBuyerReferenceRequirement } from "../rules/19.xrechnung-mandatory-fields.js";
+import { checkIssueDateNotInFuture } from "../rules/20.issue-date.js";
 
 export type { ValidationIssue } from "../types.js";
 
@@ -39,12 +40,22 @@ function netAllowanceChargeAdjustment(items: AllowanceCharge[] | undefined): num
  * profile defaults to "EN16931"
  * Use "XRECHNUNG" when creating an XRechnung invoice,
  * so XRechnung-only rules like BT-10 buyer reference are also checked.
+ *
+ * `options.today` ("YYYY-MM-DD", default: the current UTC date) is the reference date for the
+ * future-issue-date warning; pass it for deterministic results.
  */
 export function validateBusinessRules(
   invoice: Invoice,
   profile: EInvoiceProfile = "EN16931",
+  options: { today?: string } = {},
 ): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
+
+  checkIssueDateNotInFuture(
+    invoice.issueDate,
+    options.today ?? new Date().toISOString().slice(0, 10),
+    issues,
+  );
 
   // --- Line-level checks -------------------------------------------------
   invoice.lines.forEach((line, index) => {

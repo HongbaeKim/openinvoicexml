@@ -54,8 +54,8 @@ All three are implemented. The hybrid PDF/A-3 adapter's two entry points (`toHyb
 `toFacturXPdf()`) each consume one of the other two adapters' output — see `adapters/` below.
 
 1. **Input** arrives as JSON matching `schemas/invoice.schema.json`.
-2. **Schema validation** (consumer-side, not run by this package at runtime) checks structural
-   completeness — see "No runtime dependencies" below.
+2. **Schema validation** (`validateInvoiceSchema()`, run first by `generateInvoice()`) checks
+   structural completeness against the schema.
 3. The validated object becomes an **internal `Invoice`** — a TypeScript interface with fields
    mapping to XRechnung Business Terms.
 4. **Business rule validation** checks legal/arithmetic correctness: VAT category consistency,
@@ -149,20 +149,19 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
 
 ### No runtime dependencies
 
-The engine has exactly two production dependencies, both scoped solely to the hybrid PDF/A-3
-adapter (`adapters/hybrid-pdf.ts`/`adapters/hybrid-pdf-mapping.ts`):
+The engine has two production dependencies scoped to the hybrid PDF/A-3 adapter (`adapters/hybrid-pdf.ts`/`adapters/hybrid-pdf-mapping.ts`):
 [`@cantoo/pdf-lib`](https://github.com/cantoo-scribe/pdf-lib) and
 [`fontkit`](https://github.com/foliojs/fontkit) (the font engine `@cantoo/pdf-lib` requires,
 registered via `PDFDocument.registerFontkit()`, to embed a custom TTF font — it doesn't bundle one
 itself). PDF/A-3 conformance — font subsetting, ICC output intents, embedded-file attachments with
 `AFRelationship`, XMP metadata — isn't something that can reasonably be hand-rolled the way
 XRechnung's XML serialization was; these are a deliberate, narrowly scoped exception, not an
-abandonment of the zero-dependency stance for the rest of the engine. `ajv`, `vitest`, `eslint`,
-`prettier`, and `typescript` remain devDependencies used only for this repo's own build/test/lint,
-not exported for consumers. `ajv` in particular is used solely inside
-`validators/test/00.invoice-schema.test.ts` to check `schemas/invoice.schema.json` against
-fixtures; it's not part of the runtime API. A consumer validating untyped JSON supplies their own
-JSON Schema validator. **Why:** minimizing dependencies keeps the library easy to embed, audit,
+abandonment of the zero-dependency stance for the rest of the engine. A third pair,
+[`ajv`](https://ajv.js.org) and `ajv-formats`, backs `validators/engines/01.schema.ts`
+(`validateInvoiceSchema()`), which `generateInvoice()` runs on every call so malformed input
+returns structured issues instead of throwing; it is Node-only and deliberately kept out of the
+browser entry. `vitest`, `eslint`, `prettier`, and `typescript` remain devDependencies used only
+for this repo's own build/test/lint. **Why:** minimizing dependencies keeps the library easy to embed, audit,
 and trust — invoice processing is a sensitive domain, and every dependency is a supply-chain
 risk — so each one added, including this one, should be a deliberate, justified exception rather
 than a default.

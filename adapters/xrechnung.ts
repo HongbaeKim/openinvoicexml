@@ -21,7 +21,7 @@ function renderBillingReference(ref: PrecedingInvoiceReferenceFields): string {
   return `  <cac:BillingReference>
     <cac:InvoiceDocumentReference>
       <cbc:ID>${esc(ref.id)}</cbc:ID>
-      <cbc:IssueDate>${ref.issueDate}</cbc:IssueDate>
+      <cbc:IssueDate>${esc(ref.issueDate)}</cbc:IssueDate>
     </cac:InvoiceDocumentReference>
   </cac:BillingReference>`;
 }
@@ -51,7 +51,7 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
         <cbc:StreetName>${esc(party.addressLine1)}</cbc:StreetName>${line2}
         <cbc:CityName>${esc(party.city)}</cbc:CityName>
         <cbc:PostalZone>${esc(party.postalCode)}</cbc:PostalZone>
-        <cac:Country><cbc:IdentificationCode>${party.countryCode}</cbc:IdentificationCode></cac:Country>
+        <cac:Country><cbc:IdentificationCode>${esc(party.countryCode)}</cbc:IdentificationCode></cac:Country>
       </cac:PostalAddress>${vatScheme}${fcScheme}
       <cac:PartyLegalEntity>
         <cbc:RegistrationName>${esc(party.name)}</cbc:RegistrationName>${companyId}
@@ -62,7 +62,7 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
 
 function renderDelivery(delivery: DeliveryFields): string {
   const actualDeliveryDate = delivery.actualDeliveryDate
-    ? `\n    <cbc:ActualDeliveryDate>${delivery.actualDeliveryDate}</cbc:ActualDeliveryDate>`
+    ? `\n    <cbc:ActualDeliveryDate>${esc(delivery.actualDeliveryDate)}</cbc:ActualDeliveryDate>`
     : "";
   const deliverTo = delivery.deliverTo;
   const city = deliverTo?.city ? `\n        <cbc:CityName>${esc(deliverTo.city)}</cbc:CityName>` : "";
@@ -70,7 +70,7 @@ function renderDelivery(delivery: DeliveryFields): string {
     ? `\n        <cbc:PostalZone>${esc(deliverTo.postalCode)}</cbc:PostalZone>`
     : "";
   const country = deliverTo?.countryCode
-    ? `\n        <cac:Country><cbc:IdentificationCode>${deliverTo.countryCode}</cbc:IdentificationCode></cac:Country>`
+    ? `\n        <cac:Country><cbc:IdentificationCode>${esc(deliverTo.countryCode)}</cbc:IdentificationCode></cac:Country>`
     : "";
   const deliveryLocation =
     city || postalCode || country
@@ -110,7 +110,7 @@ function renderVatSubtotal(bd: VatSubtotalFields, currency: string): string {
       <cbc:TaxableAmount currencyID="${currency}">${amt(bd.taxableAmount)}</cbc:TaxableAmount>
       <cbc:TaxAmount currencyID="${currency}">${amt(bd.taxAmount)}</cbc:TaxAmount>
       <cac:TaxCategory>
-        <cbc:ID>${bd.categoryCode}</cbc:ID>
+        <cbc:ID>${esc(bd.categoryCode)}</cbc:ID>
         <cbc:Percent>${bd.rate}</cbc:Percent>${exemptionReasonCode}${exemptionReason}
         <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
       </cac:TaxCategory>
@@ -140,7 +140,7 @@ function renderAllowanceCharge(ac: AllowanceChargeFields, currency: string): str
       : `\n        <cbc:Percent>${ac.vatRate}</cbc:Percent>`;
   const taxCategory =
     ac.vatCategoryCode !== undefined
-      ? `\n      <cac:TaxCategory>\n        <cbc:ID>${ac.vatCategoryCode}</cbc:ID>${percent}\n        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>\n      </cac:TaxCategory>`
+      ? `\n      <cac:TaxCategory>\n        <cbc:ID>${esc(ac.vatCategoryCode)}</cbc:ID>${percent}\n        <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>\n      </cac:TaxCategory>`
       : "";
 
   return `    <cac:AllowanceCharge>
@@ -175,7 +175,7 @@ function renderLine(line: LineFields, currency: string, isCreditNote: boolean): 
     <cac:Item>${description}
       <cbc:Name>${esc(line.name)}</cbc:Name>
       <cac:ClassifiedTaxCategory>
-        <cbc:ID>${line.vatCategoryCode}</cbc:ID>${percent}
+        <cbc:ID>${esc(line.vatCategoryCode)}</cbc:ID>${percent}
         <cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme>
       </cac:ClassifiedTaxCategory>
     </cac:Item>
@@ -187,7 +187,9 @@ function renderLine(line: LineFields, currency: string, isCreditNote: boolean): 
 
 export function toXRechnung(invoice: Invoice): string {
   const fields = mapInvoice(invoice);
-  const currency = fields.currencyCode;
+  // Escaped once here because it is interpolated into currencyID="..." attribute values in many
+  // renderers; an unescaped `"` would break out of the attribute.
+  const currency = esc(fields.currencyCode);
 
   // A credit note (381) is its own UBL document type — CreditNote-2, not Invoice-2 — with a
   // cbc:CreditNoteTypeCode instead of cbc:InvoiceTypeCode and cac:CreditNoteLine instead of
@@ -230,7 +232,7 @@ export function toXRechnung(invoice: Invoice): string {
   // CreditNoteType has no cbc:DueDate element at all (UBL-CreditNote-2.1.xsd) — a credit
   // reduces what's owed, it doesn't create a new payment deadline.
   const dueDate =
-    !isCreditNote && fields.dueDate ? `\n  <cbc:DueDate>${fields.dueDate}</cbc:DueDate>` : "";
+    !isCreditNote && fields.dueDate ? `\n  <cbc:DueDate>${esc(fields.dueDate)}</cbc:DueDate>` : "";
   const prepaidAmount = fields.prepaidAmount
     ? `\n    <cbc:PrepaidAmount currencyID="${currency}">${amt(fields.prepaidAmount)}</cbc:PrepaidAmount>`
     : "";
@@ -279,8 +281,8 @@ export function toXRechnung(invoice: Invoice): string {
   <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0</cbc:CustomizationID>
   <cbc:ProfileID>${esc(fields.businessProcessType)}</cbc:ProfileID>
   <cbc:ID>${esc(fields.id)}</cbc:ID>
-  <cbc:IssueDate>${fields.issueDate}</cbc:IssueDate>${dueDate}
-  <cbc:${typeCodeTag}>${fields.typeCode}</cbc:${typeCodeTag}>${note}
+  <cbc:IssueDate>${esc(fields.issueDate)}</cbc:IssueDate>${dueDate}
+  <cbc:${typeCodeTag}>${esc(fields.typeCode)}</cbc:${typeCodeTag}>${note}
   <cbc:DocumentCurrencyCode>${currency}</cbc:DocumentCurrencyCode>${buyerRef}${orderReference}${billingReference}${contractReference}
 ${renderParty("cac:AccountingSupplierParty", fields.seller)}
 ${renderParty("cac:AccountingCustomerParty", fields.buyer)}${delivery}${paymentMeans}${documentAllowancesCharges}

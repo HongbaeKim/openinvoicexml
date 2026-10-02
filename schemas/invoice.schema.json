@@ -24,7 +24,8 @@
     "id": {
       "type": "string",
       "minLength": 1,
-      "description": "BT-1: Invoice number — unique identifier assigned by the seller. Required by EN 16931 and §14 UStG."
+      "description": "BT-1: Invoice number — unique identifier assigned by the seller. Required by EN 16931 and §14 UStG.",
+      "maxLength": 500
     },
     "typeCode": {
       "type": "string",
@@ -49,10 +50,19 @@
     "businessProcessType": {
       "type": "string",
       "minLength": 1,
-      "description": "BT-23: Business process type identifier. For Peppol: urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
+      "description": "BT-23: Business process type identifier. For Peppol: urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+      "maxLength": 500
     },
     "seller": {
-      "allOf": [{ "$ref": "#/$defs/Party" }, { "type": "object", "required": ["contact"] }],
+      "allOf": [
+        {
+          "$ref": "#/$defs/Party"
+        },
+        {
+          "type": "object",
+          "required": ["contact"]
+        }
+      ],
       "description": "BG-4: Seller (invoicing party). Required by §14 Abs. 4 Nr. 1 UStG. Must include contact details (BG-6) per XRechnung rule BR-DE-2."
     },
     "buyer": {
@@ -62,18 +72,24 @@
     "lines": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/InvoiceLine" },
+      "items": {
+        "$ref": "#/$defs/InvoiceLine"
+      },
       "description": "BG-25: Invoice lines. At least one line is required (XRechnung BR-16)."
     },
     "vatBreakdowns": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/VatBreakdown" },
+      "items": {
+        "$ref": "#/$defs/VatBreakdown"
+      },
       "description": "BG-23: VAT breakdown by tax category. At least one entry is required."
     },
     "allowancesCharges": {
       "type": "array",
-      "items": { "$ref": "#/$defs/AllowanceCharge" },
+      "items": {
+        "$ref": "#/$defs/AllowanceCharge"
+      },
       "description": "BG-20 / BG-21: Document-level allowances (discounts) and charges (surcharges)."
     },
     "taxExclusiveAmount": {
@@ -108,7 +124,8 @@
         "code": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-81: Payment means code (UNCL4461). 58 = SEPA credit transfer, 30 = credit transfer."
+          "description": "BT-81: Payment means code (UNCL4461). 58 = SEPA credit transfer, 30 = credit transfer.",
+          "maxLength": 500
         },
         "iban": {
           "type": "string",
@@ -117,7 +134,8 @@
         },
         "accountName": {
           "type": "string",
-          "description": "BT-85: Name of the account holder."
+          "description": "BT-85: Name of the account holder.",
+          "maxLength": 10000
         },
         "bic": {
           "type": "string",
@@ -129,19 +147,23 @@
     },
     "note": {
       "type": "string",
-      "description": "BT-22: Free-text note on the invoice (e.g. payment terms prose)."
+      "description": "BT-22: Free-text note on the invoice (e.g. payment terms prose).",
+      "maxLength": 10000
     },
     "buyerReference": {
       "type": "string",
-      "description": "BT-10: Buyer reference. For German public sector B2G invoices this must be the Leitweg-ID."
+      "description": "BT-10: Buyer reference. For German public sector B2G invoices this must be the Leitweg-ID.",
+      "maxLength": 500
     },
     "contractReference": {
       "type": "string",
-      "description": "BT-12: Contract reference (Vertragsnummer)."
+      "description": "BT-12: Contract reference (Vertragsnummer).",
+      "maxLength": 500
     },
     "purchaseOrderReference": {
       "type": "string",
-      "description": "BT-13: Purchase order reference (Bestellnummer)."
+      "description": "BT-13: Purchase order reference (Bestellnummer).",
+      "maxLength": 500
     },
     "precedingInvoiceReference": {
       "type": "object",
@@ -151,7 +173,8 @@
         "id": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-25: Preceding invoice number (for credit notes and corrective invoices)."
+          "description": "BT-25: Preceding invoice number (for credit notes and corrective invoices).",
+          "maxLength": 500
         },
         "issueDate": {
           "type": "string",
@@ -177,11 +200,13 @@
           "properties": {
             "city": {
               "type": "string",
-              "description": "BT-77: Deliver-to city."
+              "description": "BT-77: Deliver-to city.",
+              "maxLength": 500
             },
             "postalCode": {
               "type": "string",
-              "description": "BT-78: Deliver-to postal code."
+              "description": "BT-78: Deliver-to postal code.",
+              "maxLength": 500
             },
             "countryCode": {
               "type": "string",
@@ -204,11 +229,13 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-27 / BT-44: Seller or buyer trading name. Required by §14 Abs. 4 Nr. 1/2 UStG."
+          "description": "BT-27 / BT-44: Seller or buyer trading name. Required by §14 Abs. 4 Nr. 1/2 UStG.",
+          "maxLength": 500
         },
         "legalId": {
           "type": "string",
-          "description": "BT-30 / BT-47: Legal registration identifier (e.g. Handelsregisternummer HRB 12345)."
+          "description": "BT-30 / BT-47: Legal registration identifier (e.g. Handelsregisternummer HRB 12345).",
+          "maxLength": 500
         },
         "vatId": {
           "type": "string",
@@ -217,7 +244,8 @@
         },
         "taxRegistrationId": {
           "type": "string",
-          "description": "BT-32: Seller tax registration number (Steuernummer). Used by small businesses under §19 UStG who do not have a VAT ID."
+          "description": "BT-32: Seller tax registration number (Steuernummer). Used by small businesses under §19 UStG who do not have a VAT ID.",
+          "maxLength": 500
         },
         "address": {
           "$ref": "#/$defs/Address"
@@ -225,11 +253,13 @@
         "electronicAddress": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-34 / BT-49: Electronic address for invoice routing (e.g. email address). Required by XRechnung."
+          "description": "BT-34 / BT-49: Electronic address for invoice routing (e.g. email address). Required by XRechnung.",
+          "maxLength": 500
         },
         "electronicAddressSchemeId": {
           "type": "string",
-          "description": "BT-34 / BT-49: Scheme identifier for the electronic address (e.g. EM for email, 9930 for German Leitweg-ID routing)."
+          "description": "BT-34 / BT-49: Scheme identifier for the electronic address (e.g. EM for email, 9930 for German Leitweg-ID routing).",
+          "maxLength": 500
         },
         "contact": {
           "$ref": "#/$defs/Contact",
@@ -244,12 +274,14 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "BT-41: Contact point (person or department name)."
+          "description": "BT-41: Contact point (person or department name).",
+          "maxLength": 500
         },
         "telephone": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-42: Contact telephone number."
+          "description": "BT-42: Contact telephone number.",
+          "maxLength": 500
         },
         "email": {
           "type": "string",
@@ -266,21 +298,25 @@
         "line1": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-35 / BT-50: Address line 1 (street and house number). Required by §14 Abs. 4 Nr. 1/2 UStG."
+          "description": "BT-35 / BT-50: Address line 1 (street and house number). Required by §14 Abs. 4 Nr. 1/2 UStG.",
+          "maxLength": 500
         },
         "line2": {
           "type": "string",
-          "description": "BT-36 / BT-51: Address line 2 (optional)."
+          "description": "BT-36 / BT-51: Address line 2 (optional).",
+          "maxLength": 500
         },
         "city": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-37 / BT-52: City name."
+          "description": "BT-37 / BT-52: City name.",
+          "maxLength": 500
         },
         "postalCode": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-38 / BT-53: Postal code."
+          "description": "BT-38 / BT-53: Postal code.",
+          "maxLength": 500
         },
         "countryCode": {
           "type": "string",
@@ -306,16 +342,19 @@
         "id": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-126: Line identifier — unique within the invoice."
+          "description": "BT-126: Line identifier — unique within the invoice.",
+          "maxLength": 500
         },
         "name": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-153: Item name. Required by §14 Abs. 4 Nr. 5 UStG."
+          "description": "BT-153: Item name. Required by §14 Abs. 4 Nr. 5 UStG.",
+          "maxLength": 500
         },
         "description": {
           "type": "string",
-          "description": "BT-154: Item description (optional free text)."
+          "description": "BT-154: Item description (optional free text).",
+          "maxLength": 10000
         },
         "quantity": {
           "type": "number",
@@ -324,7 +363,8 @@
         "unitCode": {
           "type": "string",
           "minLength": 1,
-          "description": "BT-130: Unit of measure code (UN/ECE Recommendation 20). E.g. HUR = hours, C62 = each, KGM = kilograms."
+          "description": "BT-130: Unit of measure code (UN/ECE Recommendation 20). E.g. HUR = hours, C62 = each, KGM = kilograms.",
+          "maxLength": 500
         },
         "unitPrice": {
           "type": "number",
@@ -347,7 +387,9 @@
         },
         "allowancesCharges": {
           "type": "array",
-          "items": { "$ref": "#/$defs/AllowanceCharge" },
+          "items": {
+            "$ref": "#/$defs/AllowanceCharge"
+          },
           "description": "BG-27 / BG-28: Line-level allowances (discounts) and charges (surcharges)."
         }
       }
@@ -378,11 +420,13 @@
         },
         "exemptionReason": {
           "type": "string",
-          "description": "BT-120: Textual reason for VAT exemption (required by §14 Abs. 4 UStG when applicable)."
+          "description": "BT-120: Textual reason for VAT exemption (required by §14 Abs. 4 UStG when applicable).",
+          "maxLength": 10000
         },
         "exemptionReasonCode": {
           "type": "string",
-          "description": "BT-121: Coded reason for VAT exemption (VATEX code list)."
+          "description": "BT-121: Coded reason for VAT exemption (VATEX code list).",
+          "maxLength": 500
         },
         "reverseChargeReason": {
           "type": "string",
@@ -420,11 +464,13 @@
         },
         "reason": {
           "type": "string",
-          "description": "BT-97/BT-104 (document) or BT-139/BT-144 (line): reason text."
+          "description": "BT-97/BT-104 (document) or BT-139/BT-144 (line): reason text.",
+          "maxLength": 10000
         },
         "reasonCode": {
           "type": "string",
-          "description": "BT-98/BT-105 (document) or BT-140/BT-145 (line): reason code."
+          "description": "BT-98/BT-105 (document) or BT-140/BT-145 (line): reason code.",
+          "maxLength": 500
         },
         "vatCategoryCode": {
           "type": "string",

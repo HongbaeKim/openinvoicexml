@@ -26,7 +26,8 @@ import {
 
 /** CII qdt:DocumentCodeType-style dates use format "102" — YYYYMMDD, no separators. */
 function dt102(isoDate: string): string {
-  return isoDate.replace(/-/g, "");
+  // Escaped as well as stripped of dashes: a date like `2026"<x/>` must not reach the markup raw.
+  return esc(isoDate.replace(/-/g, ""));
 }
 
 function renderDateTime(isoDate: string, tag: string): string {
@@ -78,7 +79,7 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
         <ram:PostcodeCode>${esc(party.postalCode)}</ram:PostcodeCode>
         <ram:LineOne>${esc(party.addressLine1)}</ram:LineOne>${line2}
         <ram:CityName>${esc(party.city)}</ram:CityName>
-        <ram:CountryID>${party.countryCode}</ram:CountryID>
+        <ram:CountryID>${esc(party.countryCode)}</ram:CountryID>
       </ram:PostalTradeAddress>`;
 
   const electronicAddress = `\n      <ram:URIUniversalCommunication>
@@ -105,7 +106,7 @@ function renderShipTo(delivery: DeliveryFields): string {
     ? `\n        <ram:PostcodeCode>${esc(deliverTo.postalCode)}</ram:PostcodeCode>`
     : "";
   const country = deliverTo.countryCode
-    ? `\n        <ram:CountryID>${deliverTo.countryCode}</ram:CountryID>`
+    ? `\n        <ram:CountryID>${esc(deliverTo.countryCode)}</ram:CountryID>`
     : "";
   if (!city && !postalCode && !country) return "";
   return `\n    <ram:ShipToTradeParty>\n      <ram:PostalTradeAddress>${postalCode}${city}${country}\n      </ram:PostalTradeAddress>\n    </ram:ShipToTradeParty>`;
@@ -175,7 +176,7 @@ function renderVatSubtotal(bd: VatSubtotalFields): string {
       <ram:CalculatedAmount>${amt(bd.taxAmount)}</ram:CalculatedAmount>
       <ram:TypeCode>VAT</ram:TypeCode>${exemptionReason}
       <ram:BasisAmount>${amt(bd.taxableAmount)}</ram:BasisAmount>
-      <ram:CategoryCode>${bd.categoryCode}</ram:CategoryCode>${exemptionReasonCode}${percent}
+      <ram:CategoryCode>${esc(bd.categoryCode)}</ram:CategoryCode>${exemptionReasonCode}${percent}
     </ram:ApplicableTradeTax>`;
 }
 
@@ -191,7 +192,7 @@ function renderAllowanceCharge(ac: AllowanceChargeFields, indent: string): strin
   const percent = renderRateApplicablePercent(ac.vatCategoryCode ?? "", ac.vatRate);
   const categoryTradeTax =
     ac.vatCategoryCode !== undefined
-      ? `\n${indent}  <ram:CategoryTradeTax>\n${indent}    <ram:TypeCode>VAT</ram:TypeCode>\n${indent}    <ram:CategoryCode>${ac.vatCategoryCode}</ram:CategoryCode>${percent}\n${indent}  </ram:CategoryTradeTax>`
+      ? `\n${indent}  <ram:CategoryTradeTax>\n${indent}    <ram:TypeCode>VAT</ram:TypeCode>\n${indent}    <ram:CategoryCode>${esc(ac.vatCategoryCode)}</ram:CategoryCode>${percent}\n${indent}  </ram:CategoryTradeTax>`
       : "";
 
   // CII-DT-031: no currencyID on ActualAmount — see renderVatSubtotal's note above.
@@ -234,7 +235,7 @@ function renderLine(line: LineFields): string {
     <ram:SpecifiedLineTradeSettlement>
       <ram:ApplicableTradeTax>
         <ram:TypeCode>VAT</ram:TypeCode>
-        <ram:CategoryCode>${line.vatCategoryCode}</ram:CategoryCode>${percent}
+        <ram:CategoryCode>${esc(line.vatCategoryCode)}</ram:CategoryCode>${percent}
       </ram:ApplicableTradeTax>${lineAllowancesCharges}
       <ram:SpecifiedTradeSettlementLineMonetarySummation>
         <ram:LineTotalAmount>${amt(line.lineAmount)}</ram:LineTotalAmount>
@@ -256,7 +257,8 @@ const GUIDELINE_ID: Record<EInvoiceProfile, string> = {
 export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } = {}): string {
   const profile = options.profile ?? "EN16931";
   const fields = mapInvoice(invoice);
-  const currency = fields.currencyCode;
+  // Escaped once: interpolated into currencyID="..." attribute values below.
+  const currency = esc(fields.currencyCode);
 
   const businessProcess = fields.businessProcessType
     ? `\n    <ram:BusinessProcessSpecifiedDocumentContextParameter>\n      <ram:ID>${esc(fields.businessProcessType)}</ram:ID>\n    </ram:BusinessProcessSpecifiedDocumentContextParameter>`
@@ -330,7 +332,7 @@ export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } =
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
     <ram:ID>${esc(fields.id)}</ram:ID>
-    <ram:TypeCode>${fields.typeCode}</ram:TypeCode>
+    <ram:TypeCode>${esc(fields.typeCode)}</ram:TypeCode>
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">${dt102(fields.issueDate)}</udt:DateTimeString>
     </ram:IssueDateTime>${note}

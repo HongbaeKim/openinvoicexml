@@ -74,7 +74,7 @@ Everything else is standard for a Node ESM library — see `tsconfig.json` direc
 
 ### Dependency policy
 
-Two runtime dependencies, both scoped to the hybrid PDF/A-3 adapter
+Four runtime dependencies. Two are scoped to the hybrid PDF/A-3 adapter
 (`adapters/hybrid-pdf.ts`/`adapters/hybrid-pdf-mapping.ts`):
 
 - [`@cantoo/pdf-lib`](https://github.com/cantoo-scribe/pdf-lib) — PDF generation, ICC output
@@ -85,6 +85,14 @@ Two runtime dependencies, both scoped to the hybrid PDF/A-3 adapter
 
 These cover PDF/A-3 conformance mechanics — font subsetting, color/ICC handling, embedded-file
 attachment — that can't reasonably be hand-rolled the way XRechnung's XML serialization was.
+
+The other two back `validators/engines/01.schema.ts` (`validateInvoiceSchema()`, run first by
+`generateInvoice()`):
+
+- [`ajv`](https://ajv.js.org) — compiles and runs `schemas/invoice.schema.json`.
+- `ajv-formats` — the `date` and `email` format checks the schema uses.
+
+Both are Node-only; the browser entry (`openinvoicexml/browser`) stays dependency-free.
 Everything else stays `devDependencies` (build/lint/format/test). See
 [`ARCHITECTURE.md`](ARCHITECTURE.md#no-runtime-dependencies) for why this is a scoped exception,
 not a change in policy for the rest of the engine.

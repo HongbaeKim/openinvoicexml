@@ -125,12 +125,20 @@ interface GenerateInvoiceResult {
 }
 ```
 
-`generateInvoice` runs `validateBusinessRules` against the invoice first. If any issue has
-`severity: "error"`, `xml` is `null` and the errors are returned in `issues` — no XML is
-produced for a known-non-compliant invoice. Otherwise `xml` contains the generated UBL 2.1
-document (`issues` may still contain non-blocking `warning` entries). This is `generateInvoice`'s
-default contract: compose validation + generation, gate output on error-severity issues, and
-return a result instead of throwing — synchronous and dependency-free, no Java required.
+`generateInvoice` validates in two layers, in order. First [`validateInvoiceSchema`](#validateinvoiceschemadata--structural-validation)
+checks the structure (required fields, types, formats, unknown properties, length caps); if it
+finds anything, `xml` is `null`, `issues` holds only the `SCHEMA_*` errors, and the business
+rules are skipped (they assume a structurally valid invoice). Then `validateBusinessRules` runs.
+If any issue has `severity: "error"`, `xml` is `null` and the errors are returned in `issues` —
+no XML is produced for a known-non-compliant invoice. Otherwise `xml` contains the generated
+UBL 2.1 document (`issues` may still contain non-blocking `warning` entries). This is
+`generateInvoice`'s default contract: compose validation + generation, gate output on
+error-severity issues, and return a result instead of throwing, even for malformed input
+(`null`, missing `lines`, wrong types) — synchronous, no Java required. `generateCii`,
+`generateHybridPdf` and `generateFacturXPdf` apply the same schema gate first.
+
+`generateInvoiceXml()` (the browser-safe variant) does **not** run the schema layer: it needs
+AJV, which is Node-only, so it assumes a structurally valid `Invoice`.
 
 ```ts
 const { xml, issues } = generateInvoice(invoice);
@@ -209,11 +217,39 @@ const xml: string = toXRechnung(invoice);
 - **Input:** `Invoice`
 - **Output:** a UBL 2.1 XML string (always produced, no validation)
 
-`toXRechnung` performs **no business-rule validation** — it maps the invoice straight to XML
-and always returns a document, even one that would fail `validateBusinessRules` or KoSIT. Use
-this only when you validate separately; otherwise prefer `generateInvoice`. Runtime input (parsed
-JSON, or data cast to `Invoice`) isn't validated by `toXRechnung` — check it against
-`schemas/invoice.schema.json` with your own JSON Schema validator first if it arrives untyped.
+`toXRechnung` performs **no schema or business-rule validation** — it maps the invoice straight
+to XML and always returns a document, even one that would fail `validateInvoiceSchema`,
+`validateBusinessRules` or KoSIT. It assumes a pre-validated, structurally correct `Invoice`
+(a missing `lines` array makes it throw). Use it only when you validate separately; otherwise
+prefer `generateInvoice`, which does both. What it does guarantee on its own: every string it
+writes into the XML is escaped (`& < > "`), including values interpolated into attributes such
+as `currencyID`, so even an unvalidated field cannot inject markup. `toCii` gives the same
+escaping guarantee.
+
+## `validateInvoiceSchema(data)` — structural validation
+
+```ts
+import { validateInvoiceSchema } from "openinvoicexml/validators";
+
+const issues = validateInvoiceSchema(JSON.parse(body)); // data: unknown
+if (issues.length > 0) {
+  // [{ code: "SCHEMA_REQUIRED", severity: "error", message: "...", path: "seller" }, ...]
+}
+```
+
+- **Input:** `unknown` — safe for untyped data (parsed JSON, form input)
+- **Output:** `ValidationIssue[]`, empty when the structure is valid; never throws
+
+Checks `data` against `schemas/invoice.schema.json` with AJV and reports **all** problems in one
+pass. Issue `code` is `SCHEMA_` plus the upper-cased JSON Schema keyword (`SCHEMA_REQUIRED`,
+`SCHEMA_TYPE`, `SCHEMA_PATTERN`, `SCHEMA_ENUM`, `SCHEMA_FORMAT`, `SCHEMA_MAXLENGTH`,
+`SCHEMA_ADDITIONALPROPERTIES`, ...) and `path` uses the same notation as `validateBusinessRules`
+(`lines[0].vatRate`). Structure only — VAT arithmetic and legal rules are
+`validateBusinessRules`. Not available from `openinvoicexml/browser`.
+
+Free-text fields are length-capped: 10,000 characters for `note`, line `description`,
+exemption/allowance-charge reasons and `accountName`; 500 for every other free string (names,
+addresses, ids, references).
 
 ## `generateHybridPdf(invoice, options)` — recommended entry point
 
@@ -399,9 +435,11 @@ interface ValidationIssue {
 ```
 
 `code` is a stable, machine-matchable identifier — safe to switch on, unlike `message`, which is
-for humans. Almost every issue is `severity: "error"`; the one exception is
+for humans. Almost every issue is `severity: "error"`; the exceptions are
 `PLACE_OF_SUPPLY_CROSS_BORDER` (`"warning"`, never blocks `generateInvoice` — see
-[`LIMITATIONS.md`](LIMITATIONS.md)). A few representative codes:
+[`LIMITATIONS.md`](LIMITATIONS.md)) and `ISSUE_DATE_IN_FUTURE`. Structural problems come from
+[`validateInvoiceSchema`](#validateinvoiceschemadata--structural-validation) with `SCHEMA_*`
+codes in the same shape. A few representative codes:
 
 | Code                                   | Severity  | Meaning                                                                              |
 | -------------------------------------- | --------- | ------------------------------------------------------------------------------------ |
@@ -410,6 +448,8 @@ for humans. Almost every issue is `severity: "error"`; the one exception is
 | `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED` | `error`   | Category `AE` used without a buyer VAT ID                                            |
 | `VAT_EXEMPTION_REASON_REQUIRED`        | `error`   | Exemption category (`E`/`AE`/`K`/`G`/`O`) missing a reason (BT-120/BT-121)           |
 | `PLACE_OF_SUPPLY_CROSS_BORDER`         | `warning` | Seller/buyer countries differ — informational only                                   |
+| `ISSUE_DATE_IN_FUTURE`                 | `warning` | BT-2 issue date is later than today (UTC) — legal but usually a typo                 |
+| `SCHEMA_REQUIRED` (and other `SCHEMA_*`) | `error` | Structural problem found by `validateInvoiceSchema`; business rules are skipped      |
 
 Not exhaustive — see `validators/engines/02.business-rules.ts` and `validators/rules/17.vat-rate.ts` for
 the full, current set.
