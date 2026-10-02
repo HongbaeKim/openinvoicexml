@@ -11,8 +11,6 @@ import type { ValidationIssue } from "../types.js";
 // Load ajv-formats with require() because its default import causes a TypeScript error
 // with our NodeNext setup.
 const require = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-
 // Loads ajv-formats for checks like "date" and "date-time".
 // Without the type:
 // TypeScript doesn't clearly know the type
@@ -21,6 +19,7 @@ const require = createRequire(import.meta.url);
 // With the type:
 // Input: an Ajv instance
 // Output: nothing (void)
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const addFormats: (ajv: InstanceType<typeof Ajv>) => void = require("ajv-formats");
 
 // Returns a function that checks an object against the invoice schema.
