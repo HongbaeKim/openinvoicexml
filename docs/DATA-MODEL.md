@@ -138,9 +138,10 @@ list — see [`LIMITATIONS.md`](LIMITATIONS.md) for why.
 | BT-37 | Seller city               | `seller.address.city`                                                     | §14 Abs. 4 Nr. 1 UStG | `cbc:CityName`                                       |
 | BT-38 | Seller postal code        | `seller.address.postalCode`                                               | §14 Abs. 4 Nr. 1 UStG | `cbc:PostalZone`                                     |
 | BT-40 | Seller country code       | `seller.address.countryCode`                                              | EN 16931 §6.4.1       | `cac:Country/cbc:IdentificationCode`                 |
+| BT-29 | Seller identifier         | `seller.identifier` (`id`, optional `schemeId`)                           | BR-CO-26              | `cac:PartyIdentification/cbc:ID[@schemeID]`          |
 | BT-31 | Seller VAT identifier     | `seller.vatId` (optional)                                                 | §14 Abs. 4 Nr. 2 UStG | `cac:PartyTaxScheme/cbc:CompanyID` (TaxScheme `VAT`) |
 | BT-32 | Seller tax registration   | `seller.taxRegistrationId` (optional)                                     | §14 Abs. 4 Nr. 2 UStG | `cac:PartyTaxScheme/cbc:CompanyID` (TaxScheme `FC`)  |
-| BT-30 | Seller legal registration | `seller.legalId` (opt., fallback: name)                                   | —                     | `cac:PartyLegalEntity/cbc:CompanyID`                 |
+| BT-30 | Seller legal registration | `seller.legalId` (optional)                                               | —                     | `cac:PartyLegalEntity/cbc:CompanyID`                 |
 | BT-28 | Seller legal name         | `seller.name`                                                             | —                     | `cac:PartyLegalEntity/cbc:RegistrationName`          |
 | BT-41 | Seller contact point      | `seller.contact.name` (optional)                                          | XRechnung BR-DE-5     | `cac:Contact/cbc:Name`                               |
 | BT-42 | Seller contact telephone  | `seller.contact.telephone`                                                | XRechnung BR-DE-6     | `cac:Contact/cbc:Telephone`                          |
@@ -149,14 +150,25 @@ list — see [`LIMITATIONS.md`](LIMITATIONS.md) for why.
 Seller contact (BG-6) is mandatory under `BR-DE-2`, enforced via the JSON Schema. `Party.contact`
 is shared with `buyer`, but only the seller's is required.
 
+**Seller identifier (`BR-CO-26`).** The seller needs at least one of BT-29 (`identifier`), BT-30
+(`legalId`) or BT-31 (`vatId`). A Steuernummer (`taxRegistrationId`, BT-32) alone does not satisfy
+it, and the engine never copies it into BT-29: `validateBusinessRules()` fails with
+`SELLER_IDENTIFIER_REQUIRED`. Setting `identifier` to the Steuernummer is an accepted convention
+(FeRD E13), not a requirement; see fixtures 55 and 56. BT-29 identifies the seller and may be
+assigned by the buyer (e.g. a supplier number).
+
 ### Buyer (BG-7)
 
 Same structure as seller, BT numbers shift to the BG-7 range.
+
+`Party.identifier` is shared: it is BT-29 on the seller and BT-46 on the buyer. BT-46 identifies
+the buyer, is optional, and is not part of `BR-CO-26` validation.
 
 | BT    | Name                     | Internal field                                                           | Legal basis                                                        | UBL element                                          |
 | ----- | ------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------- |
 | BT-49 | Buyer electronic address | `buyer.electronicAddress` (+ `electronicAddressSchemeId` as `@schemeID`) | XRechnung spec §2.4                                                | `cbc:EndpointID[@schemeID]` (default `"EM"`)         |
 | BT-44 | Buyer name               | `buyer.name`                                                             | §14 Abs. 4 Nr. 1 UStG                                              | `cac:PartyName/cbc:Name`                             |
+| BT-46 | Buyer identifier         | `buyer.identifier` (`id`, optional `schemeId`)                           | —                                                                  | `cac:PartyIdentification/cbc:ID[@schemeID]`          |
 | BT-50 | Buyer address line 1     | `buyer.address.line1`                                                    | §14 Abs. 4 Nr. 1 UStG                                              | `cbc:StreetName`                                     |
 | BT-51 | Buyer address line 2     | `buyer.address.line2` (optional)                                         | —                                                                  | `cbc:AdditionalStreetName`                           |
 | BT-52 | Buyer city               | `buyer.address.city`                                                     | §14 Abs. 4 Nr. 1 UStG                                              | `cbc:CityName`                                       |

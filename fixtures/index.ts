@@ -52,6 +52,8 @@ import highPrecisionUnitPrice from "./51.high-precision-unit-price.invoice.json"
 import roundingAmount from "./52.rounding-amount.invoice.json" with { type: "json" };
 import fractionalQuantity from "./53.fractional-quantity.invoice.json" with { type: "json" };
 import fractionalQuantityHighPrecisionPrice from "./54.fractional-quantity-high-precision-price.invoice.json" with { type: "json" };
+import freelancerTaxNumberAsSellerId from "./55.freelancer-tax-number-as-seller-id.invoice.json" with { type: "json" };
+import freelancerBuyerAssignedSupplierId from "./56.freelancer-buyer-assigned-supplier-id.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -108,6 +110,8 @@ export {
   roundingAmount,
   fractionalQuantity,
   fractionalQuantityHighPrecisionPrice,
+  freelancerTaxNumberAsSellerId,
+  freelancerBuyerAssignedSupplierId,
 };
 
 /**
@@ -174,4 +178,6 @@ export const allFixtures: [string, unknown][] = [
   ["52. rounding-amount (19% S)", roundingAmount],
   ["53. fractional-quantity (19% S)", fractionalQuantity],
   ["54. fractional-quantity-high-precision-price (19% S)", fractionalQuantityHighPrecisionPrice],
+  ["55. freelancer-tax-number-as-seller-id (19% S)", freelancerTaxNumberAsSellerId],
+  ["56. freelancer-buyer-assigned-supplier-id (19% S)", freelancerBuyerAssignedSupplierId],
 ];

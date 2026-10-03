@@ -61,6 +61,8 @@ expected XRechnung XML output once Phase 2 is complete.
 | `52.rounding-amount.invoice.json` | Explicit rounding amount (BT-114) adjusting the amount due from 312.02 to 312.00 | Implemented |
 | `53.fractional-quantity.invoice.json` | Fractional quantity (7.25 hours) at a 2-decimal unit price | Implemented |
 | `54.fractional-quantity-high-precision-price.invoice.json` | Fractional quantity (1523.5 litres) and a 4-decimal unit price on one line | Implemented |
+| `55.freelancer-tax-number-as-seller-id.invoice.json` | Seller without VAT ID or legalId: Steuernummer (BT-32) plus the same value as an explicit seller identifier (BT-29) — the FeRD E13 convention (Forum elektronische Rechnung Deutschland E13_01_Kleinunternehmer_ohneUStId.xml) | Implemented |
+| `56.freelancer-buyer-assigned-supplier-id.invoice.json` | Same seller shape, but BT-29 is a buyer-assigned supplier number different from the Steuernummer | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -247,7 +249,8 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   a VAT identifier (BT-31/BT-48) on an `O`-category invoice, so the seller here drops `vatId` in
   favor of `legalId` (BT-30, Handelsregisternummer) instead — real KoSIT's `BR-CO-26` independently
   requires at least one seller identifier (BT-29/BT-30/BT-31), which `taxRegistrationId` (BT-32,
-  a different element) doesn't satisfy on its own.
+  a different element) doesn't satisfy on its own. `validateBusinessRules()` now checks this too
+  (`SELLER_IDENTIFIER_REQUIRED`); BT-29 is modeled as `seller.identifier` (see fixtures 55/56).
 - **`42.mixed-category-vat.invoice.json`** — `ROADMAP.md` Week 17's "0% + 19%" cross-category VAT
   mix: one line at category `S`/19% and one at category `Z`/0%, each in its own `vatBreakdowns`
   entry, present *simultaneously* on the same document. Distinct from
@@ -309,6 +312,19 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   1523.5 LTR × `0.8749` = `1332.91015`, rounded to `lineAmount: 1332.91`. Combines 51's and 53's
   cases on one line, so the product itself has more than 2 decimals and only the rounded line
   amount is a currency total. Duplicated from `01.domestic-simple.invoice.json`; only id, dates, line item, totals and note changed.
+- **`55.freelancer-tax-number-as-seller-id.invoice.json`** — a freelancer with no `vatId` and no
+  `legalId`. `BR-CO-26` requires BT-29, BT-30 or BT-31, and BT-32 never counts, so the seller
+  carries `taxRegistrationId` (BT-32) **and** the same value as `identifier` (BT-29, no scheme).
+  This is the convention in FeRD's `E13_01_Kleinunternehmer_ohneUStId.xml` example, an accepted
+  implementation practice and not a requirement of the standard — it is *not* a "Steuernummer
+  only" invoice (that one is rejected). The engine never copies BT-32 into BT-29 on its own.
+  Duplicated from `01.domestic-simple.invoice.json`; only id, seller and name changed.
+  Validated clean (zero errors) by KoSIT on UBL and both CII profiles, and by Mustang on the
+  extracted UBL XML and both Factur-X profiles.
+- **`56.freelancer-buyer-assigned-supplier-id.invoice.json`** — same seller shape as 55, but
+  `identifier.id` (`LIEF-4711`) is a supplier number the buyer assigned, different from the
+  Steuernummer. Shows the engine does not assume BT-29 equals BT-32. Same KoSIT and Mustang
+  coverage as 55, all clean.
 
 ## References
 
