@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-03
+
 ### Added
 
 - `openinvoicexml/browser` entry point with `generateInvoiceXml()`: browser-safe XRechnung XML
@@ -21,9 +23,25 @@ All notable changes to this project will be documented in this file.
   `taxInclusiveAmount − prepaidAmount + roundingAmount` (BR-CO-16)
 - Fixtures 51–54: high-precision unit price, rounding amount, fractional quantity, and both
   combined
+- `validateInvoiceSchema()`: JSON Schema (structure) validation, returning the same issue shape as
+  the business-rule validators
+- Warning `ISSUE_DATE_IN_FUTURE` when the issue date (BT-2) is later than today (legal, but
+  usually a typo)
+
+### Changed
+
+- Every `generate*()` function now validates the invoice's structure first; a malformed invoice
+  returns `{ xml: null, issues }` (or the equivalent) instead of throwing a `TypeError`
+- The JSON Schema now caps free-text and identifier fields with `maxLength` (500 characters for
+  identifiers and references, 10000 for notes and long text)
+- `ajv` and `ajv-formats` moved from `devDependencies` to `dependencies`; `dist/schemas` is now
+  included in the published package
 
 ### Fixed
 
+- `toXRechnung()` and `toCii()` now escape every interpolated value, including country, VAT
+  category and type codes, dates and `currencyID` attributes, so XML metacharacters in them can no
+  longer break the XML
 - `generateInvoice({ validateExternally: true })` no longer leaves KoSIT reports in the temp dir
 - `runMustang()` reports Mustang's `<exception>` entries as errors
 - Unit prices (BT-146) with more than 2 decimals (e.g. `0.0055`) are no longer rejected, and are
@@ -48,10 +66,10 @@ All notable changes to this project will be documented in this file.
 
 ### Profile compatibility
 
-| Profile | Supported |
-|---|---|
-| XRECHNUNG | Yes |
-| EN 16931 | Yes |
+| Profile                    | Supported                                                      |
+| -------------------------- | -------------------------------------------------------------- |
+| XRECHNUNG                  | Yes                                                            |
+| EN 16931                   | Yes                                                            |
 | BASIC WL / BASIC / MINIMUM | No — partial-data profiles, tracked in `.step/longtermplan.md` |
 
 See [`LIMITATIONS.md`](docs/LIMITATIONS.md) for detail.

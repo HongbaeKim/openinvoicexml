@@ -441,15 +441,15 @@ for humans. Almost every issue is `severity: "error"`; the exceptions are
 [`validateInvoiceSchema`](#validateinvoiceschemadata--structural-validation) with `SCHEMA_*`
 codes in the same shape. A few representative codes:
 
-| Code                                   | Severity  | Meaning                                                                              |
-| -------------------------------------- | --------- | ------------------------------------------------------------------------------------ |
-| `VAT_RATE_INVALID_FOR_CATEGORY`        | `error`   | Category `S` at a rate other than 19%/7%, or a zero-rate category at a non-zero rate |
-| `LINE_AMOUNT_ROUNDING`                 | `error`   | BT-131 line net amount doesn't match `quantity × unitPrice`                          |
-| `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED` | `error`   | Category `AE` used without a buyer VAT ID                                            |
-| `VAT_EXEMPTION_REASON_REQUIRED`        | `error`   | Exemption category (`E`/`AE`/`K`/`G`/`O`) missing a reason (BT-120/BT-121)           |
-| `PLACE_OF_SUPPLY_CROSS_BORDER`         | `warning` | Seller/buyer countries differ — informational only                                   |
-| `ISSUE_DATE_IN_FUTURE`                 | `warning` | BT-2 issue date is later than today (UTC) — legal but usually a typo                 |
-| `SCHEMA_REQUIRED` (and other `SCHEMA_*`) | `error` | Structural problem found by `validateInvoiceSchema`; business rules are skipped      |
+| Code                                     | Severity  | Meaning                                                                              |
+| ---------------------------------------- | --------- | ------------------------------------------------------------------------------------ |
+| `VAT_RATE_INVALID_FOR_CATEGORY`          | `error`   | Category `S` at a rate other than 19%/7%, or a zero-rate category at a non-zero rate |
+| `LINE_AMOUNT_ROUNDING`                   | `error`   | BT-131 line net amount doesn't match `quantity × unitPrice`                          |
+| `REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED`   | `error`   | Category `AE` used without a buyer VAT ID                                            |
+| `VAT_EXEMPTION_REASON_REQUIRED`          | `error`   | Exemption category (`E`/`AE`/`K`/`G`/`O`) missing a reason (BT-120/BT-121)           |
+| `PLACE_OF_SUPPLY_CROSS_BORDER`           | `warning` | Seller/buyer countries differ — informational only                                   |
+| `ISSUE_DATE_IN_FUTURE`                   | `warning` | BT-2 issue date is later than today (UTC) — legal but usually a typo                 |
+| `SCHEMA_REQUIRED` (and other `SCHEMA_*`) | `error`   | Structural problem found by `validateInvoiceSchema`; business rules are skipped      |
 
 Not exhaustive — see `validators/engines/02.business-rules.ts` and `validators/rules/17.vat-rate.ts` for
 the full, current set.
@@ -556,13 +556,13 @@ Node-only. Use this to check an existing XML or PDF, including files created by 
 
 The format is detected from its content, not its file name:
 
-| File | Checks |
-| --- | --- |
-| UBL / CII XML | KoSIT + Mustang |
+| File                 | Checks                    |
+| -------------------- | ------------------------- |
+| UBL / CII XML        | KoSIT + Mustang           |
 | Factur-X/ZUGFeRD PDF | veraPDF + KoSIT + Mustang |
-| Hybrid PDF with UBL | veraPDF + KoSIT + Mustang |
-| Invalid XML/PDF | Reported as failed |
-| Other file | Unsupported |
+| Hybrid PDF with UBL  | veraPDF + KoSIT + Mustang |
+| Invalid XML/PDF      | Reported as failed        |
+| Other file           | Unsupported               |
 
 For PDFs, the embedded invoice XML is detected by its content. If no invoice XML or more than one is found, validation fails instead of guessing which one to use.
 

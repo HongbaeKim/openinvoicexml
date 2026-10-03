@@ -67,7 +67,10 @@ across 40+ scenarios.
   thresholds enforced in CI (`npm run test:coverage`). Week 18 done: unit prices with more than
   2 decimals, BT-114 rounding amount, fractional-quantity fixtures (54 fixtures in total).
 - **Week 19:** Security pass — file handling, input sanitization, malformed-input handling,
-  dependency audit. Feeds into `SECURITY.md`.
+  dependency audit. Feeds into `SECURITY.md`. Done so far: structural schema validation in every
+  `generate*()` function, XML escaping of all interpolated values, future issue-date warning,
+  `maxLength` limits. Tag v0.4.1 (also includes the browser entry, external XML/file validation
+  and BT-114 rounding amount) for testing against `openinvoicexml-web`.
 - **Week 20:** Finalize `API.md`, `ARCHITECTURE.md`, `LIMITATIONS.md`; German translation of key
   docs.
 - **Week 21:** Performance/stress testing (100/500/1000-line invoices, batch generation);

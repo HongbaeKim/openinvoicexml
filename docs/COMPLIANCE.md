@@ -10,7 +10,7 @@ EN 16931 and XRechnung are **different layers**. The EN 16931 repository does no
 CIUS-specific rules (XRechnung is a CIUS built on top of EN 16931) — a `BR-DE-*` code will never
 be found there.
 
-CIUS:   Core Invoice Usage Specification
+CIUS: Core Invoice Usage Specification
 
 ```
 German VAT law (UStG)
@@ -24,22 +24,22 @@ OpenInvoiceXML — this project's TypeScript business-rule validation
 
 ## Sources
 
-| Source | URL | Use it for |
-|---|---|---|
-| XRechnung specification & KoSIT validation bundles | [xrechnung-spec] | Main page for German XRechnung requirements |
-| EN 16931 validation rules (GitHub) | [en16931] | European rules (`BR-AE-01`, `BT-118`, etc.) — not XRechnung's `BR-DE-*` |
-| EN 16931 supporting-artefacts & code-list registry | [en16931-artefacts] | VATEX codes and other EN 16931 code-list releases |
-| §14 UStG | [ustg-14] | Mandatory invoice fields |
-| §4 UStG | [ustg-4] | VAT exemptions (`E` category) |
-| §6 UStG | [ustg-6] | Export outside EU (`G` category) |
-| §6a UStG | [ustg-6a] | Intra-EU supply (`K` category) |
-| §13b UStG | [ustg-13b] | Reverse-charge subcases (`AE` category) |
-| §12 UStG | [ustg-12] | German VAT rates (19%/7%/0%) |
-| §19 UStG | [ustg-19] | Small-business exemption (Kleinunternehmerregelung) |
-| §3a UStG | [ustg-3a] | Place-of-supply default/B2B-override rule |
-| Anlage 3 / Anlage 4 UStG | [ustg-anlage-3] / [ustg-anlage-4] | Goods lists behind specific §13b subcases |
-| Umsatzsteuer-Anwendungserlass (UStAE) | [ustae] | Current BMF administrative guidance |
-| PDF/A-3 (ISO 19005-3) conformance | [verapdf] | Reference validator used by this project to check PDF/A-3b conformance against ISO 19005-3 — the same role KoSIT plays for XRechnung XML |
+| Source                                             | URL                               | Use it for                                                                                                                               |
+| -------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| XRechnung specification & KoSIT validation bundles | [xrechnung-spec]                  | Main page for German XRechnung requirements                                                                                              |
+| EN 16931 validation rules (GitHub)                 | [en16931]                         | European rules (`BR-AE-01`, `BT-118`, etc.) — not XRechnung's `BR-DE-*`                                                                  |
+| EN 16931 supporting-artefacts & code-list registry | [en16931-artefacts]               | VATEX codes and other EN 16931 code-list releases                                                                                        |
+| §14 UStG                                           | [ustg-14]                         | Mandatory invoice fields                                                                                                                 |
+| §4 UStG                                            | [ustg-4]                          | VAT exemptions (`E` category)                                                                                                            |
+| §6 UStG                                            | [ustg-6]                          | Export outside EU (`G` category)                                                                                                         |
+| §6a UStG                                           | [ustg-6a]                         | Intra-EU supply (`K` category)                                                                                                           |
+| §13b UStG                                          | [ustg-13b]                        | Reverse-charge subcases (`AE` category)                                                                                                  |
+| §12 UStG                                           | [ustg-12]                         | German VAT rates (19%/7%/0%)                                                                                                             |
+| §19 UStG                                           | [ustg-19]                         | Small-business exemption (Kleinunternehmerregelung)                                                                                      |
+| §3a UStG                                           | [ustg-3a]                         | Place-of-supply default/B2B-override rule                                                                                                |
+| Anlage 3 / Anlage 4 UStG                           | [ustg-anlage-3] / [ustg-anlage-4] | Goods lists behind specific §13b subcases                                                                                                |
+| Umsatzsteuer-Anwendungserlass (UStAE)              | [ustae]                           | Current BMF administrative guidance                                                                                                      |
+| PDF/A-3 (ISO 19005-3) conformance                  | [verapdf]                         | Reference validator used by this project to check PDF/A-3b conformance against ISO 19005-3 — the same role KoSIT plays for XRechnung XML |
 
 ## Versions currently targeted
 
@@ -96,24 +96,24 @@ artifacts under `tools/facturx/` have no such script — see "Validating Factur-
 > not mean every statutory condition is fully determined by the software, especially for
 > "Partial" rows.
 
-| Reference | Meaning | Implemented in | Status |
-|---|---|---|---|
-| `§13b UStG` (Abs. 1 + Abs. 2 Nr. 1–12) | Reverse-charge groups | `validators/rules/15.reverse-charge.ts` | Partial — checks free-text wording, not subcase legal preconditions |
-| `§19 UStG` | Small-business exemption (category `E`) | `validators/rules/16.small-business.ts` | Partial — requires a seller tax ID, doesn't verify turnover |
-| `VATEX-EU-G`, `§4 Nr. 1 Buchst. a UStG` | Export (category `G`) | `validators/rules/12.export.ts` | Implemented |
-| `VATEX-EU-IC`, `§6a UStG`, `BR-IC-11/12` | Intra-EU supply (category `K`) | `validators/rules/13.intra-eu.ts` | Implemented (BG-14 alternative to BT-72 not supported) |
-| `BR-O-02` | Outside scope (category `O`) | `validators/rules/14.outside-scope.ts` | Implemented |
-| `BR-57` | Deliver-to country (BT-80) | `validators/rules/11.delivery.ts` | Implemented |
-| `BT-25`/`BT-26` | Credit note / corrective invoice reference | `validators/rules/10.credit-note.ts` | Partial — no diff against the original document |
-| `BT-113`/`BT-25`/`BT-26` | Down-payment deduction reference | `validators/engines/02.business-rules.ts` (inline) | Partial — single reference only |
-| `BR-CO-16`/`BR-DEC-17` | Amount due (BT-115) = total with VAT − prepaid (BT-113) + rounding amount (BT-114) | `validators/engines/02.business-rules.ts` (inline) | Implemented — no project-specific range limit on BT-114 |
-| `BT-118`/`BT-119` | VAT rate rules | `validators/rules/17.vat-rate.ts` | Implemented |
-| `BT-120`/`BT-121` | Exemption-reason presence | `validators/rules/17.vat-rate.ts` + `engines/02.business-rules.ts` | Implemented |
-| `BR-DE-10`/`BR-DE-11` | Deliver-to city/postal code | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
-| `BR-DE-1` | Payment means (BG-16) mandatory under XRechnung | — | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md) |
-| `BR-CO-25` | Due date (BT-9) or payment terms (BT-20) required when amount due is positive | — | Not implemented (and no BT-20 field exists) — see [`LIMITATIONS.md`](LIMITATIONS.md) |
-| `BT-10` (cardinality 1 under the XRechnung 3.0 CIUS) | Buyer reference, mandatory under XRechnung though optional under plain EN 16931 | `validators/rules/19.xrechnung-mandatory-fields.ts` | Implemented — profile-gated (only applies when validated with `profile: "XRECHNUNG"`), presence-only, no Leitweg-ID format/B2G check |
-| Full BT → field mapping | — | [`DATA-MODEL.md`](DATA-MODEL.md) | Reference |
+| Reference                                            | Meaning                                                                            | Implemented in                                                     | Status                                                                                                                               |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `§13b UStG` (Abs. 1 + Abs. 2 Nr. 1–12)               | Reverse-charge groups                                                              | `validators/rules/15.reverse-charge.ts`                            | Partial — checks free-text wording, not subcase legal preconditions                                                                  |
+| `§19 UStG`                                           | Small-business exemption (category `E`)                                            | `validators/rules/16.small-business.ts`                            | Partial — requires a seller tax ID, doesn't verify turnover                                                                          |
+| `VATEX-EU-G`, `§4 Nr. 1 Buchst. a UStG`              | Export (category `G`)                                                              | `validators/rules/12.export.ts`                                    | Implemented                                                                                                                          |
+| `VATEX-EU-IC`, `§6a UStG`, `BR-IC-11/12`             | Intra-EU supply (category `K`)                                                     | `validators/rules/13.intra-eu.ts`                                  | Implemented (BG-14 alternative to BT-72 not supported)                                                                               |
+| `BR-O-02`                                            | Outside scope (category `O`)                                                       | `validators/rules/14.outside-scope.ts`                             | Implemented                                                                                                                          |
+| `BR-57`                                              | Deliver-to country (BT-80)                                                         | `validators/rules/11.delivery.ts`                                  | Implemented                                                                                                                          |
+| `BT-25`/`BT-26`                                      | Credit note / corrective invoice reference                                         | `validators/rules/10.credit-note.ts`                               | Partial — no diff against the original document                                                                                      |
+| `BT-113`/`BT-25`/`BT-26`                             | Down-payment deduction reference                                                   | `validators/engines/02.business-rules.ts` (inline)                 | Partial — single reference only                                                                                                      |
+| `BR-CO-16`/`BR-DEC-17`                               | Amount due (BT-115) = total with VAT − prepaid (BT-113) + rounding amount (BT-114) | `validators/engines/02.business-rules.ts` (inline)                 | Implemented — no project-specific range limit on BT-114                                                                              |
+| `BT-118`/`BT-119`                                    | VAT rate rules                                                                     | `validators/rules/17.vat-rate.ts`                                  | Implemented                                                                                                                          |
+| `BT-120`/`BT-121`                                    | Exemption-reason presence                                                          | `validators/rules/17.vat-rate.ts` + `engines/02.business-rules.ts` | Implemented                                                                                                                          |
+| `BR-DE-10`/`BR-DE-11`                                | Deliver-to city/postal code                                                        | —                                                                  | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md)                                                                             |
+| `BR-DE-1`                                            | Payment means (BG-16) mandatory under XRechnung                                    | —                                                                  | Not implemented — see [`LIMITATIONS.md`](LIMITATIONS.md)                                                                             |
+| `BR-CO-25`                                           | Due date (BT-9) or payment terms (BT-20) required when amount due is positive      | —                                                                  | Not implemented (and no BT-20 field exists) — see [`LIMITATIONS.md`](LIMITATIONS.md)                                                 |
+| `BT-10` (cardinality 1 under the XRechnung 3.0 CIUS) | Buyer reference, mandatory under XRechnung though optional under plain EN 16931    | `validators/rules/19.xrechnung-mandatory-fields.ts`                | Implemented — profile-gated (only applies when validated with `profile: "XRECHNUNG"`), presence-only, no Leitweg-ID format/B2G check |
+| Full BT → field mapping                              | —                                                                                  | [`DATA-MODEL.md`](DATA-MODEL.md)                                   | Reference                                                                                                                            |
 
 ---
 
@@ -131,13 +131,13 @@ projects are developed and licensed independently from OpenInvoiceXML and are no
 These tools are downloaded for local validation/testing and are not vendored or distributed with OpenInvoiceXML; `scripts/setup-*.sh` downloads them from their upstream releases into the
 gitignored `tools/` directory. Versions are the ones the setup scripts pin, not necessarily the newest upstream releases.
 
-| Tool | Version pinned | License | Upstream | Installed by |
-| --- | --- | --- | --- | --- |
-| KoSIT Validator | 1.6.2 (standalone jar) | Apache-2.0 | [itplr-kosit/validator](https://github.com/itplr-kosit/validator) | `make kosit-setup` (`scripts/setup-kosit.sh`) |
-| XRechnung validator configuration | release 2026-01-31, for XRechnung 3.0.2 | Apache-2.0 | [itplr-kosit/validator-configuration-xrechnung](https://github.com/itplr-kosit/validator-configuration-xrechnung) | `make kosit-setup` (`scripts/setup-kosit.sh`) |
-| Mustangproject (Mustang CLI) | 2.26.0 | Apache-2.0 | [ZUGFeRD/mustangproject][mustang-tool] | `make mustang-setup` (`scripts/setup-mustang.sh`) |
-| veraPDF (greenfield) | 1.30.2 | GPLv3+ OR MPLv2+ | [verapdf.org][verapdf] | `make verapdf-setup` (`scripts/setup-verapdf.sh`) |
-| Eclipse Temurin JRE | 17.0.19+10 | GPLv2 with the Classpath Exception | [Eclipse Adoptium](https://adoptium.net/) | any of the three setup targets, only if no `java` is found |
+| Tool                              | Version pinned                          | License                            | Upstream                                                                                                          | Installed by                                               |
+| --------------------------------- | --------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| KoSIT Validator                   | 1.6.2 (standalone jar)                  | Apache-2.0                         | [itplr-kosit/validator](https://github.com/itplr-kosit/validator)                                                 | `make kosit-setup` (`scripts/setup-kosit.sh`)              |
+| XRechnung validator configuration | release 2026-01-31, for XRechnung 3.0.2 | Apache-2.0                         | [itplr-kosit/validator-configuration-xrechnung](https://github.com/itplr-kosit/validator-configuration-xrechnung) | `make kosit-setup` (`scripts/setup-kosit.sh`)              |
+| Mustangproject (Mustang CLI)      | 2.26.0                                  | Apache-2.0                         | [ZUGFeRD/mustangproject][mustang-tool]                                                                            | `make mustang-setup` (`scripts/setup-mustang.sh`)          |
+| veraPDF (greenfield)              | 1.30.2                                  | GPLv3+ OR MPLv2+                   | [verapdf.org][verapdf]                                                                                            | `make verapdf-setup` (`scripts/setup-verapdf.sh`)          |
+| Eclipse Temurin JRE               | 17.0.19+10                              | GPLv2 with the Classpath Exception | [Eclipse Adoptium](https://adoptium.net/)                                                                         | any of the three setup targets, only if no `java` is found |
 
 ### XRechnung XML (KoSIT)
 
@@ -181,13 +181,13 @@ EN 16931 only, and can still pass.
 The library doesn't know the intended scenario. The caller compares `scenarioName` to what they
 expected:
 
-| KoSIT selected expected scenario? | `valid` | Meaning |
-| --- | --- | --- |
-| Yes | `true` | KoSIT used the expected rule set and the invoice passed it. |
-| Yes | `false` | KoSIT used the expected rule set, but the invoice failed validation. |
-| No | `true` | The invoice passed, but under a different rule set. This does not prove conformance with the intended profile. |
-| No | `false` | KoSIT used a different rule set and the invoice also failed that validation. |
-| No scenario matched | `false` | KoSIT could not find an applicable scenario for the document. `scenarioName` is absent. |
+| KoSIT selected expected scenario? | `valid` | Meaning                                                                                                        |
+| --------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| Yes                               | `true`  | KoSIT used the expected rule set and the invoice passed it.                                                    |
+| Yes                               | `false` | KoSIT used the expected rule set, but the invoice failed validation.                                           |
+| No                                | `true`  | The invoice passed, but under a different rule set. This does not prove conformance with the intended profile. |
+| No                                | `false` | KoSIT used a different rule set and the invoice also failed that validation.                                   |
+| No scenario matched               | `false` | KoSIT could not find an applicable scenario for the document. `scenarioName` is absent.                        |
 
 ```ts
 import { runKosit } from "openinvoicexml/validators";
@@ -254,7 +254,7 @@ fixtures pass veraPDF's PDF/A-3b profile with zero errors.
 
 `make validate-hybrid` automates a round-trip check across all 54 fixtures: it runs veraPDF
 against every generated hybrid PDF, then extracts each one's embedded XML
-(`extractEmbeddedXml()`, `adapters/hybrid-pdf.ts`) and runs *that* through KoSIT — proving what a
+(`extractEmbeddedXml()`, `adapters/hybrid-pdf.ts`) and runs _that_ through KoSIT — proving what a
 real recipient would actually extract from the PDF is itself a conformant XRechnung document, not
 just that the PDF passes PDF/A-3b on its own.
 
@@ -265,7 +265,7 @@ an independent, third-party tool instead of this project's own `extractEmbeddedX
 [Mustang Project][mustang-tool] CLI's own `--action extract` must recover XML byte-for-byte
 identical to `toXRechnung()`'s direct output from every one of the 50 generated hybrid PDFs
 (despite the PDF not being ZUGFeRD-branded), and Mustang's own `--action validate` — run against
-that *extracted* XML, not the PDF — must independently corroborate this project's EN16931/
+that _extracted_ XML, not the PDF — must independently corroborate this project's EN16931/
 XRechnung UBL validation findings with zero error-severity findings.
 
 Validating the extracted XML rather than the PDF directly is a deliberate choice: pointing
@@ -305,7 +305,7 @@ Factur-X/ZUGFeRD hybrid PDF (unlike `toHybridPdf()` above). Same three validator
 - **Mustang**, direct against the PDF, no extraction — this is the gating claim (unlike the
   UBL-only PDF above, where Mustang-on-PDF is only a capability check). Before this adapter
   existed, the same call against a UBL-only hybrid PDF failed with Mustang's own
-  *"Factur-X/ZUGFeRD... always strictly CII only, no UBL allowed"* rejection.
+  _"Factur-X/ZUGFeRD... always strictly CII only, no UBL allowed"_ rejection.
 
 ```bash
 make generate-cii          # standalone CII XML per fixture, both profiles, into dist/cii/

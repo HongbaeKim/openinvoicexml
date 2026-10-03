@@ -28,7 +28,7 @@ Phase 4 (Hybrid PDF/A-3 Export) done, tagged v0.4.0 — XRechnung UBL XML, CII X
 (UBL and genuine Factur-X/ZUGFeRD), and unified compliance diagnostics are all implemented and
 validated against KoSIT, veraPDF, and Mustang across 54 fixtures (see
 [docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
-(stabilization & release prep) is in progress — CI now enforces test coverage thresholds. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+(stabilization & release prep) is in progress — CI now enforces test coverage thresholds, and v0.4.1 adds input validation and XML escaping to every `generate*()` function. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 
 ## Prerequisites
 
@@ -85,7 +85,7 @@ engine rather than the other way around.
 Apache-2.0
 
 Optional external validators (KoSIT, Mustangproject, veraPDF) are independent projects under
-their own licenses and are not bundled — see 
+their own licenses and are not bundled — see
 [docs/COMPLIANCE.md](docs/COMPLIANCE.md#third-party-validation-tools).
 
 ---
