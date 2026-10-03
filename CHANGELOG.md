@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-03
+
+### Added
+
+- `Party.identifier` (BT-29 seller / BT-46 buyer, optional `schemeId`; BT-46 is optional and not part of BR-CO-26): schema, UBL
+  (`cac:PartyIdentification`) and CII (`ram:ID`, or `ram:GlobalID` with a scheme) output.
+- `validateBusinessRules()` checks BR-CO-26 (`SELLER_IDENTIFIER_REQUIRED`): the seller needs
+  `identifier`, `legalId` or `vatId`. `taxRegistrationId` alone, a SEPA-scheme identifier or a
+  whitespace-only value does not count.
+- Fixtures 55 and 56 (freelancer without VAT ID, with a BT-29 seller identifier). Both pass KoSIT
+  (UBL and both CII profiles) and Mustang (extracted UBL XML and both Factur-X profiles) with zero
+  errors, which confirms the FeRD E13 convention (Steuernummer as both BT-32 and BT-29) is accepted.
+
+### Changed
+
+- **Behavior change:** invoices whose seller has none of BT-29/BT-30/BT-31 now fail
+  `validateBusinessRules()` locally (previously only KoSIT/Mustang rejected them). The engine
+  never copies the Steuernummer into BT-29 on its own. In particular, a seller with only a
+  Steuernummer (`taxRegistrationId`, BT-32) now fails with `SELLER_IDENTIFIER_REQUIRED`; set
+  `identifier` (BT-29), `legalId` or `vatId`. Using the Steuernummer as BT-29 is an accepted
+  convention (FeRD E13), not a requirement.
+
 ## [0.4.1] - 2026-10-03
 
 ### Added
