@@ -19,6 +19,7 @@ import { checkCreditNoteAndCorrectionRequirements } from "../rules/10.credit-not
 import { checkAllowanceChargeRequirements } from "../rules/18.allowance-charge.js";
 import { checkXRechnungBuyerReferenceRequirement } from "../rules/19.xrechnung-mandatory-fields.js";
 import { checkIssueDateNotInFuture } from "../rules/20.issue-date.js";
+import { checkSellerIdentifierRequirement } from "../rules/21.seller-identifier.js";
 
 export type { ValidationIssue } from "../types.js";
 
@@ -124,6 +125,9 @@ export function validateBusinessRules(
 
   // --- XRechnung-only mandatory fields (BT-10 buyer reference) --------------
   checkXRechnungBuyerReferenceRequirement(invoice.buyerReference, profile, issues);
+
+  // --- Seller identifier (BR-CO-26: BT-29, BT-30 or BT-31) ------------------------------
+  checkSellerIdentifierRequirement(invoice.seller, issues);
 
   // --- Credit notes (381) and corrective invoices (384) --------------------
   checkCreditNoteAndCorrectionRequirements(

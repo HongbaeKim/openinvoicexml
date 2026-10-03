@@ -105,23 +105,16 @@ describe("generateInvoice", () => {
       ).toBe(true);
     }, 60000);
 
-    it("still reports a KoSIT-found error even when this project's own validator misses it", () => {
-      // Fixture 41 passes our own business-rule checks.
-      // But KoSIT would fail if the seller had none of BT-29, BT-30, or BT-31.
-      // We test that KoSIT-only error directly instead of keeping a broken fixture just for this test.
+    it("catches a seller without BT-29/BT-30/BT-31 locally (BR-CO-26) instead of leaving it to KoSIT", () => {
       const invoice = clone(domesticSimple) as Invoice;
       delete invoice.seller.vatId;
       delete invoice.seller.legalId;
 
       const result = generateInvoice(invoice, { validateExternally: true });
 
-      expect(result.xml).not.toBeNull();
-      expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
-      const kositErrors = result.complianceIssues!.filter(
-        (i) => i.source === "kosit" && i.severity === "error",
-      );
-      expect(kositErrors.some((i) => i.code === "BR-CO-26")).toBe(true);
-    }, 60000);
+      expect(result.xml).toBeNull();
+      expect(result.issues.some((i) => i.code === "SELLER_IDENTIFIER_REQUIRED")).toBe(true);
+    });
   });
 });
 
