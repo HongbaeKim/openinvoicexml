@@ -39,13 +39,16 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
   const companyId = party.legalId
     ? `\n        <cbc:CompanyID>${esc(party.legalId)}</cbc:CompanyID>`
     : "";
+  const identifier = party.identifier
+    ? `\n      <cac:PartyIdentification>\n        <cbc:ID${party.identifier.schemeId ? ` schemeID="${esc(party.identifier.schemeId)}"` : ""}>${esc(party.identifier.id)}</cbc:ID>\n      </cac:PartyIdentification>`
+    : "";
   const contact = party.contact
     ? `\n      <cac:Contact>${party.contact.name ? `\n        <cbc:Name>${esc(party.contact.name)}</cbc:Name>` : ""}\n        <cbc:Telephone>${esc(party.contact.telephone)}</cbc:Telephone>\n        <cbc:ElectronicMail>${esc(party.contact.email)}</cbc:ElectronicMail>\n      </cac:Contact>`
     : "";
 
   return `  <${wrapperTag}>
     <cac:Party>
-      <cbc:EndpointID schemeID="${esc(party.schemeId)}">${esc(party.electronicAddress)}</cbc:EndpointID>
+      <cbc:EndpointID schemeID="${esc(party.schemeId)}">${esc(party.electronicAddress)}</cbc:EndpointID>${identifier}
       <cac:PartyName><cbc:Name>${esc(party.name)}</cbc:Name></cac:PartyName>
       <cac:PostalAddress>
         <cbc:StreetName>${esc(party.addressLine1)}</cbc:StreetName>${line2}

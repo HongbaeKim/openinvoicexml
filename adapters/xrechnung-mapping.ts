@@ -18,6 +18,7 @@ export interface PartyFields {
   city: string;
   postalCode: string;
   countryCode: string;
+  identifier?: { id: string; schemeId?: string | undefined } | undefined;
   vatId?: string | undefined;
   taxRegistrationId?: string | undefined;
   legalId?: string | undefined;
@@ -34,6 +35,7 @@ export function mapParty(party: Party): PartyFields {
     city: party.address.city,
     postalCode: party.address.postalCode,
     countryCode: party.address.countryCode,
+    identifier: party.identifier,
     vatId: party.vatId,
     taxRegistrationId: party.taxRegistrationId,
     legalId: party.legalId,

@@ -35,6 +35,8 @@ function baseInvoice(): Invoice {
   const invoice = clone(domesticSimple);
   return {
     ...invoice,
+    seller: { ...invoice.seller, identifier: { id: "S-1", schemeId: "0204" } },
+    buyer: { ...invoice.buyer, identifier: { id: "B-1", schemeId: "0204" } },
     delivery: {
       actualDeliveryDate: "2026-06-09",
       deliverTo: { city: "Berlin", postalCode: "10117", countryCode: "DE" },
@@ -59,6 +61,10 @@ const INJECTION_POINTS: string[] = [
   "dueDate",
   "currencyCode", // lands in currencyID="..." attribute values too
   "seller.address.countryCode",
+  "seller.identifier.id",
+  "seller.identifier.schemeId",
+  "buyer.identifier.id",
+  "buyer.identifier.schemeId",
   "delivery.deliverTo.countryCode",
   "delivery.actualDeliveryDate",
   "precedingInvoiceReference.issueDate",

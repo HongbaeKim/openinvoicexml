@@ -5,6 +5,16 @@ export interface Party {
   /** BT-30 / BT-47: Legal registration identifier (e.g. Handelsregisternummer). */
   legalId?: string;
 
+  /**
+   * Party identifier.
+   *
+   * Seller: BT-29
+   * Buyer: BT-46
+   *
+   * schemeId corresponds to the applicable identifier scheme (BT-29-1 / BT-46-1).
+   */
+  identifier?: { id: string; schemeId?: string };
+
   /** BT-31 / BT-48: VAT registration number (Umsatzsteuer-Identifikationsnummer). */
   vatId?: string;
   /** BT-32: Seller tax registration number (Steuernummer, for §19 small businesses). */

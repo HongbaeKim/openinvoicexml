@@ -59,6 +59,13 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
     ? `\n      <ram:SpecifiedLegalOrganization>\n        <ram:ID>${esc(party.legalId)}</ram:ID>\n      </ram:SpecifiedLegalOrganization>`
     : "";
 
+  // BT-29 / BT-46: ram:ID without a scheme, ram:GlobalID with one. Both precede ram:Name.
+  const identifier = party.identifier
+    ? party.identifier.schemeId
+      ? `\n      <ram:GlobalID schemeID="${esc(party.identifier.schemeId)}">${esc(party.identifier.id)}</ram:GlobalID>`
+      : `\n      <ram:ID>${esc(party.identifier.id)}</ram:ID>`
+    : "";
+
   const contact = party.contact
     ? `\n      <ram:DefinedTradeContact>${
         party.contact.name ? `\n        <ram:PersonName>${esc(party.contact.name)}</ram:PersonName>` : ""
@@ -93,7 +100,7 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
     ? `\n      <ram:SpecifiedTaxRegistration>\n        <ram:ID schemeID="FC">${esc(party.taxRegistrationId)}</ram:ID>\n      </ram:SpecifiedTaxRegistration>`
     : "";
 
-  return `  <ram:${wrapperTag}>
+  return `  <ram:${wrapperTag}>${identifier}
       <ram:Name>${esc(party.name)}</ram:Name>${legalOrg}${contact}${address}${electronicAddress}${vatRegistration}${fcRegistration}
   </ram:${wrapperTag}>`;
 }

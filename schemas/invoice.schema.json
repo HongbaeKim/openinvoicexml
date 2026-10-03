@@ -237,6 +237,26 @@
           "description": "BT-30 / BT-47: Legal registration identifier (e.g. Handelsregisternummer HRB 12345).",
           "maxLength": 500
         },
+        "identifier": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id"],
+          "description": "BT-29 / BT-46: Seller or buyer identifier, e.g. a supplier number assigned by the buyer. For the seller, BR-CO-26 requires at least one of BT-29, BT-30 (legalId) or BT-31 (vatId).",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "description": "BT-29 / BT-46: Identifier value."
+            },
+            "schemeId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "description": "BT-29-1 / BT-46-1: Identification scheme identifier (optional)."
+            }
+          }
+        },
         "vatId": {
           "type": "string",
           "pattern": "^[A-Z]{2}[0-9A-Z]{2,13}$",
