@@ -4,7 +4,8 @@
 // unapproved packages, no fileURLToPath()/fs-based loading. browser.test.ts walks the whole
 // import graph from here and enforces that ("browser entry policy").
 //
-// Node-only features (hybrid PDF, KoSIT/veraPDF/Mustang) stay in `openinvoicexml/adapters`.
+// Hybrid PDFs are available here too (browser-pdf.ts); only KoSIT/veraPDF/Mustang stay Node-only in
+// `openinvoicexml/adapters`.
 // The dependency points one way: generate-invoice.ts imports this file, never the reverse.
 
 import type { Invoice } from "../core/index.js";
@@ -15,6 +16,8 @@ import {
 import { toXRechnung } from "./xrechnung.js";
 
 export { toXRechnung } from "./xrechnung.js";
+export { toHybridPdf, toFacturXPdf } from "./browser-pdf.js";
+export type { BrowserPdfOptions, HybridPdfOptions, PdfFontBytes } from "./browser-pdf.js";
 export { validateBusinessRules } from "../validators/engines/02.business-rules.js";
 export type { Invoice } from "../core/index.js";
 export type { ValidationIssue } from "../validators/types.js";

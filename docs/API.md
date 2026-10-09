@@ -196,9 +196,12 @@ Available from `openinvoicexml/browser`:
 - `generateInvoiceXml`
 - `toXRechnung`
 - `validateBusinessRules`
+- `toHybridPdf` and `toFacturXPdf` (async; same PDFs as in `openinvoicexml/adapters`, made in the browser)
 - Related TypeScript types
 
-PDF generation and external validators are not available in the browser. KoSIT, Mustang, and veraPDF need Java and must run on a Node backend.
+External validators are not available in the browser. KoSIT, Mustang, and veraPDF need Java and must run on a Node backend.
+
+**Hybrid PDFs in the browser.** `toHybridPdf(invoice, options?)` and `toFacturXPdf(invoice, options?)` return a `Promise<Uint8Array>`. They do not validate the invoice: call `generateInvoiceXml()` (or `validateBusinessRules(invoice, "XRECHNUNG")`) first and only create the PDF when there are no errors. The fonts (DejaVu Sans, about 1.4 MB) are fetched on the first call from `assets/fonts/` next to the module via `new URL(..., import.meta.url)`, which Vite, webpack and esbuild bundle as assets. If your setup cannot do that, pass the font bytes yourself: `{ fonts: { regular, bold } }`. The browser-pdf test bundles the entry and runs it with `Buffer`, `process` and `require` removed; it is not run in a real browser engine.
 
 CI checks the XML created by `generateInvoiceXml()` with KoSIT and Mustang for all scenarios in the browser-validation test suite.
 

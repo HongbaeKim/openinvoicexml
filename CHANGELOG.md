@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-10-09
+
+### Added
+
+- `openinvoicexml/browser` now exports `toHybridPdf()` and `toFacturXPdf()`: the existing PDF generators, running in
+  the browser with no Node APIs. Fonts are fetched next to the module, or passed in with `options.fonts`. A test bundles
+  the entry and runs both functions with Node-only globals removed.
+
+### Changed
+
+- Internal: the PDF layout moved from `adapters/hybrid-pdf.ts` to the browser-safe `adapters/hybrid-pdf-core.ts`;
+  `hybrid-pdf.ts` keeps the Node API (`toHybridPdf`, `toFacturXPdf`, `extractEmbeddedXml`) unchanged. `@cantoo/pdf-lib`
+  and `fontkit` are now on the browser entry's allowed-package list.
+
 ## [0.4.2] - 2026-10-03
 
 ### Added
