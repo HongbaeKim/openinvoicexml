@@ -21,12 +21,12 @@ import { allFixtures, domesticSimple, intraEuSupply, reducedRate } from "../fixt
 //   - a node:* specifier
 //   - a Node built-in without the node: prefix (fs, path, os, child_process, ...)
 //   - a bare package specifier not listed in ALLOWED_PACKAGES
-//   - fileURLToPath (module URL → filesystem path, as hybrid-pdf.ts does for its fonts)
+//   - fileURLToPath (module URL → filesystem path, as the Node-only hybrid-pdf.ts does for its fonts)
 // import.meta.url on its own is allowed: `new URL("./asset.svg", import.meta.url)` is valid
 // browser code. Type-only imports/exports are skipped because they're erased at compile time.
 
 // This is the browser dependency allowlist.
-const ALLOWED_PACKAGES: ReadonlySet<string> = new Set();
+const ALLOWED_PACKAGES: ReadonlySet<string> = new Set(["@cantoo/pdf-lib", "fontkit"]);
 // Node gives you a list of its built-in modules
 const NODE_BUILTINS: ReadonlySet<string> = new Set(builtinModules);
 
@@ -179,6 +179,10 @@ describe("browser entry policy (adapters/browser.ts import graph)", () => {
     expect(result.visited).toContain("adapters/browser.ts");
     expect(result.visited).toContain("adapters/xrechnung.ts");
     expect(result.visited).toContain("validators/engines/02.business-rules.ts");
+    // The PDF path is part of the browser entry, so it is held to the same policy (fonts are fetched, not read).
+    expect(result.visited).toContain("adapters/browser-pdf.ts");
+    expect(result.visited).toContain("adapters/hybrid-pdf-core.ts");
+    expect(result.visited).not.toContain("adapters/hybrid-pdf.ts");
     expect(result.visited.length).toBeGreaterThan(10);
   });
 
@@ -209,8 +213,8 @@ describe("browser entry policy: the walker catches each violation", () => {
       "entry.ts imports fs (browser entry policy: no Node built-ins",
     ],
     [
-      'import * as fontkit from "fontkit";',
-      "entry.ts imports fontkit (browser entry policy: package is not in ALLOWED_PACKAGES)",
+      'import * as lodash from "lodash";',
+      "entry.ts imports lodash (browser entry policy: package is not in ALLOWED_PACKAGES)",
     ],
     [
       'const fs = await import("node:fs");',
