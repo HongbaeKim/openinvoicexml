@@ -276,6 +276,15 @@ export function wrappedLineCount(doc: PDFDocument, font: PDFFont, text: string, 
   ).length;
 }
 
+/**
+ * Formats the bottom-right page-number label. Exported only for direct unit testing (see
+ * wrappedLineCount() above): drawn text isn't recoverable from saved PDF bytes once fonts are
+ * subset/CID-encoded, so the string is verified independently of the PDF output.
+ */
+export function pageNumberLabel(page: number, total: number): string {
+  return `Seite ${page} / ${total}`;
+}
+
 function drawLineRow(layout: Layout, fields: PdfDocumentFields, line: PdfLineFields): void {
   const maxDescWidth = TABLE_COLUMNS.description - 8;
 
@@ -534,6 +543,29 @@ function drawFooter(layout: Layout, fields: PdfDocumentFields): void {
   });
 }
 
+/**
+ * Draws "Seite N / total" bottom-right on every page, once the full page count is known. Must run
+ * after all other content is drawn (drawFooter() included): pagination during layout can still add
+ * pages up to that point, and this has to see the final count. Unconditional: even a single-page
+ * invoice gets "Seite 1 / 1". Never calls ensureSpace()/startPage(), so it cannot add a page.
+ */
+function drawPageNumbers(doc: PDFDocument, fonts: Fonts): void {
+  const pages = doc.getPages();
+  const total = pages.length;
+  pages.forEach((page, index) => {
+    const label = pageNumberLabel(index + 1, total);
+    const size = 8;
+    const width = fonts.regular.widthOfTextAtSize(label, size);
+    page.drawText(label, {
+      x: MARGIN + CONTENT_WIDTH - width,
+      y: MARGIN,
+      size,
+      font: fonts.regular,
+      color: GRAY,
+    });
+  });
+}
+
 /** The two TrueType fonts the layout needs (DejaVu Sans regular + bold). Where they come from is the caller's job. */
 export interface PdfFontBytes {
   regular: Uint8Array;
@@ -578,6 +610,7 @@ async function buildInvoicePages(invoice: Invoice, fontBytes: PdfFontBytes): Pro
   drawTotalsBlock(layout, fields);
   drawPaymentInfo(layout, fields);
   drawFooter(layout, fields);
+  drawPageNumbers(doc, fonts);
 
   return doc;
 }

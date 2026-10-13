@@ -8,7 +8,13 @@ import { PDFDocument, parsePDFAConformanceFromXmp, AFRelationship } from "@canto
 import * as fontkit from "fontkit";
 import type { Font } from "fontkit";
 
-import { toHybridPdf, toFacturXPdf, extractEmbeddedXml, wrappedLineCount } from "./hybrid-pdf.js";
+import {
+  toHybridPdf,
+  toFacturXPdf,
+  extractEmbeddedXml,
+  wrappedLineCount,
+  pageNumberLabel,
+} from "./hybrid-pdf.js";
 import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
 import type { Invoice } from "../core/index.js";
@@ -182,6 +188,20 @@ describe("toHybridPdf", () => {
 
       expect(wrappedLineCount(doc, font, shortText, 8)).toBe(1);
       expect(wrappedLineCount(doc, font, longText, 8)).toBeGreaterThan(4);
+    });
+  });
+
+  describe("page numbers", () => {
+    it("formats the label as 'Seite N / total'", () => {
+      expect(pageNumberLabel(1, 1)).toBe("Seite 1 / 1");
+      expect(pageNumberLabel(1, 3)).toBe("Seite 1 / 3");
+      expect(pageNumberLabel(3, 3)).toBe("Seite 3 / 3");
+    });
+
+    it("does not add a page to a single-page invoice", async () => {
+      const bytes = await toHybridPdf(domesticSimple as Invoice);
+      const reloaded = await PDFDocument.load(bytes);
+      expect(reloaded.getPageCount()).toBe(1);
     });
   });
 

@@ -14,7 +14,7 @@ import {
 // this file only adds what needs Node: reading the fonts from disk and extractEmbeddedXml().
 // The browser counterpart is browser-pdf.ts (`openinvoicexml/browser`).
 
-export { wrappedLineCount } from "./hybrid-pdf-core.js";
+export { wrappedLineCount, pageNumberLabel } from "./hybrid-pdf-core.js";
 export type { EInvoiceProfile, HybridPdfOptions } from "./hybrid-pdf-core.js";
 
 const FONT_DIR = fileURLToPath(new URL("./assets/fonts/", import.meta.url));
