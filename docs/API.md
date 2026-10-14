@@ -1,12 +1,45 @@
 # API
 
-Usage reference for the generation modules: the unified `generateInvoiceDocument` entry point,
-`generateInvoice`/`toXRechnung` (UBL XML), `generateInvoiceXml` (also available from the browser-safe `openinvoicexml/browser`), `validateXmlExternally` (KoSIT + Mustang on existing XML), `validateFileExternally`/`detectInvoiceFormat` (validate an existing XML or PDF invoice file), `generateCii`/`toCii` (CII XML), the hybrid PDF/A-3
-counterparts `generateHybridPdf`/`toHybridPdf` (UBL attachment, no Factur-X/ZUGFeRD claim) and
-`generateFacturXPdf`/`toFacturXPdf` (CII embedded via `embedFacturX()`, a genuine Factur-X/ZUGFeRD
-conformance claim), and the `ValidationIssue` error-code contract shared between them. `runKosit`,
-`runVeraPdf`, and `runMustang`/`extractWithMustang` are documented separately at the end as
-optional, external validation layers.
+Usage reference for the public API: generating invoices (XML and PDF), validating them, and
+checking existing files.
+
+## Entry points
+
+| Import                      | Environment | Contents                                                                                           |
+| --------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| `openinvoicexml/browser`    | Browser     | `generateInvoiceXml`, `toXRechnung`, `toHybridPdf`, `toFacturXPdf`, `validateBusinessRules`, types |
+| `openinvoicexml/adapters`   | Node.js     | All generation functions, `extractEmbeddedXml`, and file/XML external validation                   |
+| `openinvoicexml/validators` | Node.js     | `validateInvoiceSchema`, `validateBusinessRules`, `runKosit`/`runVeraPdf`/`runMustang`, converters |
+| `openinvoicexml`            | Any         | The `Invoice` types (`Invoice`, `InvoiceLine`, `Party`, `VatBreakdown`, ... )                      |
+
+`toHybridPdf` and `toFacturXPdf` exist in both `openinvoicexml/browser` and
+`openinvoicexml/adapters` with the same output; they differ only in how fonts are loaded (see
+[Browser entry](#browser-entry-openinvoicexmlbrowser)). Everything that needs Java (KoSIT, Mustang,
+veraPDF) or the file system is Node-only.
+
+| Function                                   | Browser | Node.js | Sync/async |
+| ------------------------------------------ | ------- | ------- | ---------- |
+| `generateInvoiceDocument`                  | No      | Yes     | async      |
+| `generateInvoice`                          | No      | Yes     | sync       |
+| `generateInvoiceXml`                       | Yes     | Yes     | sync       |
+| `toXRechnung`                              | Yes     | Yes     | sync       |
+| `generateCii` / `toCii`                    | No      | Yes     | sync       |
+| `generateHybridPdf` / `generateFacturXPdf` | No      | Yes     | async      |
+| `toHybridPdf` / `toFacturXPdf`             | Yes     | Yes     | async      |
+| `extractEmbeddedXml`                       | No      | Yes     | async      |
+| `validateBusinessRules`                    | Yes     | Yes     | sync       |
+| `validateInvoiceSchema`                    | No      | Yes     | sync       |
+| `validateXmlExternally`                    | No      | Yes     | sync       |
+| `validateFileExternally`                   | No      | Yes     | async      |
+| `detectInvoiceFormat`                      | No      | Yes     | sync       |
+| `runKosit` / `runVeraPdf` / `runMustang`   | No      | Yes     | sync       |
+
+Signatures are taken from the exports in `package.json`; the sections below document each
+function. For the error-code contract shared by all of them, see
+[`ValidationIssue`](#validationissue--error-code-contract).
+
+A condensed German overview is available in [`API.de.md`](API.de.md). It is maintained by hand and
+may lag behind this file; this English version is authoritative.
 
 For the `Invoice` input shape itself (fields, types, BT mapping), see
 [`DATA-MODEL.md`](DATA-MODEL.md) rather than re-reading it here.
@@ -185,7 +218,7 @@ Both imports are the same function.
 
 `generateInvoiceXml()` checks the invoice with OpenInvoiceXML's business rules and creates XRechnung UBL XML. Errors stop XML creation; warnings do not. For CII XML, use [`generateCii()`](#generateciiinvoice-options--recommended-entry-point).
 
-`generateInvoice(invoice)` without options returns the same result. Use `generateInvoice()` when you need its Node-specific options, such as `validateExternally`; use `generateInvoiceXml()` when you specifically want validated XRechnung UBL XML.
+`generateInvoice(invoice)` produces the same XML for a valid invoice, but runs the JSON Schema check first (see above), which `generateInvoiceXml()` skips because it needs Node-only AJV. Use `generateInvoice()` on a Node backend, especially for untyped input or its `validateExternally` option; use `generateInvoiceXml()` in the browser, or when you already have a typed, structurally valid `Invoice`.
 
 ### Browser entry (`openinvoicexml/browser`)
 
@@ -201,7 +234,7 @@ Available from `openinvoicexml/browser`:
 
 External validators are not available in the browser. KoSIT, Mustang, and veraPDF need Java and must run on a Node backend.
 
-**Hybrid PDFs in the browser.** `toHybridPdf(invoice, options?)` and `toFacturXPdf(invoice, options?)` return a `Promise<Uint8Array>`. They do not validate the invoice: call `generateInvoiceXml()` (or `validateBusinessRules(invoice, "XRECHNUNG")`) first and only create the PDF when there are no errors. The fonts (DejaVu Sans, about 1.4 MB) are fetched on the first call from `assets/fonts/` next to the module via `new URL(..., import.meta.url)`, which Vite, webpack and esbuild bundle as assets. If your setup cannot do that, pass the font bytes yourself: `{ fonts: { regular, bold } }`. The browser-pdf test bundles the entry and runs it with `Buffer`, `process` and `require` removed; it is not run in a real browser engine.
+**Hybrid PDFs in the browser.** `toHybridPdf(invoice, options?)` and `toFacturXPdf(invoice, options?)` return a `Promise<Uint8Array>`. `options` is `BrowserPdfOptions`: the `profile` from `HybridPdfOptions` plus the optional `fonts` below. They do not validate the invoice: call `generateInvoiceXml()` (or `validateBusinessRules(invoice, "XRECHNUNG")`) first and only create the PDF when there are no errors. The fonts (DejaVu Sans, about 1.4 MB) are fetched on the first call from `assets/fonts/` next to the module via `new URL(..., import.meta.url)`, which Vite, webpack and esbuild bundle as assets. If your setup cannot do that, pass the font bytes yourself: `{ fonts: { regular, bold } }`. The browser-pdf test bundles the entry and runs it with `Buffer`, `process` and `require` removed; it is not run in a real browser engine.
 
 CI checks the XML created by `generateInvoiceXml()` with KoSIT and Mustang for all scenarios in the browser-validation test suite.
 
@@ -419,6 +452,57 @@ function `toHybridPdf` output uses, with an explicit second argument for this at
 different file name) — see
 [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output).
 
+## `extractEmbeddedXml(pdfPath, attachmentName)` — read the XML out of a hybrid PDF
+
+```ts
+import { extractEmbeddedXml } from "openinvoicexml/adapters";
+
+const ubl = await extractEmbeddedXml("invoice.pdf"); // xrechnung.xml
+const cii = await extractEmbeddedXml("facturx.pdf", "factur-x.xml");
+```
+
+- **Input:** path to a PDF on disk, plus the attachment name (default `"xrechnung.xml"`; use
+  `"factur-x.xml"` for `toFacturXPdf()` output)
+- **Output:** `Promise<string>` with the decoded XML. Throws if the PDF has no such attachment.
+
+Node-only (reads from disk). It reads this project's own attachment names, so it is meant for
+PDFs generated by this library. For PDFs from other software, use
+[`validateFileExternally()`](#validatefileexternallybytes-options--validate-an-existing-file),
+which detects the embedded invoice XML by content.
+
+## `detectInvoiceFormat(bytes)` — identify a file by content
+
+```ts
+import { detectInvoiceFormat } from "openinvoicexml/adapters";
+
+const format = detectInvoiceFormat(uploadedBytes);
+// "UBL_XML" | "CII_XML" | "XML_OTHER" | "XML_MALFORMED" | "PDF" | "UNKNOWN"
+```
+
+- **Input:** `Uint8Array`
+- **Output:** `InvoiceFileFormat`
+
+Looks only at the content: file name, extension, and MIME type are ignored. It checks enough of
+the XML to identify its root element; it does not fully validate it. Used internally by
+`validateFileExternally()`.
+
+## `validateBusinessRules(invoice, profile, options)`
+
+```ts
+import { validateBusinessRules } from "openinvoicexml/validators"; // or "openinvoicexml/browser"
+
+const issues = validateBusinessRules(invoice, "XRECHNUNG");
+```
+
+- **Input:** `Invoice`, an optional `EInvoiceProfile` (defaults to `"EN16931"`), and optional
+  `{ today?: string }` to fix the date used by the future-issue-date check
+- **Output:** `ValidationIssue[]`; never throws
+
+`generateInvoice`, `generateInvoiceXml`, and `generateHybridPdf` validate as `"XRECHNUNG"`.
+`generateCii` and `generateFacturXPdf` use the `profile` you pass. It assumes a structurally valid
+`Invoice`; for untyped input, run [`validateInvoiceSchema`](#validateinvoiceschemadata--structural-validation)
+first.
+
 ## `ValidationIssue` — error-code contract
 
 `validateBusinessRules(invoice)` (used internally by `generateInvoice`, also importable
@@ -535,7 +619,25 @@ KoSIT and Mustang are reported separately:
 - **Failed:** validator ran and found errors.
 - **Unavailable:** validator could not run, for example because Java or the validator is missing.
 
-When `Uint8Array` is used, the exact bytes are validated without changing them. Temporary files are deleted after validation.
+When `Uint8Array` is used, the exact bytes are validated without changing them. Temporary files are deleted after validation. The function is synchronous and never throws for validator problems: an unavailable validator is reported in its own result.
+
+```ts
+interface ExternalValidationResult {
+  kosit: ApplicableValidatorResult;
+  mustang: ApplicableValidatorResult;
+  /** The KoSIT scenario the XML matched, when KoSIT ran and one matched. */
+  kositScenario?: string;
+  /** KoSIT findings first, then Mustang's; empty for a validator that didn't run. */
+  complianceIssues: ComplianceIssue[];
+}
+
+type ApplicableValidatorResult =
+  | { applicable: true; ran: false; valid: false; error: string } // unavailable
+  | { applicable: true; ran: true; valid: boolean; issues: ComplianceIssue[] };
+```
+
+`options` is `ExternalValidationOptions` (`{ kosit?, mustang? }`), passed through to
+`runKosit`/`runMustang`.
 
 `kositScenario` is the KoSIT scenario the XML was checked under. A KoSIT pass only means it passed that scenario's rules — see [`COMPLIANCE.md`](COMPLIANCE.md#check-the-matched-scenario-not-just-valid).
 
@@ -570,6 +672,26 @@ The format is detected from its content, not its file name:
 For PDFs, the embedded invoice XML is detected by its content. If no invoice XML or more than one is found, validation fails instead of guessing which one to use.
 
 ### Result
+
+`FileValidationResult` has these fields:
+
+| Field                           | Meaning                                                                                                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`                        | `"PASS" \| "FAIL" \| "UNAVAILABLE" \| "UNSUPPORTED"`                                                                                                       |
+| `detectedFormat`                | `InvoiceFileFormat` (see `detectInvoiceFormat`)                                                                                                            |
+| `pdfKind?`                      | `"FACTURX_CII"` or `"UBL_HYBRID"` for a PDF with exactly one embedded invoice XML                                                                          |
+| `attachments?`                  | Every attachment found in a PDF (metadata only)                                                                                                            |
+| `embedded?`                     | The one embedded invoice XML that was validated, with its exact bytes                                                                                      |
+| `mustangTarget?`                | What Mustang ran on: `"XML"`, `"PDF"`, or `"EXTRACTED_XML"`                                                                                                |
+| `kositScenario?`                | The KoSIT scenario matched                                                                                                                                 |
+| `veraPdfProfile?`               | The PDF/A profile veraPDF applied                                                                                                                          |
+| `fileFindings`                  | Problems with the file itself: `XML_MALFORMED`, `XML_NOT_AN_INVOICE`, `PDF_UNREADABLE`, `PDF_NO_EMBEDDED_INVOICE_XML`, `PDF_MULTIPLE_EMBEDDED_INVOICE_XML` |
+| `kosit` / `mustang` / `veraPdf` | Per-validator outcome: not applicable, did not run (`error`), or ran (`valid`, `issues`)                                                                   |
+| `complianceIssues`              | KoSIT, then Mustang, then veraPDF findings as `ComplianceIssue[]`                                                                                          |
+
+A hybrid PDF with embedded UBL is never labelled Factur-X/ZUGFeRD (`pdfKind: "UBL_HYBRID"`).
+Mustang rejects UBL inside a PDF, so for that case it validates the extracted XML
+(`mustangTarget: "EXTRACTED_XML"`).
 
 - **PASS:** all applicable checks passed.
 - **FAIL:** the file or one of its checks failed.
