@@ -1,7 +1,7 @@
 import type { Invoice } from "../core/index.js";
 import { validateInvoiceSchema } from "../validators/engines/01.schema.js";
-import { 
-  validateBusinessRules, 
+import {
+  validateBusinessRules,
   type ValidationIssue,
 } from "../validators/engines/02.business-rules.js";
 import {
@@ -9,8 +9,8 @@ import {
   fromKositIssue,
   type ComplianceIssue,
 } from "../validators/engines/99.compliance-issue.js";
-import { toCii } from "./cii.js";
-import { generateInvoiceXml } from "./browser.js";
+import { generateInvoiceXml, generateCii as generateCiiBusinessRules } from "./browser.js";
+import type { GenerateCiiResult } from "./browser.js";
 import { runKositAgainstXml } from "./external-validation.js";
 import {
   toHybridPdf,
@@ -26,7 +26,7 @@ import {
  * generateInvoiceDocument() is always async so callers can use the same API for every format.
  */
 
-  export interface GenerateInvoiceOptions {
+export interface GenerateInvoiceOptions {
   /**
    * Optional: runs the real KoSIT validator on the generated XML.
    *
@@ -104,16 +104,14 @@ export function generateInvoice(
   return { xml, issues, complianceIssues };
 }
 
-export interface GenerateCiiResult {
-  /** The generated CII XML, or null if schema or business-rule validation found an error. */
-  xml: string | null;
-  /** All schema and business-rule issues found, including non-blocking warnings. */
-  issues: ValidationIssue[];
-}
+export type { GenerateCiiResult } from "./browser.js";
 
 /**
  * Same gate as generateInvoice(), but for toCii(). toCii() is synchronous like toXRechnung(), so
  * this mirrors generateInvoice()'s signature, not generateHybridPdf()'s.
+ *
+ * Runs the JSON Schema check first, then delegates to the browser-safe generateCii(), which
+ * applies the profile-aware business rules and serializes. The browser entry has no schema step.
  */
 export function generateCii(
   invoice: Invoice,
@@ -121,11 +119,7 @@ export function generateCii(
 ): GenerateCiiResult {
   const structural = schemaIssues(invoice);
   if (structural) return { xml: null, issues: structural };
-  // toCii() genuinely varies its guideline claim by profile, so validate against the same
-  // profile it will generate (mirroring toCii's own "EN16931" default).
-  const issues = validateBusinessRules(invoice, options.profile);
-  const hasErrors = issues.some((issue) => issue.severity === "error");
-  return { xml: hasErrors ? null : toCii(invoice, options), issues };
+  return generateCiiBusinessRules(invoice, options);
 }
 
 export interface GenerateHybridPdfResult {

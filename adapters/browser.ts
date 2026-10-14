@@ -13,9 +13,12 @@ import {
   validateBusinessRules,
   type ValidationIssue,
 } from "../validators/engines/02.business-rules.js";
+import type { EInvoiceProfile } from "../core/types/profile.js";
 import { toXRechnung } from "./xrechnung.js";
+import { toCii } from "./cii.js";
 
 export { toXRechnung } from "./xrechnung.js";
+export { toCii } from "./cii.js";
 export { toHybridPdf, toFacturXPdf } from "./browser-pdf.js";
 export type { BrowserPdfOptions, HybridPdfOptions, PdfFontBytes } from "./browser-pdf.js";
 export { validateBusinessRules } from "../validators/engines/02.business-rules.js";
@@ -40,4 +43,29 @@ export function generateInvoiceXml(invoice: Invoice): GenerateInvoiceXmlResult {
   const issues = validateBusinessRules(invoice, "XRECHNUNG");
   const hasErrors = issues.some((issue) => issue.severity === "error");
   return { xml: hasErrors ? null : toXRechnung(invoice), issues };
+}
+
+export interface GenerateCiiResult {
+  /** The generated CII XML, or null if schema (Node only) or business-rule validation found an error. */
+  xml: string | null;
+  /** All issues found, including non-blocking warnings. */
+  issues: ValidationIssue[];
+}
+
+/**
+ * Checks the invoice against the business rules of the requested profile (default "EN16931",
+ * same as toCii()). If there are no errors, it creates CII XML.
+ * Warnings never block the XML; they are returned in `issues`.
+ *
+ * This is the business-rule gate only. The Node entry point's generateCii() also runs the JSON
+ * Schema check first (it needs AJV, which is Node-only); this function assumes a structurally
+ * valid `Invoice`, like generateInvoiceXml().
+ */
+export function generateCii(
+  invoice: Invoice,
+  options: { profile?: EInvoiceProfile } = {},
+): GenerateCiiResult {
+  const issues = validateBusinessRules(invoice, options.profile);
+  const hasErrors = issues.some((issue) => issue.severity === "error");
+  return { xml: hasErrors ? null : toCii(invoice, options), issues };
 }

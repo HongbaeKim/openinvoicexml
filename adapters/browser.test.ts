@@ -7,7 +7,13 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { afterAll, describe, expect, it } from "vitest";
 
-import { generateInvoiceXml, toXRechnung, validateBusinessRules } from "./browser.js";
+import {
+  generateCii,
+  generateInvoiceXml,
+  toCii,
+  toXRechnung,
+  validateBusinessRules,
+} from "./browser.js";
 import type { Invoice } from "../core/index.js";
 
 import { allFixtures, domesticSimple, intraEuSupply, reducedRate } from "../fixtures/index.js";
@@ -347,6 +353,63 @@ describe("generateInvoiceXml with all fixtures", () => {
 
       // KoSIT/Mustang tests rely on both paths producing the same XML.
       expect(xml).toBe(toXRechnung(invoice));
+    });
+  });
+});
+
+/**
+ * Browser CII output. Each profile is checked separately: a fixture is only required to produce
+ * CII for the profiles whose business rules it satisfies, and the XML must be withheld exactly
+ * when those rules report an error. Runs without Java.
+ */
+const CII_PROFILES = ["EN16931", "XRECHNUNG"] as const;
+
+describe("browser toCii and generateCii", () => {
+  it("toCii is the same serializer the Factur-X path uses (default profile EN16931)", () => {
+    const invoice = domesticSimple as Invoice;
+    expect(toCii(invoice)).toBe(toCii(invoice, { profile: "EN16931" }));
+    expect(toCii(invoice, { profile: "XRECHNUNG" })).not.toBe(toCii(invoice));
+  });
+
+  it("generateCii withholds XML when a profile's business rules report an error", () => {
+    const invoice = clone(domesticSimple) as Invoice;
+    delete invoice.buyerReference;
+
+    // BT-10 is only mandatory for the XRechnung profile.
+    const xrechnung = generateCii(invoice, { profile: "XRECHNUNG" });
+    expect(xrechnung.xml).toBeNull();
+    expect(xrechnung.issues.some((i) => i.code === "XRECHNUNG_BUYER_REFERENCE_REQUIRED")).toBe(
+      true,
+    );
+
+    const en16931 = generateCii(invoice, { profile: "EN16931" });
+    expect(en16931.issues.some((i) => i.severity === "error")).toBe(false);
+    expect(en16931.xml).toBe(toCii(invoice, { profile: "EN16931" }));
+  });
+
+  it("generateCii does not let warnings block the XML", () => {
+    const result = generateCii(intraEuSupply as Invoice, { profile: "XRECHNUNG" });
+    expect(result.issues.some((i) => i.severity === "warning")).toBe(true);
+    expect(result.xml).not.toBeNull();
+  });
+
+  it("generateCii defaults to the EN16931 profile, like toCii", () => {
+    const invoice = domesticSimple as Invoice;
+    expect(generateCii(invoice)).toEqual(generateCii(invoice, { profile: "EN16931" }));
+  });
+
+  describe.each(allFixtures)("%s", (label, fixture) => {
+    it.each(CII_PROFILES)("generateCii(%s) matches toCii and the business rules", (profile) => {
+      const invoice = fixture as Invoice;
+      const { xml, issues } = generateCii(invoice, { profile });
+      const errorCodes = issues.filter((i) => i.severity === "error").map((i) => i.code);
+
+      // Every fixture is expected to be valid for both profiles; a failure names the rule.
+      expect(errorCodes, `${label} (${profile}): business-rule errors withheld the XML`).toEqual(
+        [],
+      );
+      // generateCii().xml equals toCii() when validation succeeds.
+      expect(xml).toBe(toCii(invoice, { profile }));
     });
   });
 });
