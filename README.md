@@ -6,6 +6,9 @@ An open-source TypeScript library for generating compliant German electronic inv
 
 From 2028 onward, all domestic B2B invoices in Germany must be issued as structured electronic invoices. This library handles the full pipeline: structured JSON input → validated XRechnung XML → hybrid PDF with embedded XML.
 
+> Eine deutsche Fassung dieser Seite: [README.de.md](README.de.md). Translations are maintained by
+> hand and may lag behind the English version.
+
 Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml) (June–November 2026).
 
 ## What it does
@@ -20,13 +23,15 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 - `generateInvoiceDocument(invoice, { format })` gives one call site across all four output
   formats — XRechnung UBL, XRechnung CII, Factur-X/ZUGFeRD EN16931, Factur-X/ZUGFeRD XRechnung —
   without callers needing to know which adapter or `profile` value each one maps to
-- Covers major German VAT and legal scenarios: [§19][ustg-19] small business, [§13b][ustg-13b] reverse charge, intra-EU supply, credit notes, down payment invoices, and more
+- Runs in the browser too: `openinvoicexml/browser` generates XRechnung XML and PDFs locally;
+  external validators need Java and run only in Node.js
+- Covers major German VAT and legal scenarios: [§19][ustg-19] small business, [§13b][ustg-13b] reverse charge, intra-EU supply, credit notes, down payment invoices, and more — see [docs/SUPPORTED_SCENARIOS.md](docs/SUPPORTED_SCENARIOS.md) for the full list
 
 ## Status
 
 Phase 4 (Hybrid PDF/A-3 Export) done, tagged v0.4.0 — XRechnung UBL XML, CII XML, hybrid PDF/A-3
 (UBL and genuine Factur-X/ZUGFeRD), and unified compliance diagnostics are all implemented and
-validated against KoSIT, veraPDF, and Mustang across 54 fixtures (see
+validated against KoSIT, veraPDF, and Mustang across 56 fixtures (see
 [docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
 (stabilization & release prep) is in progress — CI now enforces test coverage thresholds, and v0.4.1 adds input validation and XML escaping to every `generate*()` function. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 
@@ -50,6 +55,31 @@ npm test
 CI (`.github/workflows/ci.yml`) also runs `npm run lint` and `npm run typecheck` on every push
 and PR to `main`.
 
+## Quick start
+
+Generate an invoice (Node.js):
+
+```ts
+import { generateInvoice } from "openinvoicexml/adapters";
+
+const { xml, issues } = generateInvoice(invoice); // invoice: see docs/DATA-MODEL.md
+
+if (xml === null) {
+  // issues contains at least one entry with severity: "error"
+  for (const issue of issues) console.error(`${issue.code}: ${issue.message}`);
+}
+```
+
+In the browser:
+
+```ts
+import { generateInvoiceXml } from "openinvoicexml/browser";
+
+const { xml, issues } = generateInvoiceXml(invoice);
+```
+
+See [docs/API.md](docs/API.md) for every function and output format.
+
 ## Project structure
 
 ```
@@ -63,6 +93,9 @@ and PR to `main`.
 
 ## Docs
 
+German versions exist for [README](README.de.md), [supported scenarios](docs/SUPPORTED_SCENARIOS.de.md),
+and an [API overview](docs/API.de.md). They are maintained by hand and may lag behind the English docs.
+
 | Document                                                                                                      | Status |
 | ------------------------------------------------------------------------------------------------------------- | ------ |
 | `ARCHITECTURE.md` — Adapter pattern, module boundaries, data flow                                             | Done   |
@@ -71,6 +104,7 @@ and PR to `main`.
 | `DATA-MODEL.md` — Internal invoice schema, full XRechnung BT mapping table                                    | Done   |
 | `API.md` — API usage: `generateInvoiceDocument`, `generateInvoice`, `toXRechnung`, error codes                | Done   |
 | `ROADMAP.md` — Phase goals, non-goals, open questions                                                         | Done   |
+| `SUPPORTED_SCENARIOS.md` — Supported, partially supported, and unsupported scenarios                          | Done   |
 | `LIMITATIONS.md` — What is not supported and why                                                              | Done   |
 | `SECURITY.md` — Security considerations and responsible disclosure                                            | Done   |
 
