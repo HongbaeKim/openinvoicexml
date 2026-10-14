@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `openinvoicexml/browser` now exports `toCii()` and `generateCii()`: standalone CII XML in the browser, as an
+  optional output next to the unchanged XRechnung UBL default (`generateInvoiceXml()`). The browser
+  `generateCii()` runs the profile's business rules but not the JSON Schema check (AJV is Node-only); the Node
+  `generateCii()` still runs both. `GenerateCiiResult` is now defined in `adapters/browser.ts` and re-exported
+  from `adapters/generate-invoice.ts`; the public types are unchanged.
+
 ## [0.4.3] - 2026-10-09
 
 ### Added

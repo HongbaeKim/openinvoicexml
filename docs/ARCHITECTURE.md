@@ -112,7 +112,9 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
   and `generate-invoice.ts` composes `validateBusinessRules()` with `toXRechnung()` behind the
   `generateInvoice()` entry point (see [`API.md`](API.md)).
 - **Browser entry** — `browser.ts`, exported as `openinvoicexml/browser`: `generateInvoiceXml()`
-  (the validate-then-convert step), `toXRechnung()`, `validateBusinessRules()`, and the PDF
+  (the validate-then-convert step), `toXRechnung()`, `toCii()`/`generateCii()` (optional CII
+  XML; `generateCii()` has the business-rule gate only, no schema step),
+  `validateBusinessRules()`, and the PDF
   functions `toHybridPdf()`/`toFacturXPdf()` from `browser-pdf.ts`. Its import graph never
   reaches Node-only code (enforced by `browser.test.ts`). The dependency is one-way:
   `generate-invoice.ts` imports `browser.ts` and adds the Node-only KoSIT step on top, and
@@ -213,8 +215,9 @@ file-system access differ.
 ┌───────────────────────────────┐ ┌────────────────────────────────┐
 │ Browser                       │ │ Node.js                        │
 │ openinvoicexml/browser        │ │ openinvoicexml/adapters        │
-│ XML: generateInvoiceXml()     │ │ Generation: generateInvoice(), │
-│ PDF: toHybridPdf(),           │ │ toCii(), toHybridPdf(),        │
+│ XML: generateInvoiceXml(),    │ │ Generation: generateInvoice(), │
+│      toCii()                  │ │ toCii(), toHybridPdf(),        │
+│ PDF: toHybridPdf(),           │ │                                │
 │      toFacturXPdf()           │ │ toFacturXPdf(), …              │
 │ Fonts fetched (browser-pdf.ts)│ │ Fonts read from disk           │
 │                               │ │ External validation (Java):    │
@@ -227,7 +230,7 @@ file-system access differ.
 | Business-rule validation                    | Yes                                | Yes                                 |
 | JSON Schema validation                      | No                                 | Yes (`generateInvoice()`)           |
 | XRechnung UBL XML                           | Yes                                | Yes                                 |
-| Standalone CII XML                          | No                                 | Yes (`toCii()`)                     |
+| Standalone CII XML                          | Yes (`toCii()`, `generateCii()`)   | Yes (`toCii()`, `generateCii()`)    |
 | Hybrid PDF and Factur-X PDF                 | Yes                                | Yes                                 |
 | External validation (KoSIT/Mustang/veraPDF) | No (requires Java)                 | Yes                                 |
 

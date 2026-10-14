@@ -45,8 +45,8 @@ identifier — falls back to the generic `AE` checks only.
 
 - **XML (XRechnung UBL 2.1)** — implemented, all current fixtures pass KoSIT with zero
   `error`-severity findings.
-- **CII XML (`toCii()`)** — implemented (`adapters/cii.ts`), `EN16931`/`XRECHNUNG` profiles. Node.js
-  entry point only; the browser entry exposes CII only inside `toFacturXPdf()`.
+- **CII XML (`toCii()`)** — implemented (`adapters/cii.ts`), `EN16931`/`XRECHNUNG` profiles. Also
+  available from the browser entry (`toCii()`, and `generateCii()` without the JSON Schema step).
 - **Hybrid PDF/A-3, UBL (`toHybridPdf()`)** — implemented (`adapters/hybrid-pdf.ts`). The current
   hybrid PDFs pass veraPDF's PDF/A-3b profile with zero errors across all fixtures.
   `make validate-mustang` independently confirms, via the Mustang Project CLI (a third-party

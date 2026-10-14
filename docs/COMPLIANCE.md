@@ -336,6 +336,8 @@ behind a lead-capture form, so re-vendoring is manual.
 
 CI tests the XML from `generateInvoiceXml()` with KoSIT and Mustang for all scenarios in the browser-validation test suite. This shows that the tested scenarios pass, but it does not validate every invoice a user may create.
 
+**CII from the browser.** `toCii()` and `generateCii()` use the same serializer as the Node entry point, so CII conformance is established by the KoSIT run over `toCii()` output (every fixture, both profiles) and by the Mustang run over the CII embedded in Factur-X PDFs. Browser `generateCii()` applies the profile's business rules but not the JSON Schema check.
+
 To validate a user's exact XML, send it to a Node backend and call `validateXmlExternally(xml)`. This checks the XML with KoSIT and Mustang. See [`API.md`](API.md#validatexmlexternallyxml-options--kosit--mustang).
 
 ### Validating an existing invoice file (`validateFileExternally()`)

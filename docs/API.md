@@ -23,7 +23,7 @@ veraPDF) or the file system is Node-only.
 | `generateInvoice`                          | No      | Yes     | sync       |
 | `generateInvoiceXml`                       | Yes     | Yes     | sync       |
 | `toXRechnung`                              | Yes     | Yes     | sync       |
-| `generateCii` / `toCii`                    | No      | Yes     | sync       |
+| `generateCii` / `toCii`                    | Yes     | Yes     | sync       |
 | `generateHybridPdf` / `generateFacturXPdf` | No      | Yes     | async      |
 | `toHybridPdf` / `toFacturXPdf`             | Yes     | Yes     | async      |
 | `extractEmbeddedXml`                       | No      | Yes     | async      |
@@ -228,11 +228,14 @@ Available from `openinvoicexml/browser`:
 
 - `generateInvoiceXml`
 - `toXRechnung`
+- `toCii` and `generateCii` (CII XML, optional; UBL stays the default)
 - `validateBusinessRules`
 - `toHybridPdf` and `toFacturXPdf` (async; same PDFs as in `openinvoicexml/adapters`, made in the browser)
 - Related TypeScript types
 
 External validators are not available in the browser. KoSIT, Mustang, and veraPDF need Java and must run on a Node backend.
+
+**CII XML in the browser.** `generateInvoiceXml()` stays the default and always produces XRechnung UBL. For CII, `toCii(invoice, { profile })` is the raw serializer (no validation, same function as in `openinvoicexml/adapters`), and `generateCii(invoice, { profile })` checks the business rules of the profile first (default `"EN16931"`, like `toCii`) and returns `{ xml, issues }`. The browser `generateCii()` has the same result shape and business-rule gate as the Node one, but **no JSON Schema step** (AJV is Node-only), so it assumes a structurally valid `Invoice`; the Node version additionally runs `validateInvoiceSchema()`.
 
 **Hybrid PDFs in the browser.** `toHybridPdf(invoice, options?)` and `toFacturXPdf(invoice, options?)` return a `Promise<Uint8Array>`. `options` is `BrowserPdfOptions`: the `profile` from `HybridPdfOptions` plus the optional `fonts` below. They do not validate the invoice: call `generateInvoiceXml()` (or `validateBusinessRules(invoice, "XRECHNUNG")`) first and only create the PDF when there are no errors. The fonts (DejaVu Sans, about 1.4 MB) are fetched on the first call from `assets/fonts/` next to the module via `new URL(..., import.meta.url)`, which Vite, webpack and esbuild bundle as assets. If your setup cannot do that, pass the font bytes yourself: `{ fonts: { regular, bold } }`. The browser-pdf test bundles the entry and runs it with `Buffer`, `process` and `require` removed; it is not run in a real browser engine.
 

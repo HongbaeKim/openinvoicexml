@@ -21,21 +21,21 @@ mit gleicher Ausgabe; sie unterscheiden sich nur im Laden der Schriftarten.
 
 ## Funktionen
 
-| Funktion                                       | Browser | Node.js | Aufruf | Zweck                                                                                            |
-| ---------------------------------------------- | ------- | ------- | ------ | ------------------------------------------------------------------------------------------------ |
-| `generateInvoiceDocument(invoice, { format })` | Nein    | Ja      | async  | Ein Aufrufpunkt für XRechnung UBL/CII und Factur-X (EN16931/XRechnung)                           |
-| `generateInvoice(invoice, options)`            | Nein    | Ja      | sync   | Schema- und Geschäftsregelprüfung, dann XRechnung-UBL-XML; optional `validateExternally` (KoSIT) |
-| `generateInvoiceXml(invoice)`                  | Ja      | Ja      | sync   | Geschäftsregelprüfung, dann XRechnung-UBL-XML; ohne Schema-Prüfung, daher auch im Browser        |
-| `toXRechnung(invoice)`                         | Ja      | Ja      | sync   | Nur Umwandlung in UBL-XML, **ohne** Validierung                                                  |
-| `generateCii(invoice, { profile })` / `toCii`  | Nein    | Ja      | sync   | CII-XML mit bzw. ohne Prüfung; Profil `EN16931` (Standard) oder `XRECHNUNG`                      |
-| `generateHybridPdf` / `toHybridPdf`            | Nein/Ja | Ja      | async  | Hybrides PDF/A-3 mit eingebettetem UBL (kein Factur-X/ZUGFeRD-Anspruch)                          |
-| `generateFacturXPdf` / `toFacturXPdf`          | Nein/Ja | Ja      | async  | Echtes Factur-X/ZUGFeRD-PDF mit eingebettetem CII                                                |
-| `extractEmbeddedXml(pdfPath, name)`            | Nein    | Ja      | async  | Liest das eingebettete XML aus einer von dieser Bibliothek erzeugten PDF                         |
-| `validateBusinessRules(invoice, profile)`      | Ja      | Ja      | sync   | Geschäftsregeln; gibt `ValidationIssue[]` zurück, wirft nie                                      |
-| `validateInvoiceSchema(data)`                  | Nein    | Ja      | sync   | Strukturprüfung gegen das JSON-Schema                                                            |
-| `validateXmlExternally(xml, options)`          | Nein    | Ja      | sync   | Prüft vorhandenes XML mit KoSIT und Mustang (benötigt Java)                                      |
-| `validateFileExternally(bytes, options)`       | Nein    | Ja      | async  | Prüft eine vorhandene XML- oder PDF-Datei mit KoSIT, Mustang und veraPDF                         |
-| `detectInvoiceFormat(bytes)`                   | Nein    | Ja      | sync   | Erkennt das Dateiformat am Inhalt, nicht am Dateinamen                                           |
+| Funktion                                       | Browser | Node.js | Aufruf | Zweck                                                                                                            |
+| ---------------------------------------------- | ------- | ------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| `generateInvoiceDocument(invoice, { format })` | Nein    | Ja      | async  | Ein Aufrufpunkt für XRechnung UBL/CII und Factur-X (EN16931/XRechnung)                                           |
+| `generateInvoice(invoice, options)`            | Nein    | Ja      | sync   | Schema- und Geschäftsregelprüfung, dann XRechnung-UBL-XML; optional `validateExternally` (KoSIT)                 |
+| `generateInvoiceXml(invoice)`                  | Ja      | Ja      | sync   | Geschäftsregelprüfung, dann XRechnung-UBL-XML; ohne Schema-Prüfung, daher auch im Browser                        |
+| `toXRechnung(invoice)`                         | Ja      | Ja      | sync   | Nur Umwandlung in UBL-XML, **ohne** Validierung                                                                  |
+| `generateCii(invoice, { profile })` / `toCii`  | Ja      | Ja      | sync   | CII-XML mit bzw. ohne Prüfung; Profil `EN16931` (Standard) oder `XRECHNUNG`. Im Browser ohne JSON-Schema-Prüfung |
+| `generateHybridPdf` / `toHybridPdf`            | Nein/Ja | Ja      | async  | Hybrides PDF/A-3 mit eingebettetem UBL (kein Factur-X/ZUGFeRD-Anspruch)                                          |
+| `generateFacturXPdf` / `toFacturXPdf`          | Nein/Ja | Ja      | async  | Echtes Factur-X/ZUGFeRD-PDF mit eingebettetem CII                                                                |
+| `extractEmbeddedXml(pdfPath, name)`            | Nein    | Ja      | async  | Liest das eingebettete XML aus einer von dieser Bibliothek erzeugten PDF                                         |
+| `validateBusinessRules(invoice, profile)`      | Ja      | Ja      | sync   | Geschäftsregeln; gibt `ValidationIssue[]` zurück, wirft nie                                                      |
+| `validateInvoiceSchema(data)`                  | Nein    | Ja      | sync   | Strukturprüfung gegen das JSON-Schema                                                                            |
+| `validateXmlExternally(xml, options)`          | Nein    | Ja      | sync   | Prüft vorhandenes XML mit KoSIT und Mustang (benötigt Java)                                                      |
+| `validateFileExternally(bytes, options)`       | Nein    | Ja      | async  | Prüft eine vorhandene XML- oder PDF-Datei mit KoSIT, Mustang und veraPDF                                         |
+| `detectInvoiceFormat(bytes)`                   | Nein    | Ja      | sync   | Erkennt das Dateiformat am Inhalt, nicht am Dateinamen                                                           |
 
 Die Spalte „Browser“ bei den PDF-Funktionen: `generate*` nur unter Node.js, `to*` in beiden
 Umgebungen.

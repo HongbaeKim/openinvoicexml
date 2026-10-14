@@ -25,7 +25,7 @@ Lesehilfe:
 | ---------------------------------------------- | ----------------------------------------------------- | ------- | ------- | ------------------------- |
 | XRechnung UBL 2.1 XML                          | `toXRechnung()`                                       | Ja      | Ja      | XRechnung                 |
 | XRechnung-UBL-XML mit Validierung              | `generateInvoiceXml()`                                | Ja      | Ja      | XRechnung                 |
-| CII-XML                                        | `toCii()`                                             | Ja      | Nein    | `EN16931`, `XRECHNUNG`    |
+| CII-XML                                        | `toCii()`                                             | Ja      | Ja      | `EN16931`, `XRECHNUNG`    |
 | Hybrides PDF/A-3 mit XRechnung-UBL             | `toHybridPdf()`                                       | Ja      | Ja      | XRechnung (kein Factur-X) |
 | Factur-X/ZUGFeRD-PDF/A-3 mit eingebettetem CII | `toFacturXPdf()`                                      | Ja      | Ja      | `EN16931`, `XRECHNUNG`    |
 | Eines der obigen Formate über einen Aufruf     | `generateInvoiceDocument()`                           | Ja      | Nein    | siehe API-Dokumentation   |
