@@ -52,6 +52,8 @@ validation runs against one consistent representation.
 
 All three are implemented. The hybrid PDF/A-3 adapter's two entry points (`toHybridPdf()`/
 `toFacturXPdf()`) each consume one of the other two adapters' output — see `adapters/` below.
+The same flow runs in Node.js and in the browser; see
+[Browser and Node.js execution](#browser-and-nodejs-execution).
 
 1. **Input** arrives as JSON matching `schemas/invoice.schema.json`.
 2. **Schema validation** (`validateInvoiceSchema()`, run first by `generateInvoice()`) checks
@@ -76,11 +78,12 @@ All three are implemented. The hybrid PDF/A-3 adapter's two entry points (`toHyb
 
 ### `validators/`
 
-Three layers, each catching a different class of error:
+Four parts, each catching a different class of error or normalizing the results:
 
-- **Schema validation** (`invoice.schema.json`) — structural errors: missing fields, wrong
-  types, invalid formats. Not run automatically by this package; a consumer with untyped JSON
-  input validates it themselves before constructing an `Invoice`.
+- **Schema validation** (`invoice.schema.json`, `engines/01.schema.ts`) — structural errors:
+  missing fields, wrong types, invalid formats. `validateInvoiceSchema()` is run first by
+  `generateInvoice()`; it is Node-only, so a browser consumer with untyped JSON input validates
+  against the schema themselves before constructing an `Invoice`.
 - **Business rule validation** (`validateBusinessRules()`, in `engines/02.business-rules.ts` +
   `rules/*.ts`) — legal errors valid JSON can still contain: VAT rate/category consistency,
   reverse-charge/exemption requirements, line and document total arithmetic. Returns
@@ -109,10 +112,12 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
   and `generate-invoice.ts` composes `validateBusinessRules()` with `toXRechnung()` behind the
   `generateInvoice()` entry point (see [`API.md`](API.md)).
 - **Browser entry** — `browser.ts`, exported as `openinvoicexml/browser`: `generateInvoiceXml()`
-  (the validate-then-convert step) plus `toXRechnung()`/`validateBusinessRules()`, with an import
-  graph that never reaches Node-only code (enforced by `browser.test.ts`). The dependency is
-  one-way: `generate-invoice.ts` imports `browser.ts` and adds the Node-only KoSIT step on top,
-  and `browser.ts` never imports anything Node-side.
+  (the validate-then-convert step), `toXRechnung()`, `validateBusinessRules()`, and the PDF
+  functions `toHybridPdf()`/`toFacturXPdf()` from `browser-pdf.ts`. Its import graph never
+  reaches Node-only code (enforced by `browser.test.ts`). The dependency is one-way:
+  `generate-invoice.ts` imports `browser.ts` and adds the Node-only KoSIT step on top, and
+  `browser.ts` never imports anything Node-side. See
+  [Browser and Node.js execution](#browser-and-nodejs-execution).
 - **External validation** — Node-only, kept separate from generation (Invoice → XML), in three
   files:
   - `external-validation.ts`: XML → KoSIT/Mustang result (`validateXmlExternally()`), plus the
@@ -126,12 +131,27 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
   written). `cii-mapping.ts` + `cii.ts` mirror the XRechnung adapter's own split. Required because
   every Factur-X/ZUGFeRD conformance level needs CII, not UBL — `toXRechnung()` can't serve that
   role. See [`API.md`](API.md).
-- **Hybrid PDF/A-3 adapter** — implemented, two entry points sharing one visual-layout helper
-  (`buildInvoicePages()` in `hybrid-pdf.ts`) but branching at the end: `toHybridPdf()` embeds the
-  UBL XML as a plain associated file (no Factur-X/ZUGFeRD claim); `toFacturXPdf()` embeds the CII
-  XML via `@cantoo/pdf-lib`'s `embedFacturX()` (`fx:` XMP metadata, a genuine conformance claim).
-  `generate-invoice.ts` composes `validateBusinessRules()` with each behind
+- **Hybrid PDF/A-3 adapter** — implemented, split across three files so the Node and browser entry
+  points share one implementation:
+  - `hybrid-pdf-core.ts`: browser-safe layout and embedding (`buildHybridPdf()`/
+    `buildFacturXPdf()`). Takes font bytes as input and imports no Node modules.
+    `toHybridPdf()`'s path embeds the UBL XML as a plain associated file (no Factur-X/ZUGFeRD
+    claim); `toFacturXPdf()`'s path embeds the CII XML via `@cantoo/pdf-lib`'s `embedFacturX()`
+    (`fx:` XMP metadata, a genuine conformance claim).
+  - `hybrid-pdf.ts`: the Node entry points. Reads the bundled fonts from disk and adds
+    `extractEmbeddedXml()`.
+  - `browser-pdf.ts`: the browser entry points. Fetches the bundled fonts, or accepts them via
+    the `fonts` option.
+
+  `hybrid-pdf-mapping.ts` resolves BT-to-field values for the layout.
+  `generate-invoice.ts` composes `validateBusinessRules()` with each Node entry point behind
   `generateHybridPdf()`/`generateFacturXPdf()`. See [`API.md`](API.md).
+
+- **Profile support** — `EInvoiceProfile` is `"XRECHNUNG" | "EN16931"`. The UBL and CII adapters
+  both consume the same `Invoice` model; `toXRechnung()` always targets XRechnung, while
+  `toCii()`/`toFacturXPdf()` take a `profile`. Factur-X MINIMUM, BASIC WL, and BASIC are not
+  supported; see [`LIMITATIONS.md`](LIMITATIONS.md) and
+  [`SUPPORTED_SCENARIOS.md`](SUPPORTED_SCENARIOS.md).
 
 ---
 
@@ -139,32 +159,82 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
 
 - **JSON Schema, not TypeScript-only validation** — language-independent, so it can be consumed
   by non-TypeScript tooling and collaborators.
-- **No runtime dependencies** — see below.
+- **Minimal, justified runtime dependencies** — see below.
 - **Validation returns data, not exceptions** — `validateBusinessRules()` returns
   `ValidationIssue[]` so callers can see every issue at once instead of catch-fix-retry.
 - **`generateInvoice()` gates output on business-rule errors** — see [`API.md`](API.md) for the
   full contract.
-- **Adapter pattern for output formats** — each format is an independent module depending only
-  on `core/` types, so XML and PDF generation/validation stay decoupled.
+- **Adapter pattern for output formats** — each format is an independent module whose mapping
+  depends only on `core/` types, so XML and PDF generation/validation stay decoupled. UBL and CII
+  adapters share the `Invoice` model, not each other's code. Factur-X profile support is
+  described in `adapters/` above.
+- **One shared, browser-safe core for generation** — layout and serialization carry no Node
+  imports; only fonts-from-disk and external validators are Node-specific.
 
-### No runtime dependencies
+### Runtime dependencies
 
-The engine has two production dependencies scoped to the hybrid PDF/A-3 adapter (`adapters/hybrid-pdf.ts`/`adapters/hybrid-pdf-mapping.ts`):
-[`@cantoo/pdf-lib`](https://github.com/cantoo-scribe/pdf-lib) and
-[`fontkit`](https://github.com/foliojs/fontkit) (the font engine `@cantoo/pdf-lib` requires,
-registered via `PDFDocument.registerFontkit()`, to embed a custom TTF font — it doesn't bundle one
-itself). PDF/A-3 conformance — font subsetting, ICC output intents, embedded-file attachments with
-`AFRelationship`, XMP metadata — isn't something that can reasonably be hand-rolled the way
-XRechnung's XML serialization was; these are a deliberate, narrowly scoped exception, not an
-abandonment of the zero-dependency stance for the rest of the engine. A third pair,
-[`ajv`](https://ajv.js.org) and `ajv-formats`, backs `validators/engines/01.schema.ts`
-(`validateInvoiceSchema()`), which `generateInvoice()` runs on every call so malformed input
-returns structured issues instead of throwing; it is Node-only and deliberately kept out of the
-browser entry. `vitest`, `eslint`, `prettier`, and `typescript` remain devDependencies used only
-for this repo's own build/test/lint. **Why:** minimizing dependencies keeps the library easy to embed, audit,
-and trust — invoice processing is a sensitive domain, and every dependency is a supply-chain
-risk — so each one added, including this one, should be a deliberate, justified exception rather
-than a default.
+Dependencies are minimal and each is a deliberate, justified exception; the current list and
+rationale are in [`DEVELOPMENT.md`](DEVELOPMENT.md#dependency-policy).
+
+- **PDF generation** — [`@cantoo/pdf-lib`](https://github.com/cantoo-scribe/pdf-lib) and
+  [`fontkit`](https://github.com/foliojs/fontkit), used by the hybrid PDF/A-3 adapter
+  (`hybrid-pdf-core.ts`). PDF/A-3 conformance — font subsetting, ICC output intents,
+  embedded-file attachments with `AFRelationship`, XMP metadata — isn't something that can
+  reasonably be hand-rolled the way XRechnung's XML serialization was. Both are browser-safe, so
+  they are also used by `openinvoicexml/browser`'s PDF functions.
+- **Schema validation** — [`ajv`](https://ajv.js.org) and `ajv-formats` back
+  `validators/engines/01.schema.ts` (`validateInvoiceSchema()`), which `generateInvoice()` runs
+  on every call so malformed input returns structured issues instead of throwing. Node-only,
+  and deliberately kept out of the browser entry.
+- **Development only** — `vitest`, `eslint`, `prettier`, and `typescript` are devDependencies
+  used only for this repo's own build/test/lint.
+
+**Why:** minimizing dependencies keeps the library easy to embed, audit, and trust — invoice
+processing is a sensitive domain, and every dependency is a supply-chain risk — so each one
+added should be a deliberate, justified exception rather than a default. XML serialization
+(UBL and CII) remains dependency-free.
+
+---
+
+## Browser and Node.js execution
+
+The invoice engine runs in two environments. Generation is shared; only validation and
+file-system access differ.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ Shared, browser-compatible engine                            │
+│ Invoice model (core/), business rules (validators/rules,     │
+│ engines/02), UBL/CII serialization, PDF layout and embedding │
+│ (hybrid-pdf-core.ts) — no Node-only dependencies             │
+└───────────────┬──────────────────────────────┬───────────────┘
+                │                              │
+                ▼                              ▼
+┌───────────────────────────────┐ ┌────────────────────────────────┐
+│ Browser                       │ │ Node.js                        │
+│ openinvoicexml/browser        │ │ openinvoicexml/adapters        │
+│ XML: generateInvoiceXml()     │ │ Generation: generateInvoice(), │
+│ PDF: toHybridPdf(),           │ │ toCii(), toHybridPdf(),        │
+│      toFacturXPdf()           │ │ toFacturXPdf(), …              │
+│ Fonts fetched (browser-pdf.ts)│ │ Fonts read from disk           │
+│                               │ │ External validation (Java):    │
+│                               │ │ KoSIT, Mustang, veraPDF        │
+└───────────────────────────────┘ └────────────────────────────────┘
+```
+
+| Capability                                  | Browser (`openinvoicexml/browser`) | Node.js (`openinvoicexml/adapters`) |
+| ------------------------------------------- | ---------------------------------- | ----------------------------------- |
+| Business-rule validation                    | Yes                                | Yes                                 |
+| JSON Schema validation                      | No                                 | Yes (`generateInvoice()`)           |
+| XRechnung UBL XML                           | Yes                                | Yes                                 |
+| Standalone CII XML                          | No                                 | Yes (`toCii()`)                     |
+| Hybrid PDF and Factur-X PDF                 | Yes                                | Yes                                 |
+| External validation (KoSIT/Mustang/veraPDF) | No (requires Java)                 | Yes                                 |
+
+The browser entry's import graph is checked by `adapters/browser.test.ts`, so Node-only code
+can't leak into it. Browser-generated output is the same as Node's, as the PDF layout and XML
+serializers are shared. Validating the exact generated XML requires a Node backend; see
+[`COMPLIANCE.md`](COMPLIANCE.md#browser-generated-xml-openinvoicexmlbrowser).
 
 ---
 
