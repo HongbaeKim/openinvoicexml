@@ -1,7 +1,15 @@
 .ONESHELL:
-.PHONY: test type lint generate validate-xml kosit-setup validate-kosit generate-pdf validate-pdf-attachment verapdf-setup validate-verapdf validate-hybrid mustang-setup validate-mustang generate-cii validate-cii-kosit generate-facturx-pdf validate-facturx benchmark benchmark-validate
+.PHONY: test type lint generate validate-xml kosit-setup validate-kosit generate-pdf validate-pdf-attachment verapdf-setup validate-verapdf validate-hybrid mustang-setup validate-mustang generate-cii validate-cii-kosit generate-facturx-pdf validate-facturx benchmark benchmark-validate coverage ci
 
-all: lint type test
+all: lint type build test
+
+# same steps as .github/workflows/ci.yml (lint, typecheck, tests with coverage thresholds), plus
+# build so dist/scripts/benchmark.js is checked too. Run `npm ci` first for a clean install and
+# the *-setup targets once so the KoSIT/veraPDF/Mustang tests have their tools. Slow (~15 min).
+ci: lint type build coverage
+
+coverage:
+	npm run test:coverage
 
 build:
 	npm run build

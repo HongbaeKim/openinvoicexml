@@ -7,7 +7,7 @@
 // Usage (after `npm run build`, via `make benchmark`):
 //   node --expose-gc dist/scripts/benchmark.js [--lines 100,500,1000] [--iterations 5]
 //        [--batch-size 100] [--skip-stress] [--skip-batch] [--validate-external]
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
