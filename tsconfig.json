@@ -18,7 +18,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["core/**/*", "adapters/**/*", "validators/**/*"],
+  "include": ["core/**/*", "adapters/**/*", "validators/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "dist", "fixtures"],
   "files": ["fixtures/index.test.ts"]
 }

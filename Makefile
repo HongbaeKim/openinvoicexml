@@ -1,5 +1,5 @@
 .ONESHELL:
-.PHONY: test type lint generate validate-xml kosit-setup validate-kosit generate-pdf validate-pdf-attachment verapdf-setup validate-verapdf validate-hybrid mustang-setup validate-mustang generate-cii validate-cii-kosit generate-facturx-pdf validate-facturx
+.PHONY: test type lint generate validate-xml kosit-setup validate-kosit generate-pdf validate-pdf-attachment verapdf-setup validate-verapdf validate-hybrid mustang-setup validate-mustang generate-cii validate-cii-kosit generate-facturx-pdf validate-facturx benchmark benchmark-validate
 
 all: lint type test
 
@@ -381,3 +381,14 @@ validate-facturx: generate-facturx-pdf
 	}
 	if (failed) process.exit(1);
 	EOF
+
+# performance baseline (see docs/PERFORMANCE.md): per-stage engine timings at 100/500/1000 lines
+# plus a 100-invoice batch with post-GC memory baselines. Manual check, not part of CI. The
+# external validators are deliberately excluded from timing — see benchmark-validate.
+benchmark: build
+	node --expose-gc dist/scripts/benchmark.js
+
+# pass/fail KoSIT/Mustang/veraPDF correctness at 100/500/1000 lines (slow: JVM startup per tool);
+# no timing numbers are reported
+benchmark-validate: build
+	node dist/scripts/benchmark.js --skip-stress --skip-batch --validate-external
