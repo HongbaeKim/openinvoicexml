@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [Unreleased] - 2026-10-15
 
 ### Added
 
@@ -11,6 +11,12 @@ All notable changes to this project will be documented in this file.
   `generateCii()` runs the profile's business rules but not the JSON Schema check (AJV is Node-only); the Node
   `generateCii()` still runs both. `GenerateCiiResult` is now defined in `adapters/browser.ts` and re-exported
   from `adapters/generate-invoice.ts`; the public types are unchanged.
+
+### Changed
+
+- Hybrid and Factur-X PDFs now print "Seite N / total" at the bottom right of every page, including
+  single-page invoices ("Seite 1 / 1"). `pageNumberLabel()` is exported from `adapters/hybrid-pdf.ts`
+  for unit testing.
 
 ## [0.4.3] - 2026-10-09
 
