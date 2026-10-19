@@ -253,6 +253,6 @@ web layer; `openinvoicexml-web` consumes this repo, not the other way around.
 Browser applications use `openinvoicexml/browser` to run business-rule validation and generate
 XML locally with `generateInvoiceXml()`. External validators are Node-only: a backend can pass
 the exact generated XML to `validateXmlExternally()` (from `openinvoicexml/adapters`) for KoSIT
-and Mustang validation. A future `openinvoicexml-web` flow (Roadmap Phase 6) is planned to
-connect these steps: generate locally, optionally validate the exact XML on the backend, then
+and Mustang validation. The `openinvoicexml-web` invoicing flow (currently a private preview)
+connects these steps: generate locally, optionally validate the exact XML on the backend, then
 download the same XML.

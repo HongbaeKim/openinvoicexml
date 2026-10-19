@@ -6,7 +6,7 @@ machine-readable e-invoice format (PDF with embedded XML).
 
 ## Work Packages
 
-First Stage (Phases 1–5) completes by end of November 2026.
+The Prototype Fund-supported development scope (Phases 1–5) completes by end of November 2026.
 
 | Work Package                           | Period      | Focus                                                               | Done by    | Status  |
 | -------------------------------------- | ----------- | ------------------------------------------------------------------- | ---------- | ------- |
@@ -77,7 +77,7 @@ across 40+ scenarios.
   document baselines. In parallel, a disposable browser invoice-UI spike (in
   [`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web)) prototypes a
   stateless download/upload-XML workflow — a few days of additive work, not part of Week 21's
-  committed hours, de-risking the public-facing invoice UI planned for the Second Stage.
+  committed hours, de-risking the public-facing invoice UI.
 - **Week 22:** Code-quality pass — module boundaries, comments, naming. No new features.
 - **Week 23:** Final KoSIT/veraPDF verification across all fixtures and profiles.
 - **Week 24:** Finalize `DEVELOPMENT.md`, contributor onboarding, example usage docs, FAQ.
@@ -86,22 +86,21 @@ across 40+ scenarios.
 
 ---
 
-## Second Stage – Phases 6–10 (hosted public web service)
+## After v1.0.0-prototype
 
-> **Status: not yet selected — planned only.** Phases 1–5 above are the committed scope. Second
-> Stage depends on a go/no-go decision after v1.0.0-prototype, informed by demand-validation
-> signals (beta/developer signups, site traffic) and funding availability. Provisional, not a
-> commitment.
+The Prototype Fund-supported development scope concludes with v1.0.0-prototype, scheduled for 29 November 2026.
 
-| Phase                                                        | Focus                                                                     | Period                        | Done by    | Status  |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------- | ----------------------------- | ---------- | ------- |
-| Phase 6 – Public Service & Invoice UI                        | Build the browser invoice workflow, wire it to the engine, minimal deploy | Weeks 27–29 (30 Nov – 20 Dec) | 20-12-2026 | Planned |
-| Phase 7 – Sustainability & Community / Onboarding Refinement | Simplify existing guidance, short usage videos, refine FAQ                | Weeks 30–31 (21 Dec – 3 Jan)  | 03-01-2027 | Planned |
-| Phase 8 – User Testing & Public Beta                         | Structured public beta, usability interviews, feedback-driven fixes       | Weeks 32–38 (4 Jan – 21 Feb)  | 21-02-2027 | Planned |
-| Phase 9 – API Reuse & Partnerships                           | API documentation, pilot integrations, partner outreach                   | Weeks 39–42 (22 Feb – 21 Mar) | 21-03-2027 | Planned |
-| Phase 10 – Evaluation & Finalization                         | Evaluate beta results, document findings, final reporting                 | Week 43 (22 Mar – 28 Mar)     | 28-03-2027 | Planned |
+The project was not selected for a second phase of Prototype Fund funding. Therefore, the previously proposed Phases 6–10 are no longer part of the funded roadmap.
 
-The beta program (`beta.html`) and developer feedback form (`developer.html`), both in
-[`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web), collect early signups
-ahead of Phase 6; site traffic and signup volume are the demand-validation signal for whether
-the hosted service is worth the funded build-out.
+OpenInvoiceXML remains an open-source project. Further development, maintenance, community contributions, and potential integrations may continue independently of Prototype Fund funding.
+
+Potential future work includes:
+
+- Supporting additional Factur-X profiles, including MINIMUM, BASIC WL, and BASIC.
+- Updating dependencies and maintaining compatibility with evolving XRechnung and KoSIT requirements.
+- Addressing reported issues and improving developer documentation.
+- Exploring additional integrations and improvements based on community feedback.
+
+Future activities are not covered by the original Prototype Fund grant and are not subject to the previously proposed Second Stage schedule.
+
+This roadmap documents the funded development scope and does not define or limit independent future development.

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Roadmap: the funded Prototype Fund scope ends with Phase 5 (v1.0.0-prototype). Phases 6–10 were removed because
+  no second-phase funding was granted; OpenInvoiceXML itself remains an open-source project.
+
 ## [0.4.4] - 2026-10-15
 
 ### Added
