@@ -13,7 +13,7 @@ import {
   type ComplianceIssue,
 } from "../validators/engines/99.compliance-issue.js";
 import {
-  attempt,
+  tryRunValidator,
   issuesOf,
   kositScenarioField,
   runKositAttempt,
@@ -383,7 +383,7 @@ function runVeraPdfAttempt(
   // veraPDF may or may not report a profile.
   let profile: string | undefined;
 
-  const result = attempt(() => {
+  const result = tryRunValidator(() => {
     const results = runVeraPdf([pdfPath], {
       ...options.veraPdf,
       flavour: "0",

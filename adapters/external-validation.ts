@@ -207,7 +207,7 @@ export function runKositAgainstXml(xml: string): KositIssue[] {
  * If the validator runs, returns its validation result.
  * If the validator throws an error, returns `ran: false` with the error message.
  */
-export function attempt(
+export function tryRunValidator(
   run: () => { valid: boolean; issues: ComplianceIssue[] },
 ): ApplicableValidatorResult {
   try {
@@ -279,7 +279,7 @@ export function runKositAttempt(
   let scenario: string | undefined;
 
   // Try to run KoSIT safely.
-  const result = attempt(() => {
+  const result = tryRunValidator(() => {
     const kositResult = runKositOnFile(xmlPath, options.kosit);
 
     // Remember the scenario KoSIT matched.
@@ -332,7 +332,7 @@ export function kositScenarioField(
  * Tries to run Mustang on one file.
  *
  * Returns the validation result.
- * If Mustang cannot run, `attempt()` returns `ran: false`.
+ * If Mustang cannot run, `tryRunValidator()` returns `ran: false`.
  */
 export function runMustangAttempt(
   path: string,
@@ -366,8 +366,8 @@ export function runMustangAttempt(
   };
 
   // Run Mustang safely. If it throws an error,
-  // attempt() returns `ran: false` instead.
-  const result = attempt(runMustangValidator);
+  // tryRunValidator() returns `ran: false` instead.
+  const result = tryRunValidator(runMustangValidator);
 
   return result;
 }

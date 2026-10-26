@@ -1,6 +1,6 @@
 import type { Invoice } from "../core/index.js";
-import { esc } from "./xml-escape.js";
-import { amt, price } from "../core/utils/monetary.js";
+import { escapeXml } from "./xml-escape.js";
+import { formatAmount, formatUnitPrice } from "../core/utils/monetary.js";
 import type { EInvoiceProfile } from "../core/types/profile.js";
 import {
   mapInvoice,
@@ -28,7 +28,7 @@ import {
 /** CII qdt:DocumentCodeType-style dates use format "102" — YYYYMMDD, no separators. */
 function dt102(isoDate: string): string {
   // Escaped as well as stripped of dashes: a date like `2026"<x/>` must not reach the markup raw.
-  return esc(isoDate.replace(/-/g, ""));
+  return escapeXml(isoDate.replace(/-/g, ""));
 }
 
 function renderDateTime(isoDate: string, tag: string): string {
@@ -44,7 +44,7 @@ function renderReferencedDocument(
   const formattedIssueDate = issueDate
     ? `\n${indent}    <ram:FormattedIssueDateTime>\n${indent}      <qdt:DateTimeString format="102">${dt102(issueDate)}</qdt:DateTimeString>\n${indent}    </ram:FormattedIssueDateTime>`
     : "";
-  return `${indent}<ram:${wrapperTag}>\n${indent}  <ram:IssuerAssignedID>${esc(id)}</ram:IssuerAssignedID>${formattedIssueDate}\n${indent}</ram:${wrapperTag}>`;
+  return `${indent}<ram:${wrapperTag}>\n${indent}  <ram:IssuerAssignedID>${escapeXml(id)}</ram:IssuerAssignedID>${formattedIssueDate}\n${indent}</ram:${wrapperTag}>`;
 }
 
 function renderInvoiceReferencedDocument(ref: PrecedingInvoiceReferenceFields): string {
@@ -57,64 +57,64 @@ function renderParty(wrapperTag: string, party: PartyFields): string {
   // The party already has its own Name, so adding it again would be duplicate data. 
   // Only create SpecifiedLegalOrganization when legalId exists, and only include the ID.
   const legalOrg = party.legalId
-    ? `\n      <ram:SpecifiedLegalOrganization>\n        <ram:ID>${esc(party.legalId)}</ram:ID>\n      </ram:SpecifiedLegalOrganization>`
+    ? `\n      <ram:SpecifiedLegalOrganization>\n        <ram:ID>${escapeXml(party.legalId)}</ram:ID>\n      </ram:SpecifiedLegalOrganization>`
     : "";
 
   // BT-29 / BT-46: ram:ID without a scheme, ram:GlobalID with one. Both precede ram:Name.
   const identifier = party.identifier
     ? party.identifier.schemeId
-      ? `\n      <ram:GlobalID schemeID="${esc(party.identifier.schemeId)}">${esc(party.identifier.id)}</ram:GlobalID>`
-      : `\n      <ram:ID>${esc(party.identifier.id)}</ram:ID>`
+      ? `\n      <ram:GlobalID schemeID="${escapeXml(party.identifier.schemeId)}">${escapeXml(party.identifier.id)}</ram:GlobalID>`
+      : `\n      <ram:ID>${escapeXml(party.identifier.id)}</ram:ID>`
     : "";
 
   const contact = party.contact
     ? `\n      <ram:DefinedTradeContact>${
-        party.contact.name ? `\n        <ram:PersonName>${esc(party.contact.name)}</ram:PersonName>` : ""
+        party.contact.name ? `\n        <ram:PersonName>${escapeXml(party.contact.name)}</ram:PersonName>` : ""
       }
         <ram:TelephoneUniversalCommunication>
-          <ram:CompleteNumber>${esc(party.contact.telephone)}</ram:CompleteNumber>
+          <ram:CompleteNumber>${escapeXml(party.contact.telephone)}</ram:CompleteNumber>
         </ram:TelephoneUniversalCommunication>
         <ram:EmailURIUniversalCommunication>
-          <ram:URIID>${esc(party.contact.email)}</ram:URIID>
+          <ram:URIID>${escapeXml(party.contact.email)}</ram:URIID>
         </ram:EmailURIUniversalCommunication>
       </ram:DefinedTradeContact>`
     : "";
 
   const line2 = party.addressLine2
-    ? `\n        <ram:LineTwo>${esc(party.addressLine2)}</ram:LineTwo>`
+    ? `\n        <ram:LineTwo>${escapeXml(party.addressLine2)}</ram:LineTwo>`
     : "";
   const address = `\n      <ram:PostalTradeAddress>
-        <ram:PostcodeCode>${esc(party.postalCode)}</ram:PostcodeCode>
-        <ram:LineOne>${esc(party.addressLine1)}</ram:LineOne>${line2}
-        <ram:CityName>${esc(party.city)}</ram:CityName>
-        <ram:CountryID>${esc(party.countryCode)}</ram:CountryID>
+        <ram:PostcodeCode>${escapeXml(party.postalCode)}</ram:PostcodeCode>
+        <ram:LineOne>${escapeXml(party.addressLine1)}</ram:LineOne>${line2}
+        <ram:CityName>${escapeXml(party.city)}</ram:CityName>
+        <ram:CountryID>${escapeXml(party.countryCode)}</ram:CountryID>
       </ram:PostalTradeAddress>`;
 
   const electronicAddress = `\n      <ram:URIUniversalCommunication>
-        <ram:URIID schemeID="${esc(party.schemeId)}">${esc(party.electronicAddress)}</ram:URIID>
+        <ram:URIID schemeID="${escapeXml(party.schemeId)}">${escapeXml(party.electronicAddress)}</ram:URIID>
       </ram:URIUniversalCommunication>`;
 
   const vatRegistration = party.vatId
-    ? `\n      <ram:SpecifiedTaxRegistration>\n        <ram:ID schemeID="VA">${esc(party.vatId)}</ram:ID>\n      </ram:SpecifiedTaxRegistration>`
+    ? `\n      <ram:SpecifiedTaxRegistration>\n        <ram:ID schemeID="VA">${escapeXml(party.vatId)}</ram:ID>\n      </ram:SpecifiedTaxRegistration>`
     : "";
   const fcRegistration = party.taxRegistrationId
-    ? `\n      <ram:SpecifiedTaxRegistration>\n        <ram:ID schemeID="FC">${esc(party.taxRegistrationId)}</ram:ID>\n      </ram:SpecifiedTaxRegistration>`
+    ? `\n      <ram:SpecifiedTaxRegistration>\n        <ram:ID schemeID="FC">${escapeXml(party.taxRegistrationId)}</ram:ID>\n      </ram:SpecifiedTaxRegistration>`
     : "";
 
   return `  <ram:${wrapperTag}>${identifier}
-      <ram:Name>${esc(party.name)}</ram:Name>${legalOrg}${contact}${address}${electronicAddress}${vatRegistration}${fcRegistration}
+      <ram:Name>${escapeXml(party.name)}</ram:Name>${legalOrg}${contact}${address}${electronicAddress}${vatRegistration}${fcRegistration}
   </ram:${wrapperTag}>`;
 }
 
 function renderShipTo(delivery: DeliveryFields): string {
   const deliverTo = delivery.deliverTo;
   if (!deliverTo) return "";
-  const city = deliverTo.city ? `\n        <ram:CityName>${esc(deliverTo.city)}</ram:CityName>` : "";
+  const city = deliverTo.city ? `\n        <ram:CityName>${escapeXml(deliverTo.city)}</ram:CityName>` : "";
   const postalCode = deliverTo.postalCode
-    ? `\n        <ram:PostcodeCode>${esc(deliverTo.postalCode)}</ram:PostcodeCode>`
+    ? `\n        <ram:PostcodeCode>${escapeXml(deliverTo.postalCode)}</ram:PostcodeCode>`
     : "";
   const country = deliverTo.countryCode
-    ? `\n        <ram:CountryID>${esc(deliverTo.countryCode)}</ram:CountryID>`
+    ? `\n        <ram:CountryID>${escapeXml(deliverTo.countryCode)}</ram:CountryID>`
     : "";
   if (!city && !postalCode && !country) return "";
   return `\n    <ram:ShipToTradeParty>\n      <ram:PostalTradeAddress>${postalCode}${city}${country}\n      </ram:PostalTradeAddress>\n    </ram:ShipToTradeParty>`;
@@ -129,17 +129,17 @@ function renderPaymentMeans(pm: PaymentMeansFields): string {
   const account =
     pm.iban || pm.accountName
       ? `\n      <ram:PayeePartyCreditorFinancialAccount>${
-          pm.iban ? `\n        <ram:IBANID>${esc(pm.iban)}</ram:IBANID>` : ""
+          pm.iban ? `\n        <ram:IBANID>${escapeXml(pm.iban)}</ram:IBANID>` : ""
         }${
-          pm.accountName ? `\n        <ram:AccountName>${esc(pm.accountName)}</ram:AccountName>` : ""
+          pm.accountName ? `\n        <ram:AccountName>${escapeXml(pm.accountName)}</ram:AccountName>` : ""
         }\n      </ram:PayeePartyCreditorFinancialAccount>`
       : "";
   const institution = pm.bic
-    ? `\n      <ram:PayeeSpecifiedCreditorFinancialInstitution>\n        <ram:BICID>${esc(pm.bic)}</ram:BICID>\n      </ram:PayeeSpecifiedCreditorFinancialInstitution>`
+    ? `\n      <ram:PayeeSpecifiedCreditorFinancialInstitution>\n        <ram:BICID>${escapeXml(pm.bic)}</ram:BICID>\n      </ram:PayeeSpecifiedCreditorFinancialInstitution>`
     : "";
 
   return `    <ram:SpecifiedTradeSettlementPaymentMeans>
-      <ram:TypeCode>${esc(pm.code)}</ram:TypeCode>${account}${institution}
+      <ram:TypeCode>${escapeXml(pm.code)}</ram:TypeCode>${account}${institution}
     </ram:SpecifiedTradeSettlementPaymentMeans>`;
 }
 
@@ -165,10 +165,10 @@ function renderBreakdownRateApplicablePercent(rate: number): string {
 
 function renderVatSubtotal(bd: VatSubtotalFields): string {
   const exemptionReason = bd.exemptionReason
-    ? `\n        <ram:ExemptionReason>${esc(bd.exemptionReason)}</ram:ExemptionReason>`
+    ? `\n        <ram:ExemptionReason>${escapeXml(bd.exemptionReason)}</ram:ExemptionReason>`
     : "";
   const exemptionReasonCode = bd.exemptionReasonCode
-    ? `\n        <ram:ExemptionReasonCode>${esc(bd.exemptionReasonCode)}</ram:ExemptionReasonCode>`
+    ? `\n        <ram:ExemptionReasonCode>${escapeXml(bd.exemptionReasonCode)}</ram:ExemptionReasonCode>`
     : "";
   const percent = renderBreakdownRateApplicablePercent(bd.rate);
 
@@ -181,10 +181,10 @@ function renderVatSubtotal(bd: VatSubtotalFields): string {
   // during Task 1's validate-as-you-go pass, not assumed by analogy to UBL's per-amount
   // currencyID convention.
   return `    <ram:ApplicableTradeTax>
-      <ram:CalculatedAmount>${amt(bd.taxAmount)}</ram:CalculatedAmount>
+      <ram:CalculatedAmount>${formatAmount(bd.taxAmount)}</ram:CalculatedAmount>
       <ram:TypeCode>VAT</ram:TypeCode>${exemptionReason}
-      <ram:BasisAmount>${amt(bd.taxableAmount)}</ram:BasisAmount>
-      <ram:CategoryCode>${esc(bd.categoryCode)}</ram:CategoryCode>${exemptionReasonCode}${percent}
+      <ram:BasisAmount>${formatAmount(bd.taxableAmount)}</ram:BasisAmount>
+      <ram:CategoryCode>${escapeXml(bd.categoryCode)}</ram:CategoryCode>${exemptionReasonCode}${percent}
     </ram:ApplicableTradeTax>`;
 }
 
@@ -194,13 +194,13 @@ function renderVatSubtotal(bd: VatSubtotalFields): string {
 // cac:TaxCategory — line-level entries inherit the line's own VAT category.
 function renderAllowanceCharge(ac: AllowanceChargeFields, indent: string): string {
   const reasonCode = ac.reasonCode
-    ? `\n${indent}  <ram:ReasonCode>${esc(ac.reasonCode)}</ram:ReasonCode>`
+    ? `\n${indent}  <ram:ReasonCode>${escapeXml(ac.reasonCode)}</ram:ReasonCode>`
     : "";
-  const reason = ac.reason ? `\n${indent}  <ram:Reason>${esc(ac.reason)}</ram:Reason>` : "";
+  const reason = ac.reason ? `\n${indent}  <ram:Reason>${escapeXml(ac.reason)}</ram:Reason>` : "";
   const percent = renderRateApplicablePercent(ac.vatCategoryCode ?? "", ac.vatRate);
   const categoryTradeTax =
     ac.vatCategoryCode !== undefined
-      ? `\n${indent}  <ram:CategoryTradeTax>\n${indent}    <ram:TypeCode>VAT</ram:TypeCode>\n${indent}    <ram:CategoryCode>${esc(ac.vatCategoryCode)}</ram:CategoryCode>${percent}\n${indent}  </ram:CategoryTradeTax>`
+      ? `\n${indent}  <ram:CategoryTradeTax>\n${indent}    <ram:TypeCode>VAT</ram:TypeCode>\n${indent}    <ram:CategoryCode>${escapeXml(ac.vatCategoryCode)}</ram:CategoryCode>${percent}\n${indent}  </ram:CategoryTradeTax>`
       : "";
 
   // CII-DT-031: no currencyID on ActualAmount — see renderVatSubtotal's note above.
@@ -208,7 +208,7 @@ function renderAllowanceCharge(ac: AllowanceChargeFields, indent: string): strin
 ${indent}  <ram:ChargeIndicator>
 ${indent}    <udt:Indicator>${ac.isCharge}</udt:Indicator>
 ${indent}  </ram:ChargeIndicator>
-${indent}  <ram:ActualAmount>${amt(ac.amount)}</ram:ActualAmount>${reasonCode}${reason}${categoryTradeTax}
+${indent}  <ram:ActualAmount>${formatAmount(ac.amount)}</ram:ActualAmount>${reasonCode}${reason}${categoryTradeTax}
 ${indent}</ram:SpecifiedTradeAllowanceCharge>`;
 }
 
@@ -217,7 +217,7 @@ ${indent}</ram:SpecifiedTradeAllowanceCharge>`;
 // SpecifiedLineTradeSettlement.
 function renderLine(line: LineFields): string {
   const description = line.description
-    ? `\n      <ram:Description>${esc(line.description)}</ram:Description>`
+    ? `\n      <ram:Description>${escapeXml(line.description)}</ram:Description>`
     : "";
   const lineAllowancesCharges = line.allowancesCharges.length
     ? `\n${line.allowancesCharges.map((ac) => renderAllowanceCharge(ac, "      ")).join("\n")}`
@@ -227,26 +227,26 @@ function renderLine(line: LineFields): string {
   // CII-DT-031: no currencyID on ChargeAmount/LineTotalAmount — see renderVatSubtotal's note.
   return `  <ram:IncludedSupplyChainTradeLineItem>
     <ram:AssociatedDocumentLineDocument>
-      <ram:LineID>${esc(line.id)}</ram:LineID>
+      <ram:LineID>${escapeXml(line.id)}</ram:LineID>
     </ram:AssociatedDocumentLineDocument>
     <ram:SpecifiedTradeProduct>
-      <ram:Name>${esc(line.name)}</ram:Name>${description}
+      <ram:Name>${escapeXml(line.name)}</ram:Name>${description}
     </ram:SpecifiedTradeProduct>
     <ram:SpecifiedLineTradeAgreement>
       <ram:NetPriceProductTradePrice>
-        <ram:ChargeAmount>${price(line.unitPrice)}</ram:ChargeAmount>
+        <ram:ChargeAmount>${formatUnitPrice(line.unitPrice)}</ram:ChargeAmount>
       </ram:NetPriceProductTradePrice>
     </ram:SpecifiedLineTradeAgreement>
     <ram:SpecifiedLineTradeDelivery>
-      <ram:BilledQuantity unitCode="${esc(line.unitCode)}">${line.quantity}</ram:BilledQuantity>
+      <ram:BilledQuantity unitCode="${escapeXml(line.unitCode)}">${line.quantity}</ram:BilledQuantity>
     </ram:SpecifiedLineTradeDelivery>
     <ram:SpecifiedLineTradeSettlement>
       <ram:ApplicableTradeTax>
         <ram:TypeCode>VAT</ram:TypeCode>
-        <ram:CategoryCode>${esc(line.vatCategoryCode)}</ram:CategoryCode>${percent}
+        <ram:CategoryCode>${escapeXml(line.vatCategoryCode)}</ram:CategoryCode>${percent}
       </ram:ApplicableTradeTax>${lineAllowancesCharges}
       <ram:SpecifiedTradeSettlementLineMonetarySummation>
-        <ram:LineTotalAmount>${amt(line.lineAmount)}</ram:LineTotalAmount>
+        <ram:LineTotalAmount>${formatAmount(line.lineAmount)}</ram:LineTotalAmount>
       </ram:SpecifiedTradeSettlementLineMonetarySummation>
     </ram:SpecifiedLineTradeSettlement>
   </ram:IncludedSupplyChainTradeLineItem>`;
@@ -266,14 +266,14 @@ export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } =
   const profile = options.profile ?? "EN16931";
   const fields = mapInvoice(invoice);
   // Escaped once: interpolated into currencyID="..." attribute values below.
-  const currency = esc(fields.currencyCode);
+  const currency = escapeXml(fields.currencyCode);
 
   const businessProcess = fields.businessProcessType
-    ? `\n    <ram:BusinessProcessSpecifiedDocumentContextParameter>\n      <ram:ID>${esc(fields.businessProcessType)}</ram:ID>\n    </ram:BusinessProcessSpecifiedDocumentContextParameter>`
+    ? `\n    <ram:BusinessProcessSpecifiedDocumentContextParameter>\n      <ram:ID>${escapeXml(fields.businessProcessType)}</ram:ID>\n    </ram:BusinessProcessSpecifiedDocumentContextParameter>`
     : "";
 
   const note = fields.note
-    ? `\n    <ram:IncludedNote>\n      <ram:Content>${esc(fields.note)}</ram:Content>\n    </ram:IncludedNote>`
+    ? `\n    <ram:IncludedNote>\n      <ram:Content>${escapeXml(fields.note)}</ram:Content>\n    </ram:IncludedNote>`
     : "";
 
   // The newline is mainly for readability
@@ -283,7 +283,7 @@ export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } =
   // BuyerTradeParty, ..., BuyerOrderReferencedDocument (BT-13), ..., ContractReferencedDocument
   // (BT-12), ...
   const buyerReference = fields.buyerReference
-    ? `\n    <ram:BuyerReference>${esc(fields.buyerReference)}</ram:BuyerReference>`
+    ? `\n    <ram:BuyerReference>${escapeXml(fields.buyerReference)}</ram:BuyerReference>`
     : "";
   const orderReference = fields.purchaseOrderReference
     ? `\n${renderReferencedDocument("BuyerOrderReferencedDocument", fields.purchaseOrderReference, undefined, "    ")}`
@@ -312,13 +312,13 @@ export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } =
     : "";
   // CII-DT-031: no currencyID here either — see renderVatSubtotal's note above.
   const prepaidAmount = fields.prepaidAmount
-    ? `\n      <ram:TotalPrepaidAmount>${amt(fields.prepaidAmount)}</ram:TotalPrepaidAmount>`
+    ? `\n      <ram:TotalPrepaidAmount>${formatAmount(fields.prepaidAmount)}</ram:TotalPrepaidAmount>`
     : "";
   // BT-114: unlike UBL, CII puts RoundingAmount *before* GrandTotalAmount — between
   // TaxTotalAmount and GrandTotalAmount in TradeSettlementHeaderMonetarySummationType, even
   // though BR-CO-16 still adds it after the grand total (BT-115 = BT-112 − BT-113 + BT-114).
   const roundingAmount = fields.roundingAmount
-    ? `\n        <ram:RoundingAmount>${amt(fields.roundingAmount)}</ram:RoundingAmount>`
+    ? `\n        <ram:RoundingAmount>${formatAmount(fields.roundingAmount)}</ram:RoundingAmount>`
     : "";
   const invoiceReferencedDocument = fields.precedingInvoiceReference
     ? `\n${renderInvoiceReferencedDocument(fields.precedingInvoiceReference)}`
@@ -339,8 +339,8 @@ export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } =
     </ram:GuidelineSpecifiedDocumentContextParameter>
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
-    <ram:ID>${esc(fields.id)}</ram:ID>
-    <ram:TypeCode>${esc(fields.typeCode)}</ram:TypeCode>
+    <ram:ID>${escapeXml(fields.id)}</ram:ID>
+    <ram:TypeCode>${escapeXml(fields.typeCode)}</ram:TypeCode>
     <ram:IssueDateTime>
       <udt:DateTimeString format="102">${dt102(fields.issueDate)}</udt:DateTimeString>
     </ram:IssueDateTime>${note}
@@ -360,13 +360,13 @@ ${renderParty("BuyerTradeParty", fields.buyer)}${orderReference}${contractRefere
       <ram:InvoiceCurrencyCode>${currency}</ram:InvoiceCurrencyCode>${paymentMeans}
 ${vatSubtotals}${documentAllowancesCharges}${paymentTerms}
       <ram:SpecifiedTradeSettlementHeaderMonetarySummation>
-        <ram:LineTotalAmount>${amt(fields.lineExtensionAmount)}</ram:LineTotalAmount>
-        <ram:ChargeTotalAmount>${amt(fields.chargeTotalAmount)}</ram:ChargeTotalAmount>
-        <ram:AllowanceTotalAmount>${amt(fields.allowanceTotalAmount)}</ram:AllowanceTotalAmount>
-        <ram:TaxBasisTotalAmount>${amt(fields.taxExclusiveAmount)}</ram:TaxBasisTotalAmount>
-        <ram:TaxTotalAmount currencyID="${currency}">${amt(fields.taxAmount)}</ram:TaxTotalAmount>${roundingAmount}
-        <ram:GrandTotalAmount>${amt(fields.taxInclusiveAmount)}</ram:GrandTotalAmount>${prepaidAmount}
-        <ram:DuePayableAmount>${amt(fields.duePayableAmount)}</ram:DuePayableAmount>
+        <ram:LineTotalAmount>${formatAmount(fields.lineExtensionAmount)}</ram:LineTotalAmount>
+        <ram:ChargeTotalAmount>${formatAmount(fields.chargeTotalAmount)}</ram:ChargeTotalAmount>
+        <ram:AllowanceTotalAmount>${formatAmount(fields.allowanceTotalAmount)}</ram:AllowanceTotalAmount>
+        <ram:TaxBasisTotalAmount>${formatAmount(fields.taxExclusiveAmount)}</ram:TaxBasisTotalAmount>
+        <ram:TaxTotalAmount currencyID="${currency}">${formatAmount(fields.taxAmount)}</ram:TaxTotalAmount>${roundingAmount}
+        <ram:GrandTotalAmount>${formatAmount(fields.taxInclusiveAmount)}</ram:GrandTotalAmount>${prepaidAmount}
+        <ram:DuePayableAmount>${formatAmount(fields.duePayableAmount)}</ram:DuePayableAmount>
       </ram:SpecifiedTradeSettlementHeaderMonetarySummation>${invoiceReferencedDocument}
     </ram:ApplicableHeaderTradeSettlement>
   </rsm:SupplyChainTradeTransaction>
