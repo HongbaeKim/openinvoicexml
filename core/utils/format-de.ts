@@ -2,7 +2,7 @@ import { MAX_UNIT_PRICE_DECIMALS } from "./monetary.js";
 
 /**
  * German-locale display formatting for the hybrid PDF adapter. Not XML/machine formats
- * (see xml.ts's amt() for that) — these produce human-readable German text.
+ * (see monetary.ts's amt() for that) — these produce human-readable German text.
  */
 
 /**

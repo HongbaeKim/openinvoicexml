@@ -1,5 +1,6 @@
 import type { Invoice } from "../core/index.js";
-import { esc, amt, price } from "../core/utils/xml.js";
+import { esc } from "./xml-escape.js";
+import { amt, price } from "../core/utils/monetary.js";
 import {
   mapInvoice,
   type PartyFields,
