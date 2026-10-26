@@ -86,6 +86,13 @@ export function validateBusinessRules(
   });
 
   // --- VAT category requiring buyer VAT ID (§13b UStG reverse charge) ----
+  // Validation requirement: EN 16931 BR-AE-02 requires a buyer identifier on invoices with an
+  // 'AE' line, but allows either the buyer VAT ID (BT-48) or the buyer legal registration
+  // identifier (BT-47).
+  // Project decision: we require BT-48 only, which is stricter than BR-AE-02 (documented in
+  // docs/DATA-MODEL.md). Also accepting BT-47 would match BR-AE-02 exactly. This check is not a
+  // statement that every reverse-charge case legally needs the buyer's VAT ID; that depends on
+  // the §13b UStG scenario and the §14 UStG invoice requirements.
   const hasReverseCharge =
     invoice.lines.some((line) => line.vatCategoryCode === "AE") ||
     invoice.vatBreakdowns.some((vb) => vb.categoryCode === "AE");
@@ -169,6 +176,8 @@ export function validateBusinessRules(
     checkDecimalPrecision(vb.taxableAmount, `${path}.taxableAmount`, issues);
     checkDecimalPrecision(vb.taxAmount, `${path}.taxAmount`, issues);
 
+    // Validation requirement: BR-E-10, BR-AE-10, BR-IC-10, BR-G-10, BR-O-10; 
+    // see EXEMPTION_REASON_REQUIRED_CATEGORIES in rules/17.vat-rate.ts.
     if (
       EXEMPTION_REASON_REQUIRED_CATEGORIES.includes(vb.categoryCode) &&
       !vb.exemptionReason &&
