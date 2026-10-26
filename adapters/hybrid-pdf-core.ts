@@ -24,6 +24,8 @@ import {
   type PdfLineFields,
   type PdfVatSubtotalFields,
 } from "./hybrid-pdf-mapping.js";
+// The hybrid PDF needs XML, so we use toXRechnung() or toCii() to generate it.
+// The PDF layout is handled separately by hybrid-pdf-mapping.ts.
 import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
 
