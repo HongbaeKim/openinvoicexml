@@ -11,6 +11,10 @@
 // - external-validation.ts        — XML → KoSIT + Mustang, and the runner helpers the others share
 // - external-validation-detect.ts — detectInvoiceFormat(): what a file is, from content only
 // - external-validation-file.ts   — validateFileExternally(): an uploaded XML or PDF, as given
+//   - external-validation-file-types.ts  — the result/option types
+//   - external-validation-file-result.ts — builds results and the overall status
+//   - external-validation-file-xml.ts    — an uploaded XML file
+//   - external-validation-file-pdf.ts    — an uploaded PDF and its embedded XML
 //
 //
 // validateXmlExternally(xml)

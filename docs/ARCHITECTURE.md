@@ -121,13 +121,14 @@ independently for `cii-mapping.ts` vs. `xrechnung-mapping.ts` and for
   `browser.ts` never imports anything Node-side. See
   [Browser and Node.js execution](#browser-and-nodejs-execution).
 - **External validation** — Node-only, kept separate from generation (Invoice → XML), in three
-  files:
+  groups of files:
   - `external-validation.ts`: XML → KoSIT/Mustang result (`validateXmlExternally()`), plus the
     temp-file handling and validator runners the other two reuse. `generate-invoice.ts` reuses
     its KoSIT-only helper for `{ validateExternally: true }`.
   - `external-validation-detect.ts`: the content-only format detector `detectInvoiceFormat()`.
   - `external-validation-file.ts`: an existing XML/PDF file → KoSIT/Mustang/veraPDF report
-    (`validateFileExternally()`).
+    (`validateFileExternally()`), split into `external-validation-file-types.ts`,
+    `-result.ts`, `-xml.ts` and `-pdf.ts`.
 - **CII XML adapter** — implemented: UN/CEFACT Cross Industry Invoice XML, profile-aware
   (`EN16931`/`XRECHNUNG`, selecting which `GuidelineSpecifiedDocumentContextParameter` URN gets
   written). `cii-mapping.ts` + `cii.ts` mirror the XRechnung adapter's own split. Required because
