@@ -63,6 +63,10 @@ expected XRechnung XML output once Phase 2 is complete.
 | `54.fractional-quantity-high-precision-price.invoice.json` | Fractional quantity (1523.5 litres) and a 4-decimal unit price on one line | Implemented |
 | `55.freelancer-tax-number-as-seller-id.invoice.json` | Seller without VAT ID or legalId: Steuernummer (BT-32) plus the same value as an explicit seller identifier (BT-29) — the FeRD E13 convention (Forum elektronische Rechnung Deutschland E13_01_Kleinunternehmer_ohneUStId.xml) | Implemented |
 | `56.freelancer-buyer-assigned-supplier-id.invoice.json` | Same seller shape, but BT-29 is a buyer-assigned supplier number different from the Steuernummer | Implemented |
+| `57.credit-note-positive-full.invoice.json` | Credit note (typeCode 381), full reversal of `01` with positive amounts, `dueDate` and `paymentMeans` | Implemented |
+| `58.credit-note-positive-partial.invoice.json` | Credit note (typeCode 381), partial credit of `02` (2 of 3 lines) with positive amounts | Implemented |
+| `59.credit-note-positive-mixed-vat-rates.invoice.json` | Credit note (typeCode 381), positive amounts across a 19% and a 7% VAT breakdown | Implemented |
+| `60.credit-note-positive-mixed-sign-lines.invoice.json` | Credit note (typeCode 381), positive totals with one negative-quantity line, so the two VAT breakdowns have opposite signs | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -109,8 +113,9 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   `08.intra-eu-supply.invoice.json`'s within-EU case.
 - **`16.credit-note-full.invoice.json`** — typeCode `381`, full reversal of `01.domestic-simple.invoice.json`
   (`RE-2026-0042`): negated quantity/lineAmount/VAT breakdown/totals, `precedingInvoiceReference` pointing
-  back at the original invoice's id/issueDate. Tests `CREDIT_NOTE_POSITIVE_AMOUNT` and
-  `PRECEDING_INVOICE_REFERENCE_REQUIRED` (`validators/rules/10.credit-note.ts`) on the fully-negative case.
+  back at the original invoice's id/issueDate. The negative-amount form of a credit note: it raises the
+  `CREDIT_NOTE_NEGATIVE_AMOUNT` warning (never an error), and tests `PRECEDING_INVOICE_REFERENCE_REQUIRED`
+  (`validators/rules/10.credit-note.ts`). `57` is the conventional positive-amount counterpart.
 - **`17.credit-note-partial.invoice.json`** — typeCode `381`, partial credit against
   `02.domestic-multi-line.invoice.json` (`RE-2026-0043`): only 2 of the original 3 lines are credited
   (negated), the third (consulting) stays untouched on the original invoice. Tests that VAT breakdown
@@ -119,8 +124,8 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   `RE-2026-0044` (2026-06-12) but forgot to bill 3 consulting hours, so they issue a *new* document,
   `RE-2026-0045`, that only bills the missing hours (`precedingInvoiceReference` points back at
   `RE-2026-0044`). Unlike `16`/`17`'s credit notes, a corrective invoice adds to what's owed rather
-  than reducing it, so `duePayableAmount` is positive (`446.25`) — `CREDIT_NOTE_POSITIVE_AMOUNT`
-  doesn't apply here since that check is `381`-only, but `PRECEDING_INVOICE_REFERENCE_REQUIRED` still
+  than reducing it, so `duePayableAmount` is positive (`446.25`) — the `381`-only credit-note checks
+  (negative-amount warning, due-date requirement) don't apply here, but `PRECEDING_INVOICE_REFERENCE_REQUIRED` still
   does, since both `381` and `384` must say what they reference (`validators/rules/10.credit-note.ts`).
   As with `17`, only the amended line is present, not a full copy of the original invoice — that's a
   fixture-authoring convention, not something the schema enforces, since the internal `Invoice` type
@@ -325,6 +330,24 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   `identifier.id` (`LIEF-4711`) is a supplier number the buyer assigned, different from the
   Steuernummer. Shows the engine does not assume BT-29 equals BT-32. Same KoSIT and Mustang
   coverage as 55, all clean.
+- **`57.credit-note-positive-full.invoice.json`** — typeCode `381`, the conventional form of
+  `16.credit-note-full.invoice.json`: the same full reversal of `RE-2026-0042` with positive
+  quantity, line amount, VAT and totals (`duePayableAmount` `1190.00`), because the document type,
+  not the sign, expresses the credit ([peppol-bis] §5.6.1). Sets `dueDate` and `paymentMeans`: a positive credit note
+  needs a due date (`CREDIT_NOTE_DUE_DATE_REQUIRED`), and a UBL credit note carries it in
+  `cac:PaymentMeans/cbc:PaymentDueDate` since `cac:CreditNote` has no `cbc:DueDate`.
+- **`58.credit-note-positive-partial.invoice.json`** — positive-amount counterpart of
+  `17.credit-note-partial.invoice.json` (2 of the 3 lines of `RE-2026-0043`).
+- **`59.credit-note-positive-mixed-vat-rates.invoice.json`** — positive-amount counterpart of
+  `47.credit-note-mixed-vat-rates.invoice.json` (19% and 7% breakdowns).
+- **`60.credit-note-positive-mixed-sign-lines.invoice.json`** — adapted from
+  `59.credit-note-positive-mixed-vat-rates.invoice.json` (same skeleton and 19%/7% rates; new id,
+  dates, referenced invoice and line values). A positive credit note with a
+  negative-quantity line at 7% (netting off books that stay billed), so the document totals are
+  positive while one VAT breakdown is negative. No rule restricts mixed signs ([peppol-bis] §5.6 has
+  none): KoSIT and Mustang accept this shape, so the fixture pins that the engine accepts it too.
+  Validated clean by KoSIT (UBL CreditNote and CII) and Mustang; `57`–`60` are covered like every
+  other fixture by the dynamic validator suites.
 
 ## References
 
@@ -335,6 +358,7 @@ The scenarios and field references above are grounded in these sources, not a li
 | EN 16931 validation rules (GitHub)                  | [en16931]              | BT-xx field definitions and BR-xx rule text (e.g. `BT-113`, `BR-S-05`) |
 | EN 16931 supporting-artefacts & code-list registry  | [en16931-artefacts]    | VATEX exemption reason codes                                          |
 | German invoice-content law, §4 UStG                 | [ustg-4]               | VAT exemptions (category `E`, non-§19)                                 |
+| Peppol BIS Billing 3.0 (OpenPeppol)                 | [peppol-bis]           | Credit-note convention (§5.6, §5.6.1), `PaymentMeans/PaymentDueDate` |
 | German tax rates, §12 UStG                          | [ustg-12]              | 19%/7%/0% rate categories                                              |
 | German reverse-charge law, §13b UStG                | [ustg-13b]             | `AE` category and its subcases                                        |
 | German small-business law, §19 UStG                 | [ustg-19]              | Kleinunternehmerregelung exemption                                     |
@@ -342,6 +366,7 @@ The scenarios and field references above are grounded in these sources, not a li
 
 [en16931]: https://github.com/ConnectingEurope/eInvoicing-EN16931
 [en16931-artefacts]: https://ec.europa.eu/digital-building-blocks/sites/display/DIGITAL/Registry+of+supporting+artefacts+to+implement+EN16931
+[peppol-bis]: https://docs.peppol.eu/poacc/billing/3.0/bis/
 [ustg-4]: https://www.gesetze-im-internet.de/ustg_1980/__4.html
 [ustg-12]: https://www.gesetze-im-internet.de/ustg_1980/__12.html
 [ustg-13b]: https://www.gesetze-im-internet.de/ustg_1980/__13b.html

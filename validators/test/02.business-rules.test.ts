@@ -115,7 +115,7 @@ function clone<T>(fixture: T): T {
  *
  * | #  | Fixture              | Mutation                          | Expected issue                      |
  * |----|-----------------------|-------------------------------------|----------------------------------|
- * | 48 | credit-note-full     | duePayableAmount set positive      | CREDIT_NOTE_POSITIVE_AMOUNT          |
+ * | 48 | credit-note-full     | none (negative amounts as-is)      | warning CREDIT_NOTE_NEGATIVE_AMOUNT, no error |
  * | 49 | credit-note-partial  | precedingInvoiceReference removed  | PRECEDING_INVOICE_REFERENCE_REQUIRED |
  *
  * Down payment reference rule (BT-113 requires BT-25/BT-26)
@@ -411,13 +411,14 @@ describe("validateBusinessRules", () => {
   });
 
   describe("credit notes (381) and corrective invoices (384)", () => {
-    it("48. flags credit-note-full when duePayableAmount is made positive", () => {
+    it("48. warns, and does not reject, credit-note-full because its amounts are negative", () => {
       const invoice = clone(creditNoteFull) as Invoice;
-      invoice.duePayableAmount = 1190;
 
       const issues = validateBusinessRules(invoice);
 
-      expect(issues.some((i) => i.code === "CREDIT_NOTE_POSITIVE_AMOUNT")).toBe(true);
+      const warning = issues.find((i) => i.code === "CREDIT_NOTE_NEGATIVE_AMOUNT");
+      expect(warning?.severity).toBe("warning");
+      expect(issues.filter((i) => i.severity === "error")).toEqual([]);
     });
 
     it("49. flags credit-note-partial when precedingInvoiceReference is removed", () => {

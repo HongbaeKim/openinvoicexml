@@ -7,6 +7,7 @@ import type { Invoice } from "../core/index.js";
 import domesticSimple from "../fixtures/01.domestic-simple.invoice.json" with { type: "json" };
 import intraEuSupply from "../fixtures/08.intra-eu-supply.invoice.json" with { type: "json" };
 import creditNoteFull from "../fixtures/16.credit-note-full.invoice.json" with { type: "json" };
+import creditNotePositiveFull from "../fixtures/57.credit-note-positive-full.invoice.json" with { type: "json" };
 // XRechnung already proved both allowance levels work through one combined test. 
 import combinedLineAndDocumentDiscount from "../fixtures/24.combined-line-and-document-discount.invoice.json" with { type: "json" };
 import minimalRequiredFields from "../fixtures/33.minimal-required-fields.invoice.json" with { type: "json" };
@@ -349,6 +350,53 @@ describe("toXRechnung", () => {
       };
       const xml = toXRechnung(invoice);
       expect(xml).not.toContain("<cbc:DueDate>");
+    });
+
+    it("writes a credit note's dueDate (BT-9) as PaymentMeans/PaymentDueDate, directly after PaymentMeansCode", () => {
+      const invoice: Invoice = {
+        ...(creditNoteFull as unknown as Invoice),
+        dueDate: "2026-07-20",
+      };
+      const xml = toXRechnung(invoice);
+      expect(xml).toMatch(
+        /<cbc:PaymentMeansCode>58<\/cbc:PaymentMeansCode>\n\s+<cbc:PaymentDueDate>2026-07-20<\/cbc:PaymentDueDate>\n\s+<cac:PayeeFinancialAccount>/,
+      );
+      expect(xml).not.toContain("<cbc:DueDate>");
+    });
+
+    it("writes PaymentDueDate for a negative-amount credit note too", () => {
+      const xml = toXRechnung({ ...(creditNoteFull as unknown as Invoice), dueDate: "2026-07-20" });
+      expect(xml).toContain("<cbc:PaymentDueDate>2026-07-20</cbc:PaymentDueDate>");
+    });
+
+    it("leaves out PaymentDueDate when the credit note has no dueDate", () => {
+      const xml = toXRechnung(creditNoteFull as unknown as Invoice);
+      expect(xml).not.toContain("PaymentDueDate");
+    });
+
+    it("cannot write dueDate without paymentMeans (PaymentMeansCode is mandatory inside PaymentMeans)", () => {
+      const invoice = {
+        ...(creditNoteFull as unknown as Invoice),
+        dueDate: "2026-07-20",
+      } as Invoice;
+      delete invoice.paymentMeans;
+      const xml = toXRechnung(invoice);
+      expect(xml).not.toContain("PaymentDueDate");
+      expect(xml).not.toContain("<cac:PaymentMeans>");
+    });
+
+    it("keeps an ordinary invoice's dueDate in the root cbc:DueDate, never in PaymentMeans", () => {
+      const xml = toXRechnung(domesticSimple as unknown as Invoice);
+      expect(xml).toContain("<cbc:DueDate>");
+      expect(xml).not.toContain("PaymentDueDate");
+    });
+
+    it("renders a positive-amount credit note with positive CreditedQuantity and PayableAmount", () => {
+      const xml = toXRechnung(creditNotePositiveFull as unknown as Invoice);
+      expect(xml).toContain("<cbc:CreditNoteTypeCode>381</cbc:CreditNoteTypeCode>");
+      expect(xml).toContain('<cbc:CreditedQuantity unitCode="HUR">8</cbc:CreditedQuantity>');
+      expect(xml).toMatch(/<cbc:PayableAmount currencyID="EUR">1190\.00<\/cbc:PayableAmount>/);
+      expect(xml).toContain("<cbc:PaymentDueDate>2026-07-20</cbc:PaymentDueDate>");
     });
 
     it("still renders typeCode 384 (corrective invoice) as ubl:Invoice, not CreditNote", () => {

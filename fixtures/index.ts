@@ -54,6 +54,10 @@ import fractionalQuantity from "./53.fractional-quantity.invoice.json" with { ty
 import fractionalQuantityHighPrecisionPrice from "./54.fractional-quantity-high-precision-price.invoice.json" with { type: "json" };
 import freelancerTaxNumberAsSellerId from "./55.freelancer-tax-number-as-seller-id.invoice.json" with { type: "json" };
 import freelancerBuyerAssignedSupplierId from "./56.freelancer-buyer-assigned-supplier-id.invoice.json" with { type: "json" };
+import creditNotePositiveFull from "./57.credit-note-positive-full.invoice.json" with { type: "json" };
+import creditNotePositivePartial from "./58.credit-note-positive-partial.invoice.json" with { type: "json" };
+import creditNotePositiveMixedVatRates from "./59.credit-note-positive-mixed-vat-rates.invoice.json" with { type: "json" };
+import creditNotePositiveMixedSignLines from "./60.credit-note-positive-mixed-sign-lines.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -112,10 +116,14 @@ export {
   fractionalQuantityHighPrecisionPrice,
   freelancerTaxNumberAsSellerId,
   freelancerBuyerAssignedSupplierId,
+  creditNotePositiveFull,
+  creditNotePositivePartial,
+  creditNotePositiveMixedVatRates,
+  creditNotePositiveMixedSignLines,
 };
 
 /**
- * All 54 fixtures as [label, data] pairs, in fixture-number order. Each label is numbered
+ * Every fixture as a [label, data] pair, in fixture-number order. Each label is numbered
  * (matching the fixture's filename prefix) and annotated with its VAT category, so it shows
  * up that way in every test runner's output, wherever this list is consumed.
  *
@@ -180,4 +188,8 @@ export const allFixtures: [string, unknown][] = [
   ["54. fractional-quantity-high-precision-price (19% S)", fractionalQuantityHighPrecisionPrice],
   ["55. freelancer-tax-number-as-seller-id (19% S)", freelancerTaxNumberAsSellerId],
   ["56. freelancer-buyer-assigned-supplier-id (19% S)", freelancerBuyerAssignedSupplierId],
+  ["57. credit-note-positive-full (381)", creditNotePositiveFull],
+  ["58. credit-note-positive-partial (381)", creditNotePositivePartial],
+  ["59. credit-note-positive-mixed-vat-rates (381)", creditNotePositiveMixedVatRates],
+  ["60. credit-note-positive-mixed-sign-lines (381)", creditNotePositiveMixedSignLines],
 ];

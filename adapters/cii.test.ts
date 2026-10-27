@@ -248,6 +248,15 @@ describe("toCii", () => {
       );
     });
 
+    it("carries a credit note's dueDate in SpecifiedTradePaymentTerms, with or without paymentMeans", () => {
+      const withDue = { ...(creditNoteFull as unknown as Invoice), dueDate: "2026-07-20" } as Invoice;
+      expect(toCii(withDue)).toContain(
+        '<ram:DueDateDateTime>\n        <udt:DateTimeString format="102">20260720</udt:DateTimeString>',
+      );
+      delete withDue.paymentMeans;
+      expect(toCii(withDue)).toContain("<ram:DueDateDateTime>");
+    });
+
     it("carries the negative quantity/amount straight through, same as any other line", () => {
       expect(xml).toContain('<ram:BilledQuantity unitCode="HUR">-8</ram:BilledQuantity>');
       expect(xml).toContain("<ram:LineTotalAmount>-1000.00</ram:LineTotalAmount>");

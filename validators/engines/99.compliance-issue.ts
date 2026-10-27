@@ -65,8 +65,12 @@ export const SUGGESTED_FIXES: Record<string, string> = {
     "Warning only, no field is necessarily wrong — verify by hand whether the seller's or buyer's country governs place of supply for this cross-border transaction.",
 
   // --- validators/rules/10.credit-note.ts -----------------------------------------------------
-  CREDIT_NOTE_POSITIVE_AMOUNT:
-    "Make duePayableAmount (BT-115) zero or negative — required for a credit note (typeCode '381').",
+  CREDIT_NOTE_NEGATIVE_AMOUNT:
+    "Warning only: use positive amounts for a conventional credit note (typeCode '381'). A negative amount credits a negative amount and a recipient may book it as a debit.",
+  CREDIT_NOTE_DUE_DATE_REQUIRED:
+    "Set dueDate (BT-9) — OpenInvoiceXML currently requires it for a credit note (typeCode '381') with a positive duePayableAmount, because payment terms (BT-20) are not supported yet.",
+  CREDIT_NOTE_DUE_DATE_NOT_SERIALIZED:
+    "Set paymentMeans (BG-16) so the UBL credit note can carry dueDate in PaymentMeans/PaymentDueDate. XRechnung also requires payment instructions (BR-DE-1), so the document is not compliant without paymentMeans anyway.",
 
   // --- validators/rules/11.delivery.ts --------------------------------------------------------
   DELIVERY_COUNTRY_REQUIRED:

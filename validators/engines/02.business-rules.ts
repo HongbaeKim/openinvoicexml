@@ -137,12 +137,7 @@ export function validateBusinessRules(
   checkSellerIdentifierRequirement(invoice.seller, issues);
 
   // --- Credit notes (381) and corrective invoices (384) --------------------
-  checkCreditNoteAndCorrectionRequirements(
-    invoice.typeCode,
-    invoice.duePayableAmount,
-    invoice.precedingInvoiceReference,
-    issues,
-  );
+  checkCreditNoteAndCorrectionRequirements(invoice, profile, issues);
 
   // --- Final invoice deducting a down payment (BT-113) must say which invoice paid it --
   // Mirrors the credit-note/corrective-invoice reference-required checks above: a

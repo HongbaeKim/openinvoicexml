@@ -85,11 +85,20 @@ function renderDelivery(delivery: DeliveryFields): string {
   </cac:Delivery>`;
 }
 
-function renderPaymentMeans(pm: PaymentMeansFields): string {
+/**
+ * `paymentDueDate` is BT-9 for a credit note: a UBL CreditNote has no `cbc:DueDate`, so Peppol BIS
+ * Billing 3.0 maps it to `cac:PaymentMeans/cbc:PaymentDueDate` (right after `PaymentMeansCode` in
+ * the UBL sequence). An Invoice keeps BT-9 in the root `cbc:DueDate` and leaves this undefined.
+ */
+function renderPaymentMeans(pm: PaymentMeansFields, paymentDueDate?: string): string {
   const iban = pm.iban ? `\n      <cbc:ID>${escapeXml(pm.iban)}</cbc:ID>` : "";
   const accountName = pm.accountName ? `\n      <cbc:Name>${escapeXml(pm.accountName)}</cbc:Name>` : "";
   const bic = pm.bic
     ? `\n      <cac:FinancialInstitutionBranch><cbc:ID>${escapeXml(pm.bic)}</cbc:ID></cac:FinancialInstitutionBranch>`
+    : "";
+
+  const dueDate = paymentDueDate
+    ? `\n    <cbc:PaymentDueDate>${escapeXml(paymentDueDate)}</cbc:PaymentDueDate>`
     : "";
 
   const account =
@@ -98,7 +107,7 @@ function renderPaymentMeans(pm: PaymentMeansFields): string {
       : "";
 
   return `  <cac:PaymentMeans>
-    <cbc:PaymentMeansCode>${escapeXml(pm.code)}</cbc:PaymentMeansCode>${account}
+    <cbc:PaymentMeansCode>${escapeXml(pm.code)}</cbc:PaymentMeansCode>${dueDate}${account}
   </cac:PaymentMeans>`;
 }
 
@@ -226,15 +235,19 @@ export function toXRechnung(invoice: Invoice): string {
     ? `\n  <cac:ContractDocumentReference>\n    <cbc:ID>${escapeXml(fields.contractReference)}</cbc:ID>\n  </cac:ContractDocumentReference>`
     : "";
   const delivery = fields.delivery ? `\n${renderDelivery(fields.delivery)}` : "";
-  const paymentMeans = fields.paymentMeans ? `\n${renderPaymentMeans(fields.paymentMeans)}` : "";
+  // BT-9 of a credit note travels inside PaymentMeans (see renderPaymentMeans); without a
+  // paymentMeans there is nowhere to put it, and validateBusinessRules() warns about that.
+  const paymentMeans = fields.paymentMeans
+    ? `\n${renderPaymentMeans(fields.paymentMeans, isCreditNote ? fields.dueDate : undefined)}`
+    : "";
   // BG-20/BG-21: document-level discounts/charges must come before cac:TaxTotal.
   // Since this invoice does not use PaymentTerms or PrepaidPayment,
   // they are added directly after PaymentMeans.
   const documentAllowancesCharges = fields.allowancesCharges.length
     ? `\n${fields.allowancesCharges.map((ac) => renderAllowanceCharge(ac, currency)).join("\n")}`
     : "";
-  // CreditNoteType has no cbc:DueDate element at all (UBL-CreditNote-2.1.xsd) — a credit
-  // reduces what's owed, it doesn't create a new payment deadline.
+  // CreditNoteType has no cbc:DueDate element at all (UBL-CreditNote-2.1.xsd); a credit note's
+  // BT-9 is written as PaymentMeans/PaymentDueDate instead.
   const dueDate =
     !isCreditNote && fields.dueDate ? `\n  <cbc:DueDate>${escapeXml(fields.dueDate)}</cbc:DueDate>` : "";
   const prepaidAmount = fields.prepaidAmount

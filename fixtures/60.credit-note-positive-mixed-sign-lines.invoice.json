@@ -1,0 +1,91 @@
+{
+  "id": "GS-2026-0013",
+  "typeCode": "381",
+  "issueDate": "2026-08-14",
+  "dueDate": "2026-09-13",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+  "precedingInvoiceReference": {
+    "id": "RE-2026-0051",
+    "issueDate": "2026-06-16"
+  },
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+  "lines": [
+    {
+      "id": "1",
+      "name": "TypeScript Consulting",
+      "description": "Credit for 12 consulting hours not delivered as agreed (invoice RE-2026-0051)",
+      "quantity": 12,
+      "unitCode": "HUR",
+      "unitPrice": 110.0,
+      "lineAmount": 1320.0,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "2",
+      "name": "Fachliteratur",
+      "description": "Offset: 2 books kept after all, remain billed on invoice RE-2026-0051 (negative quantity inside a positive credit note)",
+      "quantity": -2,
+      "unitCode": "C62",
+      "unitPrice": 50.0,
+      "lineAmount": -100.0,
+      "vatCategoryCode": "S",
+      "vatRate": 7
+    }
+  ],
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 1320.0,
+      "taxAmount": 250.8
+    },
+    {
+      "categoryCode": "S",
+      "rate": 7,
+      "taxableAmount": -100.0,
+      "taxAmount": -7.0
+    }
+  ],
+  "taxExclusiveAmount": 1220.0,
+  "taxAmount": 243.8,
+  "taxInclusiveAmount": 1463.8,
+  "duePayableAmount": 1463.8,
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+  "note": "Gutschrift zu Rechnung RE-2026-0051 vom 16.06.2026: 12 nicht erbrachte Beratungsstunden, abzüglich 2 behaltener Bücher (negative Position innerhalb einer positiven Gutschrift)."
+}
