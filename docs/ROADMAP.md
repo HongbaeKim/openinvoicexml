@@ -28,8 +28,8 @@ Current implemented state is documented where it actually lives, not repeated he
   `ROADMAP.md`/`DEVELOPMENT.md`/`LIMITATIONS.md` written. Tagged v0.1.0.
 - **Phase 2 (Weeks 5–8):** XRechnung UBL 2.1 XML adapter, KoSIT validator integration,
   `validateBusinessRules()` + `generateInvoice()` pipeline, CI (`test`/`typecheck`/
-  `validate-kosit`). Beta signup form and `openinvoicexml.de` shipped ahead of schedule as
-  parallel frontend work. Tagged v0.2.0.
+  `validate-kosit`). Beta signup form and the project website (now `openinvoicexml.com`) shipped ahead of
+  schedule as parallel frontend work. Tagged v0.2.0.
 - **Phase 3 (Weeks 9–12):** §19 small-business, §13b reverse-charge subcases, intra-EU supply,
   export, place-of-supply warning, credit notes/corrective invoices, down-payment/final/partial-
   delivery invoices. 21 fixtures, all passing KoSIT. Tagged v0.3.0. Remaining: 30+ fixture target
@@ -38,7 +38,7 @@ Current implemented state is documented where it actually lives, not repeated he
 - **Phase 4 (Weeks 13–16):** Hybrid PDF/A-3b export, a CII adapter plus genuine Factur-X/ZUGFeRD
   hybrid PDF (`EN16931`/`XRECHNUNG` profiles), Mustang cross-validation, unified `ComplianceIssue`
   diagnostics, and edge-case hardening. 50 fixtures, all passing KoSIT + veraPDF + Mustang. Tagged
-  v0.4.0. Remaining: `MINIMUM`/`BASIC WL`/`BASIC` profiles, tracked in `.step/longtermplan.md`.
+  v0.4.0. Remaining: `MINIMUM`/`BASIC WL`/`BASIC` profiles, see [`LIMITATIONS.md`](LIMITATIONS.md).
 
 ---
 
@@ -88,19 +88,23 @@ across 40+ scenarios.
 
 ## After v1.0.0-prototype
 
-The Prototype Fund-supported development scope concludes with v1.0.0-prototype, scheduled for 29 November 2026.
+Prototype Fund funding ends in November 2026. The funded development scope concludes with
+v1.0.0-prototype, scheduled for 29 November 2026. OpenInvoiceXML itself continues as an open-source
+project.
 
-The project was not selected for a second phase of Prototype Fund funding. Therefore, the previously proposed Phases 6–10 are no longer part of the funded roadmap.
+The project was not selected for a second phase of Prototype Fund funding. Therefore, the previously
+proposed Phases 6–10 are no longer part of the funded roadmap, and no new schedule replaces them.
 
-OpenInvoiceXML remains an open-source project. Further development, maintenance, community contributions, and potential integrations may continue independently of Prototype Fund funding.
+Further development, maintenance, community contributions, and potential integrations may continue
+independently of Prototype Fund funding.
 
-Potential future work includes:
+The following are possibilities, not confirmed commitments. Whether and when any of them happens
+depends on available resources, community feedback, and funding:
 
 - Supporting additional Factur-X profiles, including MINIMUM, BASIC WL, and BASIC.
 - Updating dependencies and maintaining compatibility with evolving XRechnung and KoSIT requirements.
 - Addressing reported issues and improving developer documentation.
 - Exploring additional integrations and improvements based on community feedback.
 
-Future activities are not covered by the original Prototype Fund grant and are not subject to the previously proposed Second Stage schedule.
-
-This roadmap documents the funded development scope and does not define or limit independent future development.
+Future activities are not covered by the original Prototype Fund grant. This roadmap documents the
+funded development scope and does not define or limit independent future development.

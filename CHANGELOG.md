@@ -4,11 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Changed
-
-- Roadmap: the funded Prototype Fund scope ends with Phase 5 (v1.0.0-prototype). Phases 6–10 were removed because
-  no second-phase funding was granted; OpenInvoiceXML itself remains an open-source project.
-
 ## [0.4.4] - 2026-10-15
 
 ### Added
@@ -123,11 +118,11 @@ All notable changes to this project will be documented in this file.
 
 ### Profile compatibility
 
-| Profile                    | Supported                                                      |
-| -------------------------- | -------------------------------------------------------------- |
-| XRECHNUNG                  | Yes                                                            |
-| EN 16931                   | Yes                                                            |
-| BASIC WL / BASIC / MINIMUM | No — partial-data profiles, tracked in `.step/longtermplan.md` |
+| Profile                    | Supported                                             |
+| -------------------------- | ----------------------------------------------------- |
+| XRECHNUNG                  | Yes                                                   |
+| EN 16931                   | Yes                                                   |
+| BASIC WL / BASIC / MINIMUM | No — partial-data profiles, see `docs/LIMITATIONS.md` |
 
 See [`LIMITATIONS.md`](docs/LIMITATIONS.md) for detail.
 
