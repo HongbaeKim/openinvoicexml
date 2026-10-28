@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Credit notes (`typeCode` `381`) with **positive amounts** now generate, in UBL and CII. The document type,
+  not the sign, expresses the credit (Peppol BIS Billing 3.0 §5.6.1). Negative-amount credit notes still work.
+  Fixtures 57–60 (full, partial, mixed VAT rates, and a positive credit note with a negative line) pass KoSIT
+  (UBL `CreditNote` and CII) and Mustang.
+- `CREDIT_NOTE_NEGATIVE_AMOUNT` (warning): a `381` with a negative amount due may be booked as a debit by a
+  recipient. It never blocks generation.
+- `CREDIT_NOTE_DUE_DATE_NOT_SERIALIZED` (warning): in UBL, a credit note's `dueDate` needs `paymentMeans` to be
+  written. It concerns only the date; the XRechnung can still fail `BR-DE-1` without payment means.
+- `docs/SUPPORTED_SCENARIOS.md` (and the German version) explain the credit-note sign convention, the UBL due
+  date and the BT-20 limitation. `docs/LIMITATIONS.md` records that requiring `precedingInvoiceReference` is
+  stricter than the standard (KoSIT and Mustang accept a `381` or `384` without it).
+
+### Changed
+
+- **Behavior change:** UBL credit notes now write `dueDate` to `cac:PaymentMeans/cbc:PaymentDueDate` (the Peppol
+  BIS Billing 3.0 mapping for BT-9 on a credit note) when `paymentMeans` is set. Before, the date was dropped
+  without a message. Invoices (`380`) and corrective invoices (`384`) are unchanged.
+- **Behavior change:** a `381` with a positive amount due now needs `dueDate` (`CREDIT_NOTE_DUE_DATE_REQUIRED`,
+  error). EN 16931 `BR-CO-25` asks for a due date or payment terms (BT-20); OpenInvoiceXML does not support
+  payment terms yet, so `dueDate` is currently required. KoSIT already rejected the CII output without it.
+
+### Removed
+
+- **Breaking:** the error code `CREDIT_NOTE_POSITIVE_AMOUNT` and its `SUGGESTED_FIXES` entry are gone. A `381`
+  with a positive amount due no longer fails; callers that matched on this code should handle
+  `CREDIT_NOTE_NEGATIVE_AMOUNT` and `CREDIT_NOTE_DUE_DATE_REQUIRED` instead.
+
 ## [0.4.4] - 2026-10-15
 
 ### Added

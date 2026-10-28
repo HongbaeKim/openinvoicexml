@@ -105,6 +105,8 @@ artifacts under `tools/facturx/` have no such script — see "Validating Factur-
 | `BR-O-02`                                            | Outside scope (category `O`)                                                            | `validators/rules/14.outside-scope.ts`                             | Implemented                                                                                                                          |
 | `BR-57`                                              | Deliver-to country (BT-80)                                                              | `validators/rules/11.delivery.ts`                                  | Implemented                                                                                                                          |
 | `BT-25`/`BT-26`                                      | Credit note / corrective invoice reference                                              | `validators/rules/10.credit-note.ts`                               | Partial — no diff against the original document                                                                                      |
+| `BR-CO-25`                                           | Amount due (BT-115) positive needs a due date (BT-9) or payment terms (BT-20)           | `validators/rules/10.credit-note.ts`                               | Partial — credit note (`381`) only, and only BT-9: payment terms (BT-20) are not supported                                           |
+| `BT-9` (credit note)                                 | UBL credit note due date in `cac:PaymentMeans/cbc:PaymentDueDate` (Peppol BIS Billing 3.0) | `adapters/xrechnung.ts`                                            | Implemented — needs `paymentMeans` (warning otherwise)                                                                               |
 | `BT-113`/`BT-25`/`BT-26`                             | Down-payment deduction reference                                                        | `validators/engines/02.business-rules.ts` (inline)                 | Partial — single reference only                                                                                                      |
 | `BR-CO-26`                                           | Seller needs BT-29, BT-30 or BT-31; a Steuernummer (BT-32) alone fails (fixtures 55/56) | `validators/rules/21.seller-identifier.ts`                         | Implemented                                                                                                                          |
 | `BR-CO-16`/`BR-DEC-17`                               | Amount due (BT-115) = total with VAT − prepaid (BT-113) + rounding amount (BT-114)      | `validators/engines/02.business-rules.ts` (inline)                 | Implemented — no project-specific range limit on BT-114                                                                              |
@@ -253,7 +255,7 @@ Factur-X conformance. `toFacturXPdf()` (see ["Validating Factur-X/ZUGFeRD output
 hybrid — the two coexist as separate entry points, not a replacement of one by the other. All 50
 fixtures pass veraPDF's PDF/A-3b profile with zero errors.
 
-`make validate-hybrid` automates a round-trip check across all 54 fixtures: it runs veraPDF
+`make validate-hybrid` automates a round-trip check across all 60 fixtures: it runs veraPDF
 against every generated hybrid PDF, then extracts each one's embedded XML
 (`extractEmbeddedXml()`, `adapters/hybrid-pdf.ts`) and runs _that_ through KoSIT — proving what a
 real recipient would actually extract from the PDF is itself a conformant XRechnung document, not
@@ -298,7 +300,7 @@ Factur-X/ZUGFeRD hybrid PDF (unlike `toHybridPdf()` above). Same three validator
 
 - **KoSIT**, against CII instead of UBL. `tools/kosit/config/scenarios.xml` defines
   `EN16931 (CII)` and `EN16931 XRechnung (CII)` scenarios; KoSIT self-selects per file from its
-  guideline URN. All 54 fixtures pass, both profiles, and the tests also assert each profile
+  guideline URN. All 60 fixtures pass, both profiles, and the tests also assert each profile
   matches its expected scenario (see
   [Check the matched scenario](#check-the-matched-scenario-not-just-valid)).
 - **veraPDF**, same PDF/A-3b check as `toHybridPdf()` — confirms `embedFacturX()`'s own PDF/A-3

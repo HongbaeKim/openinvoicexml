@@ -87,12 +87,47 @@ A matching tag is necessary but not sufficient proof that reverse charge applies
 | Scenario                                                 | Type code | Fixtures         |
 | -------------------------------------------------------- | --------- | ---------------- |
 | Commercial invoice                                       | `380`     | `01`–`15`        |
-| Credit note, full reversal                               | `381`     | `16`             |
-| Credit note, partial                                     | `381`     | `17`, `47`       |
+| Credit note, full reversal                               | `381`     | `16`, `57`       |
+| Credit note, partial                                     | `381`     | `17`, `47`, `58`, `59` |
+| Credit note with positive and negative lines             | `381`     | `60`             |
 | Corrective invoice                                       | `384`     | `18`, `35`, `50` |
 | Down payment invoice (Anzahlungsrechnung)                | `380`     | `19`, `48`       |
 | Final invoice (Schlussrechnung) deducting a down payment | `380`     | `20`             |
 | Partial delivery invoice (Teilrechnung)                  | `380`     | `21`, `49`       |
+
+### Credit notes (`381`): amounts and due date
+
+- **Positive amounts are the convention.** The document type (`381`), not the sign, expresses the
+  credit (fixtures `57`–`60`). Peppol BIS Billing 3.0 §5.6.1 says that crediting "is controlled merely
+  by the business document type" and that the representation of the amount, including its sign, is
+  not affected. The e-invoicing FAQ of the German federal administration says that for a credit note
+  "it is not necessary to add another minus sign to the payment total". That FAQ is written for
+  invoices to the federal administration; it is cited as German official guidance, not as a rule
+  for every recipient.
+- **Negative amounts are accepted with a warning** (fixtures `16`, `17`, `47`). A negative amount
+  due (BT-115) on a `381` raises `CREDIT_NOTE_NEGATIVE_AMOUNT`: the document credits a negative
+  amount, and a recipient may book it as a debit. A zero amount due is accepted without a warning.
+- **Mixed signs are not restricted** (fixture `60`). A positive credit note may contain a line with
+  a negative quantity. KoSIT and Mustang accept this; Peppol BIS Billing 3.0 §5.6 neither allows
+  nor forbids it, so OpenInvoiceXML adds no rule of its own.
+- **The due date (BT-9) is kept in UBL.** A UBL `CreditNote` has no `cbc:DueDate`; as Peppol BIS
+  Billing 3.0 maps it, `dueDate` is written to `cac:PaymentMeans/cbc:PaymentDueDate`. That element
+  needs a `PaymentMeans`: without `paymentMeans`, the date cannot be written, and
+  `CREDIT_NOTE_DUE_DATE_NOT_SERIALIZED` warns about it. The warning concerns only the date: without
+  `paymentMeans` the XRechnung can still fail `BR-DE-1` (payment instructions are mandatory). CII
+  carries the date in its payment terms with or without `paymentMeans`.
+- **Current limitation (payment terms, BT-20).** EN 16931 `BR-CO-25` asks for a due date (BT-9)
+  _or_ payment terms (BT-20) when the amount due is positive. OpenInvoiceXML does not support
+  payment terms, so it currently requires `dueDate` for a `381` with a positive amount due
+  (`CREDIT_NOTE_DUE_DATE_REQUIRED`). This is a limitation of this engine, not a statement that
+  every positive credit note must carry a due date. The installed KoSIT checks `BR-CO-25` for CII
+  but not for a UBL `CreditNote`; the engine applies the requirement to both so that one input is
+  valid for both outputs.
+- **Passing the validators does not show how a recipient books the document.** KoSIT and Mustang
+  check the XML against EN 16931 and XRechnung. They do not check that a recipient's accounting
+  system reads the signs the way the sender meant, that the referenced invoice exists or is
+  actually reversed, or anything about tax treatment.
+- Corrective invoices (`384`) are unchanged: no sign or due-date rule is added for them.
 
 ### Allowances, charges, and amounts
 
@@ -127,7 +162,7 @@ condition. The caveat is part of the contract.
 | §13b reverse-charge subcases       | `reverseChargeReason` tag and a matching free-text exemption reason       | Subcase-specific legal preconditions are not verified, such as the €5,000 minimum for `mobile-devices` and `industrial-metals`. A matching keyword is not proof that reverse charge applies |
 | §13b insolvency-specific transfers | Falls back to the generic `AE` checks                                     | No dedicated subcase identifier                                                                                                                                                             |
 | Small business (§19 UStG)          | Seller tax ID is required, exemption wording is accepted                  | Turnover thresholds (€25,000/€100,000) and the Abs. 3 waiver are not verified                                                                                                               |
-| Credit notes (`381`)               | Negative amounts, `precedingInvoiceReference` is required                 | Credited amounts are not cross-checked against the original invoice                                                                                                                         |
+| Credit notes (`381`)               | Positive amounts (convention) or negative amounts (warning); `precedingInvoiceReference` is required; `dueDate` is required when the amount due is positive | Credited amounts are not cross-checked against the original invoice; payment terms (BT-20) are not supported, which is why `dueDate` is required                                                                                                                         |
 | Corrective invoices (`384`)        | Preceding-invoice reference is required                                   | "Only changed lines present" is a convention, not enforced                                                                                                                                  |
 | Down payment and final invoice     | Prepaid amount (BT-113) nets down the amount due                          | `precedingInvoiceReference` is a single reference: one prior down payment per final invoice                                                                                                 |
 | Partial delivery (Teilrechnung)    | Contract reference (BT-12), free-text `note`                              | No dedicated fields for overall contract value or remaining balance; EN 16931 has no business term for either                                                                               |

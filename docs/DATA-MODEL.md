@@ -115,16 +115,21 @@ with `profile: "XRECHNUNG"`. `generateInvoice`/`generateHybridPdf` always pass `
 (their output is always genuine XRechnung UBL regardless of any profile option);
 `generateCii`/`generateFacturXPdf` pass through their own `options.profile`, which defaults to
 `"EN16931"` — see [`COMPLIANCE.md`](COMPLIANCE.md).
-| BT-9 | Payment due date | `dueDate` (optional) | — | `cbc:DueDate` (invoice root) |
+| BT-9 | Payment due date | `dueDate` (optional; required for a credit note `381` with a positive `duePayableAmount`) | BR-CO-25 | `cbc:DueDate` (invoice root); for a credit note `cac:PaymentMeans/cbc:PaymentDueDate` |
 | BT-25 | Preceding invoice number | `precedingInvoiceReference.id` (optional) | EN 16931 §6.2.3 | `cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID` |
 | BT-26 | Preceding invoice issue date | `precedingInvoiceReference.issueDate` (optional) | EN 16931 §6.2.3 | `cac:BillingReference/cac:InvoiceDocumentReference/cbc:IssueDate` |
 | BT-12 | Contract reference | `contractReference` (optional) | — | `cac:ContractDocumentReference/cbc:ID` |
 | BT-13 | Purchase order reference | `purchaseOrderReference` (optional) | — | `cac:OrderReference/cbc:ID` |
 
-Notes: BT-9 maps to the plain root-level `cbc:DueDate`, not `PaymentMeans`/`PaymentTerms` (both
-discouraged by this profile's Schematron). Credit notes (`typeCode` `381`) render as a distinct
-UBL `CreditNote` document, not an `Invoice` — no `cbc:DueDate` at all, since a credit reduces what's
-owed rather than creating a new deadline. `precedingInvoiceReference` is a single object, not a
+Notes: for an invoice BT-9 maps to the plain root-level `cbc:DueDate`, not `PaymentMeans`/`PaymentTerms`
+(both discouraged by this profile's Schematron for invoices). Credit notes (`typeCode` `381`) render
+as a distinct UBL `CreditNote` document, not an `Invoice`. A `CreditNote` has no `cbc:DueDate`, so
+`dueDate` is written to `cac:PaymentMeans/cbc:PaymentDueDate` (right after `cbc:PaymentMeansCode`),
+which is where Peppol BIS Billing 3.0 maps BT-9 for credit notes. That needs `paymentMeans`: without
+it the date cannot be written and `CREDIT_NOTE_DUE_DATE_NOT_SERIALIZED` warns (the XRechnung can still
+fail `BR-DE-1` without payment means). In CII the date is always carried in the payment terms. A
+positive-amount `381` requires `dueDate` because payment terms (BT-20) are not supported; see
+[`SUPPORTED_SCENARIOS.md`](SUPPORTED_SCENARIOS.md#credit-notes-381-amounts-and-due-date). `precedingInvoiceReference` is a single object, not a
 list — see [`LIMITATIONS.md`](LIMITATIONS.md) for why.
 
 ### Seller (BG-4)
