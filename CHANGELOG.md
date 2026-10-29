@@ -27,6 +27,14 @@ All notable changes to this project will be documented in this file.
   error). EN 16931 `BR-CO-25` asks for a due date or payment terms (BT-20); OpenInvoiceXML does not support
   payment terms yet, so `dueDate` is currently required. KoSIT already rejected the CII output without it.
 
+### Fixed
+
+- toCii() and toFacturXPdf() now immediately throw a clear error if an unsupported profile is provided. Only EN16931 and XRECHNUNG are accepted. 
+ 
+ Before: Invalid profile → Broken XML generated → Error discovered later during validation.
+ 
+ Now: Invalid profile → Immediate, clear error.
+
 ### Removed
 
 - **Breaking:** the error code `CREDIT_NOTE_POSITIVE_AMOUNT` and its `SUGGESTED_FIXES` entry are gone. A `381`

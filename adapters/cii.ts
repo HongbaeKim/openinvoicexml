@@ -262,8 +262,30 @@ const GUIDELINE_ID: Record<EInvoiceProfile, string> = {
   XRECHNUNG: "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0",
 };
 
+/**
+ * Checks that the profile is either "EN16931" or "XRECHNUNG".
+ *
+ * TypeScript normally prevents invalid profiles, but JavaScript can still pass them.
+ * Without this check, an invalid profile could generate broken XML
+ * (<ram:ID>undefined</ram:ID>) without showing an error.
+ *
+ * Uses hasOwnProperty to reject invalid values like "toString" and "__proto__".
+ *
+ * If the check passes, TypeScript can trust that the profile is an EInvoiceProfile.
+ * If this function finishes without an error, I know profile is either EN16931 or XRECHNUNG.
+ */
+export function assertSupportedProfile(profile: unknown): asserts profile is EInvoiceProfile {
+  // if (notAString || notSupportedProfile)
+  if (typeof profile !== "string" || !Object.prototype.hasOwnProperty.call(GUIDELINE_ID, profile)) {
+    throw new Error(
+      `Unsupported profile ${JSON.stringify(profile)}: supported profiles are "EN16931" and "XRECHNUNG".`,
+    );
+  }
+}
+
 export function toCii(invoice: Invoice, options: { profile?: EInvoiceProfile } = {}): string {
   const profile = options.profile ?? "EN16931";
+  assertSupportedProfile(profile);
   const fields = mapInvoice(invoice);
   // Escaped once: interpolated into currencyID="..." attribute values below.
   const currency = escapeXml(fields.currencyCode);

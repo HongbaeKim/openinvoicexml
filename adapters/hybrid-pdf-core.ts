@@ -27,7 +27,7 @@ import {
 // The hybrid PDF needs XML, so we use toXRechnung() or toCii() to generate it.
 // The PDF layout is handled separately by hybrid-pdf-mapping.ts.
 import { toXRechnung } from "./xrechnung.js";
-import { toCii } from "./cii.js";
+import { assertSupportedProfile, toCii } from "./cii.js";
 
 /**
  * PDF layout — turns already-resolved field structures (see hybrid-pdf-mapping.ts) into a
@@ -676,6 +676,8 @@ export async function buildFacturXPdf(
   options: HybridPdfOptions = {},
 ): Promise<Uint8Array> {
   const profile = options.profile ?? "EN16931";
+  // Before the pages are built, so an unsupported profile fails fast.
+  assertSupportedProfile(profile);
 
   const doc = await buildInvoicePages(invoice, fontBytes);
 

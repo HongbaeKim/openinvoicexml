@@ -280,6 +280,15 @@ describe("toFacturXPdf", () => {
       expect(text).toContain(`<fx:ConformanceLevel>${expected}</fx:ConformanceLevel>`);
     });
 
+    it.each(["BASIC", "BASIC WL", "MINIMUM", "basic"])(
+      "rejects the unsupported profile %j instead of building a PDF",
+      async (profile) => {
+        await expect(
+          toFacturXPdf(domesticSimple as Invoice, { profile: profile as unknown as "EN16931" }),
+        ).rejects.toThrow(/supported profiles are "EN16931" and "XRECHNUNG"/);
+      },
+    );
+
     it("writes fx:DocumentFileName matching the attached file name", async () => {
       const bytes = await toFacturXPdf(domesticSimple as Invoice);
       const text = Buffer.from(bytes).toString("latin1");

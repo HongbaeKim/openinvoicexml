@@ -58,6 +58,31 @@ describe("toCii", () => {
     });
   });
 
+  describe("unsupported profiles", () => {
+    // JavaScript callers (or a cast) can pass strings the EInvoiceProfile type forbids.
+    it.each(["BASIC", "BASIC WL", "MINIMUM", "basic", "en16931", "", "toString", "__proto__"])(
+      "throws for profile %j instead of writing an undefined guideline id",
+      (profile) => {
+        expect(() =>
+          toCii(domesticSimple as Invoice, { profile: profile as unknown as "EN16931" }),
+        ).toThrow(/supported profiles are "EN16931" and "XRECHNUNG"/);
+      },
+    );
+
+    it.each([42, {}, true])("throws for a non-string profile %j", (profile) => {
+      // as never: Allow this value. I know it doesn't match the expected type, but I want to test it anyway.
+      expect(() => toCii(domesticSimple as Invoice, { profile: profile as never })).toThrow(
+        /Unsupported profile/,
+      );
+    });
+
+    it("never writes an undefined guideline id for the supported profiles", () => {
+      for (const profile of ["EN16931", "XRECHNUNG"] as const) {
+        expect(toCii(domesticSimple as Invoice, { profile })).not.toContain("undefined");
+      }
+    });
+  });
+
   describe("field-specific mapping (domestic-simple)", () => {
     const xml = toCii(domesticSimple as unknown as Invoice);
 
