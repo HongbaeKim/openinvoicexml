@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 
+import { validateBusinessRules } from "../engines/02.business-rules.js";
 import { checkReverseChargeSubcaseRequirements } from "../rules/15.reverse-charge.js";
 import type { Invoice } from "../../core/types/invoice.js";
 import type { ValidationIssue } from "../types.js";
@@ -119,6 +120,46 @@ describe("checkReverseChargeSubcaseRequirements", () => {
     expect(
       issues.some((i) => i.code === "REVERSE_CHARGE_SUBCASE_EXEMPTION_REASON_INVALID"),
     ).toBe(false);
+  });
+
+  // Insolvency-specific security-asset transfers (§13b Abs. 2 Nr. 2 UStG) have no dedicated
+  // reverseChargeReason; they are documented as falling back to the generic 'AE' checks.
+  describe("insolvency-specific transfers (no dedicated subcase)", () => {
+    // Tax liability of the recipient of services pursuant to Section 13b (2) no. 2 of the German Value 
+    // Added Tax Act (UStG) (transfer in insolvency proceedings)
+    const insolvencyReason =
+      "Steuerschuldnerschaft des Leistungsempfängers gem. §13b Abs. 2 Nr. 2 UStG (Übertragung im Insolvenzverfahren)";
+
+    function insolvencyInvoice(): Invoice {
+      const invoice = clone(reverseCharge) as Invoice;
+      invoice.vatBreakdowns[0]!.exemptionReason = insolvencyReason;
+      return invoice;
+    }
+
+    it("applies no subcase rule, whatever the exemption wording", () => {
+      const invoice = insolvencyInvoice();
+      expect(invoice.vatBreakdowns[0]!.reverseChargeReason).toBeUndefined();
+
+      const issues: ValidationIssue[] = [];
+      checkReverseChargeSubcaseRequirements(invoice.vatBreakdowns, issues);
+
+      expect(issues).toEqual([]);
+    });
+
+    it("passes the full business rules like any generic AE invoice", () => {
+      const issues = validateBusinessRules(insolvencyInvoice());
+
+      expect(issues.filter((i) => i.severity === "error")).toEqual([]);
+    });
+
+    it("still enforces the generic AE buyer VAT ID requirement", () => {
+      const invoice = insolvencyInvoice();
+      delete invoice.buyer.vatId;
+
+      const issues = validateBusinessRules(invoice);
+
+      expect(issues.some((i) => i.code === "REVERSE_CHARGE_BUYER_VAT_ID_REQUIRED")).toBe(true);
+    });
   });
 
   it("flags reverseChargeReason set on a breakdown whose category isn't 'AE'", () => {
