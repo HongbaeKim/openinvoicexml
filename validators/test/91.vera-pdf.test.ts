@@ -1,5 +1,4 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 // Gets the operating system's temporary directory.
 import { tmpdir } from "node:os";
 // Join files paths
@@ -17,25 +16,10 @@ import type { Invoice } from "../../core/index.js";
 import { PDFDocument, StandardFonts } from "@cantoo/pdf-lib";
 
 import { allFixtures } from "../../fixtures/index.js";
+import { requireValidators } from "./validator-availability.test-helpers.js";
 
-const CLI_PATH = "tools/verapdf/verapdf";
-const PORTABLE_JRE_HOME = resolve("tools/jre");
 
-function veraPdfAvailable(): boolean {
-  if (!existsSync(CLI_PATH)) return false;
-  try {
-    const env = { ...process.env };
-    if (existsSync(`${PORTABLE_JRE_HOME}/bin/java`)) 
-      env.JAVA_HOME = PORTABLE_JRE_HOME;
-    // This executes tools/verapdf/verapdf --version
-    execFileSync(CLI_PATH, ["--version"], { stdio: "ignore", env });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const available = veraPdfAvailable();
+const available = requireValidators(["veraPDF"]);
 const workDir = mkdtempSync(join(tmpdir(), "verapdf-test-"));
 
 afterAll(() => {

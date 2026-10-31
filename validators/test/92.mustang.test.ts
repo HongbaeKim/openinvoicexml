@@ -1,5 +1,4 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 // Gets the operating system's temporary directory.
 import { tmpdir } from "node:os";
 // Join files paths
@@ -18,21 +17,11 @@ import { toCii } from "../../adapters/cii.js";
 import type { Invoice } from "../../core/index.js";
 
 import { allFixtures } from "../../fixtures/index.js";
+import { requireValidators } from "./validator-availability.test-helpers.js";
 
-const JAVA_BIN = existsSync("tools/jre/bin/java") ? "tools/jre/bin/java" : "java";
 const JAR_PATH = "tools/mustang/mustang-cli.jar";
 
-function mustangAvailable(): boolean {
-  if (!existsSync(JAR_PATH)) return false;
-  try {
-    execFileSync(JAVA_BIN, ["-version"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const available = mustangAvailable();
+const available = requireValidators(["Mustang"]);
 const workDir = mkdtempSync(join(tmpdir(), "mustang-test-"));
 
 afterAll(() => {

@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -6,47 +7,65 @@ on:
   pull_request:
     branches: [main]
 
-# 1.clean install → 2.lint → 3.type-check → 4.set up external validator tools → 5.run tests
-# If any step fails, the workflow fails and (on a PR) shows up as a red ❌ 
+# CI pipeline:
+# 1. Install dependencies
+# 2. Lint
+# 3. Type-check
+# 4. Install KoSIT, veraPDF, and Mustang
+# 5. Run tests with coverage and strict validation
+#
+# Any failed step fails the workflow.
+# Missing external validators must fail tests, not be silently skipped.
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
-      - run: npm ci
+      # Install exact dependencies from package-lock.json.
+      - name: Install dependencies
+        run: npm ci
 
-      - run: npm run lint
+      # Check code style and types.
+      - name: Lint
+        run: npm run lint
 
-      - run: npm run typecheck
+      - name: Type-check
+        run: npm run typecheck
 
-      # Downloads the KoSIT validator jar + XRechnung scenario config (and a portable
-      # JRE if java isn't already on the runner) into tools/ — same script used locally
-      # via `make kosit-setup`. This makes the KoSIT-backed fixture regression in
-      # validators/test/90.kosit.test.ts (run as part of `npm test` below) an actual CI gate,
-      # not something that silently skips (validators/test/90.kosit.test.ts's
-      # describe.skipIf(!available) would otherwise let a missing jar/Java pass silently).
-      - run: bash scripts/setup-kosit.sh
+      # Install KoSIT validator, XRechnung configuration,
+      # and a portable JRE if system Java is unavailable.
+      - name: Set up KoSIT
+        run: bash scripts/setup-kosit.sh
 
-      # Downloads and unattended-installs the veraPDF CLI (PDF/A-3 validator) into tools/ —
-      # same script used locally via `make verapdf-setup`. This makes
-      # validators/test/91.vera-pdf.test.ts an actual CI gate instead of silently
-      # skipping via describe.skipIf(!available). If no system Java is available,
-      # it can reuse the portable JRE installed by the preceding KoSIT setup step.
-      - run: bash scripts/setup-verapdf.sh
+      # Install veraPDF CLI for PDF/A validation.
+      # Can reuse Java installed by the KoSIT setup.
+      - name: Set up veraPDF
+        run: bash scripts/setup-verapdf.sh
 
-      # Downloads the Mustang Project CLI jar (an independent, third-party e-invoicing tool)
-      # into tools/ — same script used locally via `make mustang-setup`. This makes
-      # validators/test/92.mustang.test.ts an actual CI gate instead of silently skipping
-      # via describe.skipIf(!available). Reuses the portable JRE from the KoSIT/veraPDF
-      # setup steps above if one was installed.
-      - run: bash scripts/setup-mustang.sh
+      # Install Mustang Project CLI for independent
+      # e-invoice validation.
+      # Can reuse Java from the previous setup steps.
+      - name: Set up Mustang
+        run: bash scripts/setup-mustang.sh
 
-      # Runs the full suite (KoSIT/veraPDF/Mustang gates included) with v8 coverage and fails
-      # if it drops below the thresholds in vitest.config.ts — replaces a separate `npm test`.
-      - run: npm run test:coverage
+      # Run the full test suite with V8 coverage.
+      #
+      # Strict validation ensures missing external tools
+      # cause test failures rather than skipped tests.
+      #
+      # Coverage must also meet the thresholds defined
+      # in vitest.config.ts.
+      - name: Run tests with strict validation
+        run: npm run test:coverage
+        env:
+          OPENINVOICE_STRICT_VALIDATION: "1"

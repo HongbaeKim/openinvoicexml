@@ -1,5 +1,4 @@
-import { execFileSync } from "node:child_process";
-import { writeFileSync, mkdtempSync, rmSync, existsSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -19,28 +18,13 @@ import { extractEmbeddedXml } from "./hybrid-pdf.js";
 import * as adaptersEntry from "./index.js";
 import * as browserEntry from "./browser.js";
 import type { Invoice } from "../core/index.js";
+import { requireValidators } from "../validators/test/validator-availability.test-helpers.js";
 
 import { allFixtures, reducedRate, domesticSimple } from "../fixtures/index.js";
 
 /** Deep-clones a fixture so mutations in one test don't leak into others. */
 function clone<T>(fixture: T): T {
   return JSON.parse(JSON.stringify(fixture)) as T;
-}
-
-/** Same availability check `validators/test/90.kosit.test.ts` uses — the `{ validateExternally:
- * true }` tests below shell out to the real KoSIT jar, so they're skipped, not failed, when it
- * (or Java) isn't set up locally. */
-function kositAvailable(): boolean {
-  const javaBin = existsSync("tools/jre/bin/java") ? "tools/jre/bin/java" : "java";
-  if (!existsSync("tools/kosit/validator.jar") || !existsSync("tools/kosit/config/scenarios.xml")) {
-    return false;
-  }
-  try {
-    execFileSync(javaBin, ["-version"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 describe("generateInvoiceXml from openinvoicexml/adapters", () => {
@@ -70,7 +54,7 @@ describe("generateInvoice", () => {
     expect(result.complianceIssues).toBeUndefined();
   });
 
-  // Not behind kositAvailable(): with xml null, KoSIT is never invoked, so this runs everywhere.
+  // Not behind requireValidators(): with xml null, KoSIT is never invoked, so this runs everywhere.
   it("still returns complianceIssues (business-rules only) when validateExternally is set but XML is withheld", () => {
     const invoice = clone(domesticSimple) as Invoice;
     delete invoice.buyerReference;
@@ -86,7 +70,7 @@ describe("generateInvoice", () => {
     ).toBe(true);
   });
 
-  describe.skipIf(!kositAvailable())("{ validateExternally: true }", () => {
+  describe.skipIf(!requireValidators(["KoSIT"]))("{ validateExternally: true }", () => {
     it("merges real KoSIT findings (as ComplianceIssue) alongside this project's own issues", () => {
       const result = generateInvoice(domesticSimple as Invoice, { validateExternally: true });
 

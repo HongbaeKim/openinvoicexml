@@ -1,5 +1,4 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 // Gets the operating system's temporary directory.
 import { tmpdir } from "node:os";
 // Join files paths
@@ -18,25 +17,12 @@ import { toCii } from "../../adapters/cii.js";
 import type { Invoice } from "../../core/index.js";
 
 import { allFixtures } from "../../fixtures/index.js";
+import { requireValidators } from "./validator-availability.test-helpers.js";
 
-const JAVA_BIN = existsSync("tools/jre/bin/java") ? "tools/jre/bin/java" : "java";
 const JAR_PATH = "tools/kosit/validator.jar";
 const SCENARIOS_PATH = "tools/kosit/config/scenarios.xml";
 
-function kositAvailable(): boolean {
-  if (!existsSync(JAR_PATH) || !existsSync(SCENARIOS_PATH)) return false;
-  try {
-    // This executes
-    // java -version
-    //or tools/jre/bin/java -version
-    execFileSync(JAVA_BIN, ["-version"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const available = kositAvailable();
+const available = requireValidators(["KoSIT"]);
 // mkdtempSync() appends exactly 6 random characters
 const workDir = mkdtempSync(join(tmpdir(), "kosit-test-"));
 

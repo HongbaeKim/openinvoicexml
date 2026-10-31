@@ -109,7 +109,9 @@ not a change in policy for the rest of the engine.
    drives the business-rules, XRechnung/CII/hybrid-PDF, KoSIT, veraPDF and Mustang regression
    tests, so nothing else needs editing. `fixtures/index.test.ts` fails if a `*.invoice.json`
    file and its `allFixtures` entry drift apart.
-3. Run `npm test` to confirm everything passes.
+3. Run `npm test` to confirm everything passes. Without Java and the validators, the KoSIT, veraPDF
+   and Mustang suites are skipped locally; in CI (or with `OPENINVOICE_STRICT_VALIDATION=1`) a
+   missing validator fails the run instead, so a green CI result means external validation ran.
 4. Document the scenario in [`fixtures/README.md`](../fixtures/README.md).
 
 **Naming convention:** `<scenario>.invoice.json` — e.g. `08.intra-eu-supply.invoice.json`.

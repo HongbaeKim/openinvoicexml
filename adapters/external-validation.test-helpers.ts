@@ -1,8 +1,7 @@
 // Shared by the external-validation*.test.ts files. Not a test file itself (vitest doesn't
 // collect *.test-helpers.ts), and dropped from the npm package by "!dist/**/*.test-helpers.*".
 
-import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import type { ExternalValidatorResult } from "./external-validation.js";
@@ -10,30 +9,21 @@ import type { FileValidationOptions } from "./external-validation-file.js";
 import { toXRechnung } from "./xrechnung.js";
 import { toCii } from "./cii.js";
 import type { Invoice } from "../core/index.js";
+import { requireValidators } from "../validators/test/validator-availability.test-helpers.js";
 
 import { domesticSimple } from "../fixtures/index.js";
 
-const JAVA_BIN = existsSync("tools/jre/bin/java") ? "tools/jre/bin/java" : "java";
-
-function javaAvailable(): boolean {
-  try {
-    execFileSync(JAVA_BIN, ["-version"], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Real KoSIT + Mustang runs need both jars and Java; skipped, not failed, without them. */
+/**
+ * Real KoSIT + Mustang runs need both jars and Java; skipped, not failed, without them (in strict
+ * mode they fail instead, see validators/test/validator-availability.test-helpers.ts).
+ */
 export function validatorsAvailable(): boolean {
-  const kosit =
-    existsSync("tools/kosit/validator.jar") && existsSync("tools/kosit/config/scenarios.xml");
-  return kosit && existsSync("tools/mustang/mustang-cli.jar") && javaAvailable();
+  return requireValidators(["KoSIT", "Mustang"]);
 }
 
 /** Real file validation also needs veraPDF (for PDFs). */
 export function allValidatorsAvailable(): boolean {
-  return validatorsAvailable() && existsSync("tools/verapdf/verapdf");
+  return requireValidators(["KoSIT", "Mustang", "veraPDF"]);
 }
 
 /** Temp dirs with this prefix left behind in the OS temp dir. */
