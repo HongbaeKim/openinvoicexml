@@ -82,12 +82,20 @@ partial deliveries, §13b subcases, and others) live in
   is in line with that guidance for `384` and stricter than it for `381`. It is kept as it is (a
   credit note that says what it credits is more useful), and could be relaxed for `381` later.
 
-## Accepted KoSIT notices
+## Accepted validator notices
 
 - **`BR-DE-TMP-32`** (severity: `information`, not blocking) — most fixtures omit a
   delivery/service date; this is a recommendation, not a hard requirement, and doesn't fail
   validation. For category `K` (intra-EU supply), `BR-IC-11` makes BT-72 mandatory instead — see
   `validators/rules/13.intra-eu.ts`.
+- **`PEPPOL-EN16931-R008`** (Mustang, Factur-X `EN16931` profile only, severity: `warning`) —
+  "Document MUST not contain empty elements". Raised for the fixtures without a delivery date or
+  address, where the output contains an empty `<ram:ApplicableHeaderTradeDelivery/>`. The CII
+  schema requires that element, so it cannot be left out. KoSIT reports nothing for it, and
+  Mustang itself marks the rule "still status warning".
+- **`BR-DE-21`** (Mustang, Factur-X `EN16931` profile only, severity: `information`) — the
+  specification identifier (BT-24) is not the XRechnung one. This is expected: the `EN16931`
+  profile is not an XRechnung document. Use the `XRECHNUNG` profile when the recipient needs one.
 
 [ustg-12]: https://www.gesetze-im-internet.de/ustg_1980/__12.html
 [ustg-3a]: https://www.gesetze-im-internet.de/ustg_1980/__3a.html
