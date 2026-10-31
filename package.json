@@ -1,6 +1,6 @@
 {
   "name": "openinvoicexml",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "Open-source XRechnung / Factur-X / ZUGFeRD invoice engine for Germany",
   "license": "Apache-2.0",
   "type": "module",
