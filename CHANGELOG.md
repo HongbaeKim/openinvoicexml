@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-31
+
 ### Added
 
 - Credit notes (`typeCode` `381`) with **positive amounts** now generate, in UBL and CII. The document type,
@@ -29,11 +31,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- toCii() and toFacturXPdf() now immediately throw a clear error if an unsupported profile is provided. Only EN16931 and XRECHNUNG are accepted. 
- 
- Before: Invalid profile → Broken XML generated → Error discovered later during validation.
- 
- Now: Invalid profile → Immediate, clear error.
+- `toCii()` and `toFacturXPdf()` now throw a clear error for an unsupported profile (only `EN16931` and
+  `XRECHNUNG` are accepted). Before, an invalid profile produced `<ram:ID>undefined</ram:ID>` and the
+  problem only showed up later in validation.
 
 ### Removed
 
