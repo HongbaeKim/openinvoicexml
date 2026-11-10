@@ -6,6 +6,14 @@ Local setup, tooling, and how to propose changes for `openinvoicexml`.
 
 ## Local Setup
 
+Prerequisites: Node.js ≥ 20.0.0, npm, git. The full path below also needs `curl`, `unzip`, `tar` and
+`bash`; Java is optional, because the setup scripts download a portable JRE into `tools/jre/` when
+no `java` is on your `PATH`.
+
+There are two ways to set up, depending on what you are changing.
+
+### Fast path: most changes
+
 ```bash
 git clone https://github.com/HongbaeKim/openinvoicexml.git
 cd openinvoicexml
@@ -13,13 +21,38 @@ npm install
 npm test
 ```
 
-Prerequisites: Node.js ≥ 20.0.0, npm, git.
+This is enough for docs, types, schema, business rules and most adapter work. **A green fast-path
+run does not mean the external validators ran.** Without KoSIT, veraPDF and Mustang installed, their
+suites are skipped (not failed) when you run locally, and Vitest still counts them in the total in
+brackets:
+
+```
+Tests  <passed> passed | <skipped> skipped (<total>)
+```
+
+Only "passed" with `0 skipped` means the validators ran. CI (or `OPENINVOICE_STRICT_VALIDATION=1`)
+turns a missing validator into a failure instead of a skip.
+
+### Full path: anything that touches XML or PDF generation
+
+```bash
+make kosit-setup && make verapdf-setup && make mustang-setup
+npm test
+```
+
+This downloads the three external validators into `tools/` (one time) so the real KoSIT, veraPDF
+and Mustang checks run against every fixture. Use it whenever you change the UBL, CII, Factur-X or
+hybrid PDF adapters, the mapping, or a fixture.
+
+On a 4-core machine (measured November 2026), the fast path takes about a minute and the full path
+about ten, most of it the Mustang tests. Slower machines or networks take longer.
 
 ### Available Commands
 
 | Command                        | What it does                                                                                                                                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `npm test`                     | Run all tests (Vitest)                                                                                                                                                                                                                                                               |
+| `npx vitest list \| wc -l`     | Count the tests without running them                                                                                                                                                                                                                                                 |
 | `npm run test:watch`           | Run tests in watch mode                                                                                                                                                                                                                                                              |
 | `npm run test:coverage`        | Run tests with v8 coverage; fails if below the thresholds in `vitest.config.ts` (CI runs this instead of `npm test`)                                                                                                                                                                 |
 | `npm run typecheck`            | Type-check without emitting files                                                                                                                                                                                                                                                    |
@@ -36,6 +69,7 @@ Prerequisites: Node.js ≥ 20.0.0, npm, git.
 | `make validate-verapdf`        | Validate generated hybrid PDFs using veraPDF                                                                                                                                                                                                                                         |
 | `make validate-hybrid`         | Validate every fixture's hybrid PDF with veraPDF, then extract and KoSIT-check its embedded XML                                                                                                                                                                                      |
 | `make mustang-setup`           | One-time download of the Mustang Project CLI (see [`COMPLIANCE.md`](COMPLIANCE.md#validating-this-projects-output))                                                                                                                                                                  |
+| `make benchmark`               | Per-stage engine timings at 100/500/1000 lines plus a 100-invoice batch with memory baselines (manual check, not part of CI; see [`PERFORMANCE.md`](PERFORMANCE.md))                                                                                                                 |
 | `make validate-mustang`        | Cross-check every fixture's hybrid PDF against the Mustang Project CLI: extract-and-diff, then validate the extracted XML                                                                                                                                                            |
 
 ---
@@ -123,6 +157,7 @@ not a change in policy for the rest of the engine.
 BT (Business Term) is a standardized invoice field defined by EN 16931.
 
 For example:
+
 - BT-1: Invoice number
 - BT-2: Invoice issue date
 - BT-5: Invoice currency
