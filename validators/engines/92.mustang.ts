@@ -30,6 +30,18 @@ export interface MustangOptions {
 const DEFAULT_JAR = "tools/mustang/mustang-cli.jar";
 const PORTABLE_JAVA = "tools/jre/bin/java";
 
+/**
+ * JVM flags used for every Mustang call to reduce CPU and memory usage.
+ *
+ * -Xmx512m: Limits the Java heap memory to 512 MB.
+ * -XX:TieredStopAtLevel=1: Uses only the C1 JIT compiler for faster startup.
+ * -XX:+UseSerialGC: Uses the serial garbage collector to reduce thread overhead.
+ *
+ * These flags improve performance without changing Mustang's validation results
+ * in the tested fixtures.
+ */
+const JVM_FLAGS = ["-Xmx512m", "-XX:TieredStopAtLevel=1", "-XX:+UseSerialGC"];
+
 function resolveJavaBin(): string {
   return existsSync(PORTABLE_JAVA) ? PORTABLE_JAVA : "java";
 }
@@ -69,13 +81,12 @@ export function extractWithMustang(pdfPath: string, options: MustangOptions = {}
       // -Xmx512m: limits Java to 512 MB of heap memory.
       // On our 4 GB machine, that is about 1/8 of the total RAM.
       // This leaves more memory for the Node/Vitest test workers running at the same time.
-      ["-Xmx512m", "-jar", jarPath, "--action", "extract", "--source", pdfPath, "--out", outPath],
+      [...JVM_FLAGS, "-jar", jarPath, "--action", "extract", "--source", pdfPath, "--out", outPath],
       { stdio: "pipe" },
     );
   } catch (err) {
     // ENOENT: Error No Entry
-    if (isNodeError(err) && err.code === "ENOENT") 
-      throw missingToolError("extraction");
+    if (isNodeError(err) && err.code === "ENOENT") throw missingToolError("extraction");
     throw err;
   }
   // Make sure Mustang actually created XML
@@ -106,15 +117,14 @@ export function runMustang(paths: string[], options: MustangOptions = {}): Musta
     try {
       stdout = execFileSync(
         resolveJavaBin(),
-        // -Xmx512m: see the comment in extractWithMustang() above.
-        ["-Xmx512m", "-jar", jarPath, "--action", "validate", "--source", path],
+        // JVM_FLAGS: see the comment on the constant above.
+        [...JVM_FLAGS, "-jar", jarPath, "--action", "validate", "--source", path],
         { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" },
       );
     } catch (err) {
-      if (isNodeError(err) && err.code === "ENOENT") 
-        throw missingToolError("validation");
+      if (isNodeError(err) && err.code === "ENOENT") throw missingToolError("validation");
       // Confirmed against Mustang-CLI 2.26.0: it exits non-zero exactly when its report's
-      // final <summary status="invalid"/> — a meaningful, corroborating validity signal, not noise. 
+      // final <summary status="invalid"/> — a meaningful, corroborating validity signal, not noise.
       // Recorded here and cross-checked against the parsed report below.
       exitedNonZero = true;
       stdout = (err as { stdout?: string }).stdout ?? "";
