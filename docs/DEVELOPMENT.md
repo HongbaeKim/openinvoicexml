@@ -118,6 +118,73 @@ not a change in policy for the rest of the engine.
 
 ---
 
+## How to Update the BT Mapping
+
+BT (Business Term) is a standardized invoice field defined by EN 16931.
+
+For example:
+- BT-1: Invoice number
+- BT-2: Invoice issue date
+- BT-5: Invoice currency
+
+BT Mapping connects fields in our internal `Invoice` model
+to the correct XML elements in UBL and CII.
+
+### How BT Mapping Works
+
+```mermaid
+flowchart TD
+    A["Invoice Model<br/>invoiceNumber: INV-2026-001"]
+    B["BT Mapping<br/>BT-1: Invoice number"]
+    C["UBL Adapter<br/>cbc:ID"]
+    D["CII Adapter<br/>ExchangedDocument/ID"]
+    E["XRechnung UBL XML"]
+    F["CII XML / Factur-X"]
+
+    A --> B
+    B --> C
+    B --> D
+    C --> E
+    D --> F
+```
+
+When adding a new invoice field or changing an existing
+mapping, follow the steps below.
+
+"Mapping" means the table in [`DATA-MODEL.md`](DATA-MODEL.md#xrechnung-business-term-mapping) that
+ties each EN 16931 Business Term (BT-nn) to an internal `Invoice` field and an output element.
+Emitting a new BT, or changing where an existing one goes, follows the same steps. Each output
+format resolves its own fields, so one BT can need work in more than one adapter.
+
+1. **Check the standard first.** Find the BT's exact element path and cardinality in the XRechnung
+   and EN 16931 specifications (UBL and CII paths differ), then check your path against what KoSIT
+   and Mustang accept. Don't assume the path. UBL also fixes the order of sibling elements, so a
+   correct element in the wrong position fails schema validation.
+2. **Add the field to the model, if it doesn't exist yet.** Update the `Invoice` types in
+   `core/types/` and `schemas/invoice.schema.json` together. The schema uses
+   `"additionalProperties": false`, so a field missing from the schema is rejected as unknown input.
+   Skip this step if the field already exists but isn't emitted.
+3. **Resolve the field in the mapping layer.** Add it to `DocumentFields` (or the relevant
+   `*Fields` interface) and map it in `mapInvoice()` in `adapters/xrechnung-mapping.ts` (UBL) and
+   `adapters/cii-mapping.ts` (CII). The hybrid PDF has its own `adapters/hybrid-pdf-mapping.ts` and
+   only needs a change if the BT should also appear on the visible page.
+4. **Serialize it.** Add the element to `adapters/xrechnung.ts` and/or `adapters/cii.ts`. Optional
+   fields are rendered only when present, so existing output stays byte-identical. Escape every
+   value with `escapeXml()`.
+5. **Update [`DATA-MODEL.md`](DATA-MODEL.md).** Add or edit the table row (BT, internal field, legal
+   basis, element path) and remove the BT from "Not yet mapped" if it was listed there. If a format
+   deliberately differs (for example, CII carries a value somewhere UBL doesn't), say so there.
+6. **Add tests.** Cover the mapping function in `adapters/*-mapping.test.ts` and the generated
+   XML in `adapters/xrechnung.test.ts` / `adapters/cii.test.ts`: the element is present with a
+   value, and absent when the field is omitted. If the change adds a rule, add it under
+   `validators/rules/` with a test in `validators/test/`.
+7. **Exercise it with a fixture.** Add or extend a fixture that sets the field (see
+   [How to Add a New Invoice Fixture](#how-to-add-a-new-invoice-fixture)). Because every fixture
+   runs through the KoSIT, veraPDF and Mustang suites, this is the real check that the element path
+   is accepted. Run `make kosit-setup` and `make mustang-setup` first, or those suites skip.
+
+---
+
 ## Commit Message Convention
 
 Loosely [Conventional Commits](https://www.conventionalcommits.org/): `type: short description`.
