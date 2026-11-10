@@ -244,7 +244,24 @@ actual behavior, steps to reproduce (ideally a triggering fixture JSON), and env
 
 ## Project Structure
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the modules fit together.
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the modules fit together. The places a contributor
+usually touches:
+
+| Path                            | What lives there                                                                                           |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `core/types/`                   | The internal `Invoice` model                                                                               |
+| `schemas/invoice.schema.json`   | Structural contract, checked by `validators/engines/01.schema.ts` (`validateInvoiceSchema()`) first        |
+| `validators/rules/`             | Per-scenario business rules, run by `validators/engines/02.business-rules.ts`                              |
+| `adapters/`                     | UBL (`xrechnung*.ts`), CII (`cii*.ts`) and hybrid PDF (`hybrid-pdf*.ts`) output, each with its own mapping |
+| `fixtures/`                     | One JSON file per legal scenario                                                                           |
+| `validators/engines/90–92.*.ts` | Wrappers for the external tools: KoSIT, veraPDF, Mustang                                                   |
+
+### Continuous integration
+
+Every push and pull request to `main` runs `.github/workflows/ci.yml`: `npm ci`, lint, typecheck,
+the KoSIT, veraPDF and Mustang setup scripts, then `npm run test:coverage` in strict validation
+mode. A missing validator or coverage below the thresholds in `vitest.config.ts` fails the run, so
+every PR is checked against the real validators, even if you only ran the fast path locally.
 
 ## License
 
