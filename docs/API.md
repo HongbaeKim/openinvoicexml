@@ -1,7 +1,8 @@
 # API
 
 Usage reference for the public API: generating invoices (XML and PDF), validating them, and
-checking existing files.
+checking existing files. For narrative, task-oriented walkthroughs, see
+[`EXAMPLES.md`](EXAMPLES.md).
 
 ## Entry points
 

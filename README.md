@@ -78,7 +78,9 @@ import { generateInvoiceXml } from "openinvoicexml/browser";
 const { xml, issues } = generateInvoiceXml(invoice);
 ```
 
-See [docs/API.md](docs/API.md) for every function and output format.
+See [docs/API.md](docs/API.md) for every function and output format, and
+[docs/EXAMPLES.md](docs/EXAMPLES.md) for three end-to-end walkthroughs (a standard invoice, a §19
+small-business invoice and a hybrid PDF).
 
 ## Project structure
 
@@ -103,6 +105,7 @@ and an [API overview](docs/API.de.md). They are maintained by hand and may lag b
 | `COMPLIANCE.md` — Index of compliance sources, rule → file → status map, KoSIT validation setup and usage     | Done   |
 | `DATA-MODEL.md` — Internal invoice schema, full XRechnung BT mapping table                                    | Done   |
 | `API.md` — API usage: `generateInvoiceDocument`, `generateInvoice`, `toXRechnung`, error codes                | Done   |
+| `EXAMPLES.md` — Three end-to-end walkthroughs: standard invoice, §19 small business, hybrid PDF               | Done   |
 | `ROADMAP.md` — Phase goals, non-goals, open questions                                                         | Done   |
 | `SUPPORTED_SCENARIOS.md` — Supported, partially supported, and unsupported scenarios                          | Done   |
 | `LIMITATIONS.md` — What is not supported and why                                                              | Done   |
