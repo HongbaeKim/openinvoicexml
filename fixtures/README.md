@@ -67,6 +67,9 @@ expected XRechnung XML output once Phase 2 is complete.
 | `58.credit-note-positive-partial.invoice.json` | Credit note (typeCode 381), partial credit of `02` (2 of 3 lines) with positive amounts | Implemented |
 | `59.credit-note-positive-mixed-vat-rates.invoice.json` | Credit note (typeCode 381), positive amounts across a 19% and a 7% VAT breakdown | Implemented |
 | `60.credit-note-positive-mixed-sign-lines.invoice.json` | Credit note (typeCode 381), positive totals with one negative-quantity line, so the two VAT breakdowns have opposite signs | Implemented |
+| `61.half-cent-line-amounts.invoice.json` | Line amounts that land exactly on a half cent (30 × 0.0055 = 0.165 → 0.17, 3 × 1.005 → 3.02, 10 × 0.0055 → 0.06) | Implemented |
+| `62.half-cent-vat-amount.invoice.json` | VAT amount that lands exactly on a half cent (14.50 × 7 % = 1.015 → 1.02) | Implemented |
+| `63.credit-note-half-cent.invoice.json` | Credit note (typeCode 381, positive amounts) with the half-cent lines of 61 and 62 at 19 % and 7 % | Implemented |
 
 Note: fixtures can't carry inline comments — they're loaded via `import ... with { type: "json" }` and
 validated against `schemas/invoice.schema.json`, which sets `"additionalProperties": false` at every level,
@@ -305,6 +308,7 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   EN 16931 ([en16931]) sets no decimal limit on it. Guards that `validateBusinessRules()` doesn't
   reject it and that the XML/PDF write `0.0055`, not a rounded `0.01` (which would make the line
   total look like 200.00). Duplicated from `01.domestic-simple.invoice.json`; only id, dates, line item and totals changed.
+  20,000 × 0.0055 is a whole amount, so nothing is rounded here; for half cents see `61`–`63`.
 - **`52.rounding-amount.invoice.json`** — 6,000 labels at `0.0437`, total with VAT `312.02`,
   an explicit `roundingAmount: -0.02` (BT-114) adjusts the amount due from `312.02` to
   `duePayableAmount: 312.00`. Exercises BR-CO-16 (BT-115 = BT-112 − BT-113 + BT-114) and BT-114's placement in
@@ -348,6 +352,31 @@ so any extra `_comment`-style key would fail schema validation. Explanations liv
   none): KoSIT and Mustang accept this shape, so the fixture pins that the engine accepts it too.
   Validated clean by KoSIT (UBL CreditNote and CII) and Mustang; `57`–`60` are covered like every
   other fixture by the dynamic validator suites.
+- **`61.half-cent-line-amounts.invoice.json`** — line amounts (BT-131) whose exact value ends in a half
+  cent, rounded half away from zero: 30 × 0.0055 = 0.165 → `0.17`, 3 × 1.005 = 3.015 → `3.02`,
+  10 × 0.0055 = 0.055 → `0.06`, next to a whole 100.00 line. BT-106/BT-109/BT-116 `103.25`, VAT
+  19.6175 → `19.62`, total `122.87`. Before 0.6.0 the engine computed these with binary floating point
+  (0.16, 3.01, 0.05) and rejected the correct `0.17` and `3.02` with `LINE_AMOUNT_ROUNDING`, withholding the
+  XML; this fixture fails on 0.5.0 and passes now. Duplicated from `01.domestic-simple.invoice.json`;
+  only id, dates, lines, totals and note changed.
+- **`62.half-cent-vat-amount.invoice.json`** — Tests a VAT amount (BT-117) that ends in half a cent: 14.50 × 7 % = 1.015 → `1.02` (the old floating-point calculation returned `1.01`), giving an invoice total of `15.52`.
+
+  This fixture is **not strictly necessary to detect the original rounding bug**, because the existing VAT rule for category `S` allows a 1-cent difference. Therefore, v0.5.0 also accepts this invoice even though its calculation would produce `1.01`. The exact result of `1.02` is checked separately in `validators/test/02b.business-rules-rounding.test.ts`.
+
+  **Why keep it?** It provides a simple, real-world example of correct half-cent VAT rounding in a normal invoice, rather than only in a credit note (fixture 63). It also ensures that XML generation, hybrid PDFs, and external validators such as KoSIT and Mustang continue to handle this case correctly. Although the fixture alone does not catch the old bug, it adds useful end-to-end regression coverage.
+
+  For reference, `14.50` is the smallest 2-decimal taxable amount at 7 % where the old floating-point rounding produces the wrong cent. At 19 %, the corresponding amount is `1.50` (0.285 → 0.28 instead of 0.29). Other half-cent examples, such as 0.50 × 19 % and 2.50 × 7 %, happen to round correctly with the old floating-point calculation and therefore would not demonstrate the bug.
+
+  Based on `03.reduced-rate.invoice.json`, with only the ID, dates, line, totals, and note changed.
+- **`63.credit-note-half-cent.invoice.json`** — a credit note in the conventional positive-amount form
+  (typeCode `381`, [peppol-bis] §5.6.1, like `57`–`60`) for returned goods: the lines of `61` (19 %) and
+  `62` (7 %), BT-109 `117.75`, VAT `19.62` + `1.02` = `20.64`, total `138.39`, with `dueDate` and
+  `paymentMeans`. Covers the half cents through the UBL `CreditNote`/`CreditNoteLine` and CII 381 paths
+  without any credit-note warning. Negative half cents (−0.165 → −0.17, −1.015 → −1.02) are tested
+  separately, on an ordinary invoice, in `02b.business-rules-rounding.test.ts`, so they are not mixed
+  with credit-note sign conventions. Adapted from `59.credit-note-positive-mixed-vat-rates.invoice.json`.
+  `61`–`63` validate clean with KoSIT (UBL and both CII profiles) and Mustang, with the same warnings
+  as their base fixtures.
 
 ## References
 

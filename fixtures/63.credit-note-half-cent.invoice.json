@@ -1,0 +1,124 @@
+{
+  "id": "GS-2026-0014",
+  "typeCode": "381",
+  "issueDate": "2026-11-10",
+  "dueDate": "2026-12-10",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+  "precedingInvoiceReference": {
+    "id": "RE-2026-0116",
+    "issueDate": "2026-11-04"
+  },
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+  "lines": [
+    {
+      "id": "1",
+      "name": "Wartungspauschale",
+      "description": "Credit for invoice RE-2026-0116: maintenance not carried out",
+      "quantity": 1,
+      "unitCode": "C62",
+      "unitPrice": 100.0,
+      "lineAmount": 100.0,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "2",
+      "name": "Senkkopfschrauben M4x20, verzinkt",
+      "description": "Credit for invoice RE-2026-0116: returned unused (30 × 0.0055 = 0.165 → 0.17)",
+      "quantity": 30,
+      "unitCode": "C62",
+      "unitPrice": 0.0055,
+      "lineAmount": 0.17,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "3",
+      "name": "Kabelbinder 200 mm, Beutel",
+      "description": "Credit for invoice RE-2026-0116: returned unused (3 × 1.005 = 3.015 → 3.02)",
+      "quantity": 3,
+      "unitCode": "C62",
+      "unitPrice": 1.005,
+      "lineAmount": 3.02,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "4",
+      "name": "Unterlegscheiben M4, verzinkt",
+      "description": "Credit for invoice RE-2026-0116: returned unused (10 × 0.0055 = 0.055 → 0.06)",
+      "quantity": 10,
+      "unitCode": "C62",
+      "unitPrice": 0.0055,
+      "lineAmount": 0.06,
+      "vatCategoryCode": "S",
+      "vatRate": 19
+    },
+    {
+      "id": "5",
+      "name": "Fachbuch Softwarearchitektur",
+      "description": "Credit for invoice RE-2026-0116: book returned unused (reduced rate)",
+      "quantity": 1,
+      "unitCode": "C62",
+      "unitPrice": 14.5,
+      "lineAmount": 14.5,
+      "vatCategoryCode": "S",
+      "vatRate": 7
+    }
+  ],
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 19,
+      "taxableAmount": 103.25,
+      "taxAmount": 19.62
+    },
+    {
+      "categoryCode": "S",
+      "rate": 7,
+      "taxableAmount": 14.5,
+      "taxAmount": 1.02
+    }
+  ],
+  "taxExclusiveAmount": 117.75,
+  "taxAmount": 20.64,
+  "taxInclusiveAmount": 138.39,
+  "duePayableAmount": 138.39,
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+  "note": "Gutschrift zu Rechnung RE-2026-0116 vom 04.11.2026: Rückgabe ungenutzter Kleinteile und eines Fachbuchs (ermäßigter Steuersatz). Positionsbeträge auf volle Cent gerundet (halbe Cent aufgerundet). (positive Beträge)"
+}

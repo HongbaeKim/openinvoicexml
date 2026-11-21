@@ -1,0 +1,77 @@
+{
+  "id": "RE-2026-0115",
+  "typeCode": "380",
+  "issueDate": "2026-11-03",
+  "dueDate": "2026-12-03",
+  "currencyCode": "EUR",
+  "businessProcessType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "buyerReference": "04011000-12345-03",
+
+  "seller": {
+    "name": "Max Mustermann GmbH",
+    "vatId": "DE123456789",
+    "address": {
+      "line1": "Unter den Linden 1",
+      "city": "Berlin",
+      "postalCode": "10117",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "rechnung@mustermann.example",
+    "electronicAddressSchemeId": "EM",
+    "contact": {
+      "name": "Buchhaltung",
+      "telephone": "+49 30 1234567",
+      "email": "buchhaltung@mustermann.example"
+    }
+  },
+
+  "buyer": {
+    "name": "Acme GmbH",
+    "vatId": "DE987654321",
+    "address": {
+      "line1": "Marienplatz 1",
+      "city": "München",
+      "postalCode": "80331",
+      "countryCode": "DE"
+    },
+    "electronicAddress": "einkauf@acme.example",
+    "electronicAddressSchemeId": "EM"
+  },
+
+  "lines": [
+    {
+      "id": "1",
+      "name": "Fachbuch Softwarearchitektur",
+      "description": "Lieferung eines Fachbuchs (reduzierter Steuersatz)",
+      "quantity": 1,
+      "unitCode": "C62",
+      "unitPrice": 14.5,
+      "lineAmount": 14.5,
+      "vatCategoryCode": "S",
+      "vatRate": 7
+    }
+  ],
+
+  "vatBreakdowns": [
+    {
+      "categoryCode": "S",
+      "rate": 7,
+      "taxableAmount": 14.5,
+      "taxAmount": 1.02
+    }
+  ],
+
+  "taxExclusiveAmount": 14.5,
+  "taxAmount": 1.02,
+  "taxInclusiveAmount": 15.52,
+  "duePayableAmount": 15.52,
+
+  "paymentMeans": {
+    "code": "58",
+    "iban": "DE89370400440532013000",
+    "accountName": "Max Mustermann GmbH",
+    "bic": "COBADEFFXXX"
+  },
+
+  "note": "USt 7 % auf 14,50 EUR = 1,015 EUR, gerundet 1,02 EUR. Zahlbar innerhalb von 30 Tagen nach Rechnungsdatum."
+}

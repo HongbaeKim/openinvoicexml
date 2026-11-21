@@ -58,6 +58,9 @@ import creditNotePositiveFull from "./57.credit-note-positive-full.invoice.json"
 import creditNotePositivePartial from "./58.credit-note-positive-partial.invoice.json" with { type: "json" };
 import creditNotePositiveMixedVatRates from "./59.credit-note-positive-mixed-vat-rates.invoice.json" with { type: "json" };
 import creditNotePositiveMixedSignLines from "./60.credit-note-positive-mixed-sign-lines.invoice.json" with { type: "json" };
+import halfCentLineAmounts from "./61.half-cent-line-amounts.invoice.json" with { type: "json" };
+import halfCentVatAmount from "./62.half-cent-vat-amount.invoice.json" with { type: "json" };
+import creditNoteHalfCent from "./63.credit-note-half-cent.invoice.json" with { type: "json" };
 
 export {
   domesticSimple,
@@ -120,6 +123,9 @@ export {
   creditNotePositivePartial,
   creditNotePositiveMixedVatRates,
   creditNotePositiveMixedSignLines,
+  halfCentLineAmounts,
+  halfCentVatAmount,
+  creditNoteHalfCent,
 };
 
 /**
@@ -192,4 +198,7 @@ export const allFixtures: [string, unknown][] = [
   ["58. credit-note-positive-partial (381)", creditNotePositivePartial],
   ["59. credit-note-positive-mixed-vat-rates (381)", creditNotePositiveMixedVatRates],
   ["60. credit-note-positive-mixed-sign-lines (381)", creditNotePositiveMixedSignLines],
+  ["61. half-cent-line-amounts (19% S)", halfCentLineAmounts],
+  ["62. half-cent-vat-amount (7% S)", halfCentVatAmount],
+  ["63. credit-note-half-cent (381)", creditNoteHalfCent],
 ];
