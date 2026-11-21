@@ -37,29 +37,51 @@ Gefördert vom [Prototype Fund](https://www.prototypefund.de/projects/openinvoic
 
 ## Status
 
-Phase 4 (Hybrid-PDF/A-3-Export) abgeschlossen, als v0.4.0 getaggt – XRechnung-UBL-XML, CII-XML,
-hybrides PDF/A-3 (UBL und echtes Factur-X/ZUGFeRD) und einheitliche Compliance-Diagnosen sind
-implementiert und mit KoSIT, veraPDF und Mustang gegen alle Fixtures validiert (siehe
-[docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
-(Stabilisierung und Release-Vorbereitung) läuft; den vollständigen Plan finden Sie in
+Für den geförderten Umfang funktional vollständig, in der abschließenden Stabilisierung vor
+`v1.0.0`. XRechnung-UBL-XML, CII-XML, hybrides PDF/A-3 (UBL und echtes Factur-X/ZUGFeRD) und
+einheitliche Compliance-Diagnosen sind implementiert und mit KoSIT, veraPDF und Mustang validiert,
+mit 63 Fixtures und über 2.000 automatisierten Tests (siehe
+[docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Die CI erzwingt
+Mindestwerte für die Testabdeckung. Die Releases stehen in [CHANGELOG.md](CHANGELOG.md), der Plan in
 [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Schnellstart
 
 Voraussetzungen:
 
-- Node.js 20+
-- npm 10+
+- Für die Entwicklung: Node.js 20+ und npm 10+
+- Für die Einrichtung der externen Validatoren (KoSIT, veraPDF, Mustang): `bash`, `curl`, `unzip`
+  und `tar`. Java muss nicht separat installiert werden: Die Setup-Skripte laden eine portable JRE
+  herunter, wenn keine gefunden wird.
 
-Installieren und Tests ausführen:
+Installieren:
+
+```bash
+npm install openinvoicexml
+```
+
+Um an der Bibliothek selbst zu arbeiten, das Repository klonen und die Tests ausführen.
+
+Schneller Weg (reicht für die meisten Änderungen):
 
 ```bash
 npm install
 npm test
 ```
 
-CI (`.github/workflows/ci.yml`) führt bei jedem Push und Pull Request auf `main` außerdem
-`npm run lint` und `npm run typecheck` aus.
+Vollständiger Weg, mit den echten KoSIT-, veraPDF- und Mustang-Prüfungen:
+
+```bash
+make kosit-setup && make verapdf-setup && make mustang-setup
+npm run build
+npm test
+```
+
+Ohne die Validatoren werden deren Tests übersprungen, nicht als Fehler gewertet, und ohne
+`npm run build` wird der Paket-Export-Test übersprungen. Nur `0 skipped` bedeutet, dass alles lief.
+Die CI führt bei jedem Push und Pull Request auf `main` Lint, Typecheck, Build und die vollständige
+Testsuite im strikten Modus aus; dort führt alles Fehlende zu einem Fehler. Details:
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#local-setup) (englisch).
 
 Eine Rechnung erzeugen (Node.js):
 
@@ -108,6 +130,9 @@ Die Dokumente sind auf Englisch. Deutsche Fassungen gibt es für diese Seite, di
 | [`COMPLIANCE.md`](docs/COMPLIANCE.md)                   | Compliance-Quellen, Regel-zu-Datei-Zuordnung, Validierung             |
 | [`DATA-MODEL.md`](docs/DATA-MODEL.md)                   | Internes Rechnungsschema, Zuordnung der XRechnung-BT                  |
 | [`API.md`](docs/API.md)                                 | API-Verwendung und Fehlercodes                                        |
+| [`EXAMPLES.md`](docs/EXAMPLES.md)                       | Drei durchgehende Beispiele: Standardrechnung, §19, hybrides PDF      |
+| [`FAQ.md`](docs/FAQ.md)                                 | Fragen von Freiberuflern und Kleinunternehmen                         |
+| [`PERFORMANCE.md`](docs/PERFORMANCE.md)                 | Gemessene Zeiten für Erzeugung und Validierung (`make benchmark`)     |
 | [`SUPPORTED_SCENARIOS.md`](docs/SUPPORTED_SCENARIOS.md) | Unterstützte, teilweise unterstützte und nicht unterstützte Szenarien |
 | [`LIMITATIONS.md`](docs/LIMITATIONS.md)                 | Was nicht unterstützt oder nicht geprüft wird, und warum              |
 | [`ROADMAP.md`](docs/ROADMAP.md)                         | Phasenziele, Nicht-Ziele, offene Fragen                               |

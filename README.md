@@ -29,31 +29,48 @@ Funded by [Prototype Fund](https://www.prototypefund.de/projects/openinvoicexml)
 
 ## Status
 
-Phase 4 (Hybrid PDF/A-3 Export) done, tagged v0.4.0 — XRechnung UBL XML, CII XML, hybrid PDF/A-3
-(UBL and genuine Factur-X/ZUGFeRD), and unified compliance diagnostics are all implemented and
-validated against KoSIT, veraPDF, and Mustang across 63 fixtures (see
-[docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). Phase 5
-(stabilization & release prep) is in progress — CI now enforces test coverage thresholds, and v0.4.1 adds input validation and XML escaping to every `generate*()` function. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
+Feature-complete for the funded scope and in final stabilization before `v1.0.0`. XRechnung UBL
+XML, CII XML, hybrid PDF/A-3 (UBL and genuine Factur-X/ZUGFeRD) and unified compliance diagnostics
+are implemented and validated against KoSIT, veraPDF and Mustang, with 63 fixtures and 2,000+
+automated tests (see [docs/COMPLIANCE.md](docs/COMPLIANCE.md#validating-this-projects-output)). CI
+enforces coverage thresholds. Releases are listed in [CHANGELOG.md](CHANGELOG.md); the plan is in
+[docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Prerequisites
 
-- Node.js 20+
-- npm 10+
+- Basic development: Node.js 20+ and npm 10+
+- External validator setup (KoSIT, veraPDF, Mustang): `bash`, `curl`, `unzip` and `tar`. Java does
+  not need a separate installation: the setup scripts download a portable JRE if none is found.
 
 ## Install
 
 ```bash
-npm install
+npm install openinvoicexml
 ```
+
+To work on the library itself, clone the repo and see [Run tests](#run-tests).
 
 ## Run tests
 
+Fast path (enough for most changes):
+
 ```bash
+npm install
 npm test
 ```
 
-CI (`.github/workflows/ci.yml`) also runs `npm run lint` and `npm run typecheck` on every push
-and PR to `main`.
+Full path, with the real KoSIT, veraPDF and Mustang checks:
+
+```bash
+make kosit-setup && make verapdf-setup && make mustang-setup
+npm run build
+npm test
+```
+
+Without the validators, their tests are skipped, not failed, and the package-export test is skipped
+without `npm run build`. Only `0 skipped` means everything ran. CI runs lint, typecheck, build and
+the full suite in strict mode on every push and PR to `main`, where anything missing fails. Details:
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#local-setup).
 
 ## Quick start
 
@@ -86,8 +103,8 @@ small-business invoice and a hybrid PDF).
 
 ```
 /core         — internal invoice schema and normalization
-/adapters     — output adapters (XRechnung XML, PDF/A-3)
-/validators   — validation layer (schema, KoSIT, veraPDF)
+/adapters     — output adapters (XRechnung XML, CII, PDF/A-3)
+/validators   — validation layer (schema, KoSIT, veraPDF, Mustang)
   /rules      — individual business rule implementations
 /fixtures     — example invoices and expected outputs
 /docs         — architecture, roadmap, and API docs
@@ -106,6 +123,8 @@ and an [API overview](docs/API.de.md). They are maintained by hand and may lag b
 | `DATA-MODEL.md` — Internal invoice schema, full XRechnung BT mapping table                                    | Done   |
 | `API.md` — API usage: `generateInvoiceDocument`, `generateInvoice`, `toXRechnung`, error codes                | Done   |
 | `EXAMPLES.md` — Three end-to-end walkthroughs: standard invoice, §19 small business, hybrid PDF               | Done   |
+| `FAQ.md` — Questions from freelancers and small businesses: legal dates, §19, formats, totals                 | Done   |
+| `PERFORMANCE.md` — Measured generation and validation timings (`make benchmark`)                              | Done   |
 | `ROADMAP.md` — Phase goals, non-goals, open questions                                                         | Done   |
 | `SUPPORTED_SCENARIOS.md` — Supported, partially supported, and unsupported scenarios                          | Done   |
 | `LIMITATIONS.md` — What is not supported and why                                                              | Done   |
