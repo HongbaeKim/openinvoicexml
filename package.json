@@ -13,7 +13,7 @@
     "dist/schemas",
     "!dist/**/*.test.*",
     "!dist/**/*.test-helpers.*",
-    "!dist/validators/test",
+    "!dist/**/test",
     "adapters/assets/fonts/LICENSE",
     "NOTICE"
   ],
