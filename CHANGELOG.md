@@ -2,7 +2,57 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.6.0] - 2026-11-21
+
+### Added
+
+- `calculateLineNetAmount(quantity, unitPrice, allowancesCharges?)`, `calculateVatAmount(taxableAmount, rate)` and
+  `sumAmounts(amounts)`, exported from `openinvoicexml`, `openinvoicexml/adapters` and `openinvoicexml/browser`:
+  they share the engine's exact decimal arithmetic and rounding rules, so amounts computed with them stay
+  consistent with the amount checks in `validateBusinessRules` (an invoice can still fail other rules, e.g. a
+  missing identifier or an invalid VAT category). Invalid input (NaN, ±Infinity, a money amount with more than 2 decimals) returns `NaN`
+  instead of being rounded silently. See `docs/API.md`, "Amount calculations".
+- Fixtures 61–63: half-cent line amounts (30 × 0.0055 = 0.17, 3 × 1.005 = 3.02, 10 × 0.0055 = 0.06), a half-cent
+  VAT amount (14.50 × 7 % = 1.015 → 1.02), and a positive-amount credit note (`381`) with the same lines at 19 % and
+  7 %. They pass KoSIT (UBL `Invoice` / `CreditNote` and both CII profiles) and Mustang with zero errors. 0.5.0
+  rejects 61 and 63 with `LINE_AMOUNT_ROUNDING`.
+
+### Fixed
+
+- Half-cent rounding: amounts were rounded with binary floating point (`Math.round(v * 100) / 100`), so exact
+  halves could round the wrong way: 30 × 0.0055 = 0.165 gave 0.16 (now 0.17), 10 × 0.0055 = 0.055 gave 0.05
+  (now 0.06), 1 × 1.005 gave 1.00 (now 1.01). All amount calculations and checks now use exact decimal arithmetic
+  on native `BigInt` (`core/utils/decimal.ts`, no new dependency).
+- False `LINE_AMOUNT_ROUNDING` errors at half cents: a correctly rounded line (e.g. 0.17 for 30 × 0.0055) was
+  rejected because the float comparison saw `0.17 − 0.16 = 0.010000000000000009 > 0.01`.
+- Zero-VAT categories (`Z`, `E`, `AE`, `K`, `G`, `O`): the VAT breakdown's taxable amount (BT-116) must now match
+  the sum of its lines and document allowances/charges exactly (BR-Z-08, BR-E-08, BR-AE-08, BR-IC-08, BR-G-08,
+  BR-O-08), and its VAT amount (BT-117) must be exactly 0 (BR-Z-09, BR-E-09, BR-AE-09, BR-IC-09, BR-G-09,
+  BR-O-09). Before, the general 1-cent tolerance accepted e.g. a VAT amount of 0.01, which KoSIT rejects. They are
+  reported as `VAT_TAXABLE_AMOUNT_MISMATCH` / `VAT_TAX_AMOUNT_ROUNDING` with the rule ID in the message.
+- `prepaidAmount` (BT-113) with more than 2 decimals is now reported as `MONETARY_AMOUNT_DECIMAL_PRECISION`
+  (BR-DEC-16) and blocks generation. Before, e.g. 7140.005 was written as 7140.01 without a message.
+- Allowance and charge amounts (document level BT-92/BT-99, line level BT-136/BT-141) with more than 2 decimals
+  are now reported as `MONETARY_AMOUNT_DECIMAL_PRECISION` (BR-DEC-01, BR-DEC-05, BR-DEC-24, BR-DEC-27) instead of
+  being rounded silently.
+
+### Changed
+
+- Rounding is half away from zero (−0.165 → −0.17): credit-note lines now mirror invoice lines cent for cent.
+- BT-131 now rounds quantity × unit price to 2 decimals before adding line charges and subtracting line
+  allowances, consistent with the Peppol BIS Billing 3.0 calculation guidance (PEPPOL-EN16931-R120) for the
+  currently supported model: price base quantity (BT-149) of 1 and fixed allowance/charge amounts.
+- Document totals are checked exactly (BR-CO-13 to BR-CO-16); before, they had a 0.01 tolerance. A total that is
+  one cent off is now reported (KoSIT rejects such an invoice anyway). BT-109 is checked against
+  Σ BT-131 − document allowances + document charges (BR-CO-13) instead of Σ BT-116.
+- The line amount check, and the taxable and VAT amount checks for category `S`, keep their 1-cent tolerance, now
+  compared in whole cents. This is an OpenInvoiceXML validation policy, not a Peppol requirement. For line amounts,
+  it is stricter than the €0.02 calculation slack in PEPPOL-EN16931-R120. BR-S-08 and BR-S-09 permit a wider
+  tolerance for taxable and VAT amounts. Invoices already issued with the old floating-point result (e.g. 0.16
+  instead of 0.17) still pass this engine's checks, but that does not guarantee acceptance by every external
+  validator.
+- XML amounts are written from the exact decimal value, never with an exponent or as `-0.00` (before, e.g.
+  `1e+21` and `-0.00` for −0.004). Binary noise such as `0.30000000000000004` is still written as `0.30`.
 
 ## [0.5.0] - 2026-10-31
 
