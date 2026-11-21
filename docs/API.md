@@ -4,14 +4,18 @@ Usage reference for the public API: generating invoices (XML and PDF), validatin
 checking existing files. For narrative, task-oriented walkthroughs, see
 [`EXAMPLES.md`](EXAMPLES.md).
 
+This library has no HTTP API. The validation endpoints of the hosted website are described with the
+website, in [`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web)
+(`backend/openapi.yaml`); they support that site and are not a stable public API.
+
 ## Entry points
 
-| Import                      | Environment | Contents                                                                                           |
-| --------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
-| `openinvoicexml/browser`    | Browser     | `generateInvoiceXml`, `toXRechnung`, `toHybridPdf`, `toFacturXPdf`, `validateBusinessRules`, types |
-| `openinvoicexml/adapters`   | Node.js     | All generation functions, `extractEmbeddedXml`, and file/XML external validation                   |
-| `openinvoicexml/validators` | Node.js     | `validateInvoiceSchema`, `validateBusinessRules`, `runKosit`/`runVeraPdf`/`runMustang`, converters |
-| `openinvoicexml`            | Any         | The `Invoice` types (`Invoice`, `InvoiceLine`, `Party`, `VatBreakdown`, ... )                      |
+| Import                      | Environment | Contents                                                                                                                |
+| --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `openinvoicexml/browser`    | Browser     | `generateInvoiceXml`, `toXRechnung`, `toHybridPdf`, `toFacturXPdf`, `validateBusinessRules`, amount calculations, types |
+| `openinvoicexml/adapters`   | Node.js     | All generation functions, `extractEmbeddedXml`, file/XML external validation, amount calculations                       |
+| `openinvoicexml/validators` | Node.js     | `validateInvoiceSchema`, `validateBusinessRules`, `runKosit`/`runVeraPdf`/`runMustang`, converters                      |
+| `openinvoicexml`            | Any         | The `Invoice` types (`Invoice`, `InvoiceLine`, `Party`, `VatBreakdown`, ... ), amount calculations                      |
 
 `toHybridPdf` and `toFacturXPdf` exist in both `openinvoicexml/browser` and
 `openinvoicexml/adapters` with the same output; they differ only in how fonts are loaded (see
@@ -245,6 +249,71 @@ CI checks the XML created by `generateInvoiceXml()` with KoSIT and Mustang for a
 To check a user's actual XML with KoSIT and Mustang, send it to a Node backend and call [`validateXmlExternally()`](#validatexmlexternallyxml-options--kosit--mustang).
 
 See [`COMPLIANCE.md`](COMPLIANCE.md#browser-generated-xml-openinvoicexmlbrowser) for more details.
+
+## Amount calculations — `calculateLineNetAmount`, `calculateVatAmount`, `sumAmounts`
+
+Exported from `openinvoicexml`, `openinvoicexml/adapters` and `openinvoicexml/browser` (no Node.js needed). They share
+the exact decimal arithmetic and rounding rules of `validateBusinessRules`, so amounts computed with them stay
+consistent with its amount checks. They do not make an invoice valid on their own: it can still fail other rules
+(e.g. a missing identifier or an invalid VAT category).
+Use them to fill `lineAmount`, `vatBreakdowns[].taxableAmount` / `taxAmount` and the document totals of an `Invoice`.
+
+```ts
+import { calculateLineNetAmount, calculateVatAmount, sumAmounts } from "openinvoicexml/browser";
+
+const lineAmount = calculateLineNetAmount(30, 0.0055); // 0.17
+const taxable = sumAmounts([5.5, lineAmount, 0.02]); // 5.69  (BT-116 / BT-109)
+const tax = calculateVatAmount(taxable, 19); // 1.08  (BT-117 / BT-110)
+const total = sumAmounts([taxable, tax]); // 6.77  (BT-112)
+```
+
+| Function                                                          | Parameters                                                                                                                                                                   | Returns                                              |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `calculateLineNetAmount(quantity, unitPrice, allowancesCharges?)` | `quantity: number`, `unitPrice: number`, optional `allowancesCharges: readonly { amount: number; isCharge: boolean }[]` (type `AmountAdjustment`; an `AllowanceCharge` fits) | `number`: BT-131 line net amount, at most 2 decimals |
+| `calculateVatAmount(taxableAmount, vatRatePercent)`               | `taxableAmount: number` (BT-116), `vatRatePercent: number` (e.g. `19`)                                                                                                       | `number`: BT-117 VAT amount, at most 2 decimals      |
+| `sumAmounts(amounts)`                                             | `amounts: readonly number[]`                                                                                                                                                 | `number`: exact sum, at most 2 decimals              |
+
+**How they calculate**
+
+- **Exact decimals.** Each number is read through its shortest round-trip text (`String(n)`), so `0.0055` is the
+  decimal 0.0055, not the binary value 0.00549999999999999968…; products and sums are exact. Exponent forms
+  (`1e-7`, `1e21`) are read exactly.
+- **Rounding: half away from zero, to 2 decimals.** Positive and negative amounts round symmetrically:
+  `0.165 → 0.17`, `-0.165 → -0.17`, `1.005 → 1.01`, `0.095 → 0.10`, `-0.095 → -0.10`. For positive amounts this is
+  commercial rounding and what the EN 16931 Schematron's `round()` does; for negative amounts it keeps credit notes
+  symmetric with invoices. Results are never `-0`.
+- **`calculateLineNetAmount`** is consistent with the Peppol BIS Billing 3.0 calculation guidance
+  (PEPPOL-EN16931-R120) for the supported model (see "Peppol scope" below): `round2(quantity × unitPrice)` is
+  rounded **on its own**, then each charge is added and each allowance subtracted (each taken as a 2-decimal amount):
+  `calculateLineNetAmount(2, 95, [{ amount: 10, isCharge: false }])` → `180`;
+  `calculateLineNetAmount(1, 0.005, [{ amount: 1, isCharge: false }])` → `-0.99` (0.01 − 1.00). Negative quantities
+  (credit-note or correction lines) are allowed: `calculateLineNetAmount(-30, 0.0055)` → `-0.17`.
+- **`calculateVatAmount`** takes the taxable amount as a 2-decimal amount, multiplies exactly by the rate and rounds
+  once: `calculateVatAmount(0.5, 19)` → `0.1`; `calculateVatAmount(-0.5, 19)` → `-0.1`. Calculate it per VAT
+  breakdown (per category and rate), not per line.
+- **`sumAmounts`** takes each amount as a 2-decimal amount and adds exactly: `sumAmounts([0.1, 0.2])` → `0.3`
+  (not `0.30000000000000004`). Use it for BT-109 / BT-110 / BT-112 / BT-116 and other sums; the totals of an invoice
+  must match exactly (BR-CO-13 to BR-CO-16).
+
+**Large numbers.** There is no limit inside the calculation (no overflow). The limit is the JavaScript `number`
+itself: inputs and results are exact up to about 15 significant digits (2-decimal amounts up to
+9 999 999 999 999.99). A value with more digits was already changed by JavaScript before it reached the function,
+and a larger result is returned as the nearest `number`.
+
+**Invalid input.** `NaN`, `Infinity`, `-Infinity`, a non-number, a non-array where an array is expected, an adjustment
+without a finite `amount`, or a **money input with more than 2 decimals** (an allowance/charge amount, the taxable
+amount, a summed amount; e.g. `0.125`) returns `NaN`: nothing throws and nothing is rounded silently. Binary noise up
+to 1e-9 (`0.1 + 0.2`) is still accepted. Quantities, unit prices and VAT rates may have any number of decimals.
+`NaN` stays `NaN` through every helper, and `validateBusinessRules` reports it, so `generateInvoiceXml` returns
+`xml: null` instead of an invoice. Range checks (e.g. a valid VAT rate for the category) are the job of
+`validateBusinessRules`, not of these functions.
+
+**Peppol scope.** `calculateLineNetAmount` covers PEPPOL-EN16931-R120 only for the engine's model: base quantity 1
+(BT-149 is not modeled), net price only (no gross price or price discount, BT-147/BT-148), and flat allowance/charge
+amounts (no base amount × percentage, BT-137/BT-138 and BT-142/BT-143). Allowance/charge amounts are taken as given:
+positive for both, the sign comes from `isCharge`.
+
+How the engine itself checks amounts (tolerances, rules): [DATA-MODEL.md, "Rounding"](DATA-MODEL.md#rounding).
 
 ## `toXRechnung(invoice)` — low-level building block
 

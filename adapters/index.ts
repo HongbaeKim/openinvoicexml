@@ -24,6 +24,8 @@ export type { EInvoiceProfile, HybridPdfOptions } from "./hybrid-pdf.js";
 
 // Same function as openinvoicexml/browser's, re-exported so Node callers never import /browser.
 export { generateInvoiceXml } from "./browser.js";
+export { calculateLineNetAmount, calculateVatAmount, sumAmounts } from "../core/amounts.js";
+export type { AmountAdjustment } from "../core/amounts.js";
 export type { GenerateInvoiceXmlResult } from "./browser.js";
 
 export {

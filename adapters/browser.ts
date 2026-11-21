@@ -22,6 +22,8 @@ export { toCii } from "./cii.js";
 export { toHybridPdf, toFacturXPdf } from "./browser-pdf.js";
 export type { BrowserPdfOptions, HybridPdfOptions, PdfFontBytes } from "./browser-pdf.js";
 export { validateBusinessRules } from "../validators/engines/02.business-rules.js";
+export { calculateLineNetAmount, calculateVatAmount, sumAmounts } from "../core/amounts.js";
+export type { AmountAdjustment } from "../core/amounts.js";
 export type { Invoice } from "../core/index.js";
 export type { ValidationIssue } from "../validators/types.js";
 export type { EInvoiceProfile } from "../core/types/profile.js";

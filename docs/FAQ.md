@@ -131,8 +131,11 @@ page is the single source of truth, so this FAQ does not repeat it.
 
 ### Does it calculate my totals?
 
-No. Every total must match the lines to the cent. A mismatch comes back as an issue instead of silently
-corrected XML. See [`EXAMPLES.md`](EXAMPLES.md).
+Not automatically. Every total must match the lines to the cent, and a mismatch comes back as an issue
+instead of silently corrected XML. To compute the amounts, use `calculateLineNetAmount`,
+`calculateVatAmount` and `sumAmounts`; they round the same way as the engine's checks. See
+[`API.md`](API.md#amount-calculations--calculatelinenetamount-calculatevatamount-sumamounts) and
+[`EXAMPLES.md`](EXAMPLES.md).
 
 ### I have no VAT ID. What do I put as the seller ID?
 

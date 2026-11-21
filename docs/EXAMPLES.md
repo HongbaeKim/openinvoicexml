@@ -109,7 +109,9 @@ What happens:
 3. If nothing is an error, `xml` holds an XRechnung 3.0 UBL 2.1 document, ready to send.
 
 The amounts are not calculated for you. Every total must match the lines to the cent, and a
-mismatch comes back as an issue instead of silently corrected XML.
+mismatch comes back as an issue instead of silently corrected XML. The helpers `calculateLineNetAmount`,
+`calculateVatAmount` and `sumAmounts` compute them with the engine's rounding; see
+[`API.md`](API.md#amount-calculations--calculatelinenetamount-calculatevatamount-sumamounts).
 
 To also run the official KoSIT validator on the result, run `make kosit-setup` once and call
 `generateInvoice(invoice, { validateExternally: true })`; the findings come back in
