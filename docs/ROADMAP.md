@@ -81,16 +81,15 @@ across 40+ scenarios.
 - **Week 22:** Code-quality pass — module boundaries, comments, naming. No new features.
 - **Week 23:** Final KoSIT/veraPDF verification across all fixtures and profiles.
 - **Week 24:** Finalize `DEVELOPMENT.md`, contributor onboarding, example usage docs, FAQ.
-- **Week 25:** Full regression pass, issue triage, release notes, reviewer feedback.
-- **Week 26:** Scope freeze, tag v1.0.0-prototype, publish release + funding summary.
+- **Week 25:** Full regression pass, issue triage, release notes, reviewer feedback. Tag v0.6.0.
+- **Week 26:** Scope freeze, tag v1.0.0, publish release + funding summary.
 
 ---
 
-## After v1.0.0-prototype
+## After v1.0.0
 
-Prototype Fund funding ends in November 2026. The funded development scope concludes with
-v1.0.0-prototype, scheduled for 29 November 2026. OpenInvoiceXML itself continues as an open-source
-project.
+Prototype Fund funding ends in November 2026. The funded development scope concludes with v1.0.0
+at the end of November 2026. OpenInvoiceXML itself continues as an open-source project.
 
 The project was not selected for a second phase of Prototype Fund funding. Therefore, the previously
 proposed Phases 6–10 are no longer part of the funded roadmap, and no new schedule replaces them.
