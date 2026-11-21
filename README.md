@@ -38,9 +38,10 @@ enforces coverage thresholds. Releases are listed in [CHANGELOG.md](CHANGELOG.md
 
 ## Prerequisites
 
-- Basic development: Node.js 20+ and npm 10+
-- External validator setup (KoSIT, veraPDF, Mustang): `bash`, `curl`, `unzip` and `tar`. Java does
-  not need a separate installation: the setup scripts download a portable JRE if none is found.
+- Basic development: Node.js 20+, npm 10+ and `git`
+- External validator setup (KoSIT, veraPDF, Mustang): `make`, `bash`, `curl`, `unzip` and `tar`.
+  Java does not need a separate installation: the setup scripts download a portable JRE if none is
+  found.
 
 ## Install
 

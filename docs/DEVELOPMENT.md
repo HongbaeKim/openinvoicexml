@@ -6,9 +6,9 @@ Local setup, tooling, and how to propose changes for `openinvoicexml`.
 
 ## Local Setup
 
-Prerequisites: Node.js ≥ 20.0.0, npm, git. The full path below also needs `curl`, `unzip`, `tar` and
-`bash`; Java is optional, because the setup scripts download a portable JRE into `tools/jre/` when
-no `java` is on your `PATH`.
+Prerequisites: Node.js ≥ 20.0.0, npm, git. The full path below also needs `make`, `curl`, `unzip`,
+`tar` and `bash`; Java is optional, because the setup scripts download a portable JRE into
+`tools/jre/` when no `java` is on your `PATH`.
 
 There are two ways to set up, depending on what you are changing.
 
@@ -42,6 +42,7 @@ always builds first, and a missing `dist/` fails there.
 
 ```bash
 make kosit-setup && make verapdf-setup && make mustang-setup
+npm run build
 npm test
 ```
 
@@ -50,7 +51,9 @@ and Mustang checks run against every fixture. Use it whenever you change the UBL
 hybrid PDF adapters, the mapping, or a fixture.
 
 On a 4-core machine (measured November 2026), the fast path takes about a minute and the full path
-about ten, most of it the Mustang tests. Slower machines or networks take longer.
+about ten, most of it the Mustang tests. Actual timings depend on the available CPU, memory and
+number of test workers (`vitest.config.ts` allows at most two); slower machines or networks take
+longer.
 
 ### Available Commands
 

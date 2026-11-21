@@ -49,10 +49,10 @@ Mindestwerte für die Testabdeckung. Die Releases stehen in [CHANGELOG.md](CHANG
 
 Voraussetzungen:
 
-- Für die Entwicklung: Node.js 20+ und npm 10+
-- Für die Einrichtung der externen Validatoren (KoSIT, veraPDF, Mustang): `bash`, `curl`, `unzip`
-  und `tar`. Java muss nicht separat installiert werden: Die Setup-Skripte laden eine portable JRE
-  herunter, wenn keine gefunden wird.
+- Für die Entwicklung: Node.js 20+, npm 10+ und `git`
+- Für die Einrichtung der externen Validatoren (KoSIT, veraPDF, Mustang): `make`, `bash`, `curl`,
+  `unzip` und `tar`. Java muss nicht separat installiert werden: Die Setup-Skripte laden eine
+  portable JRE herunter, wenn keine gefunden wird.
 
 Installieren:
 
