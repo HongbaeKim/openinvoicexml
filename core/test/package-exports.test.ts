@@ -1,17 +1,42 @@
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+
+import { strictValidation } from "../../validators/test/validator-availability.test-helpers.js";
 
 /**
  * The amount helpers through the PACKAGE ENTRY POINTS, as a consumer imports them: a separate Node process imports
  * `openinvoicexml`, `openinvoicexml/adapters` and `openinvoicexml/browser` by package name (Node resolves the
- * package's own "exports" map, i.e. the built dist/ files). Needs `npm run build` first (CI and `make all` build
- * before testing); without dist/ the test fails with a clear message instead of passing silently.
+ * package's own "exports" map, i.e. the built dist/ files). Needs `npm run build` first: CI builds before testing
+ * (ci.yml "Build" step), and so does `make all`.
+ *
+ * A missing dist/ follows the same rule as a missing external validator (validator-availability.test-helpers.ts):
+ * in strict mode (CI, or OPENINVOICE_STRICT_VALIDATION) the test fails and lists the missing files; locally it is
+ * skipped, with the reason in the test name, so `npm install && npm test` on a fresh clone stays green.
+ * A dist/ from an older build tests that older code: rebuild after changing the source.
  */
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const built =
-  existsSync(`${root}/dist/core/index.js`) && existsSync(`${root}/dist/adapters/browser.js`);
+
+/** The package "exports" subpaths this test imports, read from package.json so the two can't drift apart. */
+const ENTRY_POINTS = {
+  openinvoicexml: ".",
+  "openinvoicexml/adapters": "./adapters",
+  "openinvoicexml/browser": "./browser",
+};
+const packageExports = (
+  JSON.parse(readFileSync(`${root}/package.json`, "utf8")) as {
+    exports: Record<string, { import?: string } | undefined>;
+  }
+).exports;
+const missingEntryPoints = Object.entries(ENTRY_POINTS).flatMap(([entry, subpath]) => {
+  const file = packageExports[subpath]?.import;
+  if (file === undefined) return [`${entry} (no "exports" entry for ${subpath})`];
+  return existsSync(`${root}/${file}`) ? [] : [`${entry} → ${file}`];
+});
+const built = missingEntryPoints.length === 0;
+const strict = strictValidation();
+const notBuiltReason = `dist/ is not built (missing: ${missingEntryPoints.join(", ")}); run \`npm run build\` first`;
 
 const probe = `
 const out = {};
@@ -29,14 +54,20 @@ for (const entry of ["openinvoicexml", "openinvoicexml/adapters", "openinvoicexm
 console.log(JSON.stringify(out));
 `;
 
-describe("public amount API through the package entry points", () => {
-  it("dist/ is built (run `npm run build` before this test)", () => {
-    expect(built).toBe(true);
-  });
+const EXPORT_TEST_NAME =
+  "exports the three helpers from openinvoicexml, /adapters and /browser, and nothing internal";
 
-  it.runIf(built)(
-    "exports the three helpers from openinvoicexml, /adapters and /browser, and nothing internal",
+describe("public amount API through the package entry points", () => {
+  // Built: run. Not built + strict (CI): run, so the first assertion fails and names the missing files.
+  // Not built + local: skip, and say why in the name (Vitest prints it in the skipped list).
+  const exportTest = built || strict ? it : it.skip;
+  exportTest(
+    built || strict ? EXPORT_TEST_NAME : `${EXPORT_TEST_NAME} [skipped locally: ${notBuiltReason}]`,
     () => {
+      expect(
+        missingEntryPoints,
+        `${notBuiltReason}. Strict mode (CI) requires the package-export check to run.`,
+      ).toEqual([]);
       const stdout = execFileSync(process.execPath, ["--input-type=module", "-e", probe], {
         cwd: root,
         encoding: "utf8",

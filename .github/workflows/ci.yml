@@ -11,8 +11,9 @@ on:
 # 1. Install dependencies
 # 2. Lint
 # 3. Type-check
-# 4. Install KoSIT, veraPDF, and Mustang
-# 5. Run tests with coverage and strict validation
+# 4. Build dist/
+# 5. Install KoSIT, veraPDF, and Mustang
+# 6. Run tests with coverage and strict validation
 #
 # Any failed step fails the workflow.
 # Missing external validators must fail tests, not be silently skipped.
@@ -41,6 +42,11 @@ jobs:
 
       - name: Type-check
         run: npm run typecheck
+
+      # Compile to dist/ so the package-export test can import the package
+      # by name, and so CI checks that the build itself works.
+      - name: Build
+        run: npm run build
 
       # Install KoSIT validator, XRechnung configuration,
       # and a portable JRE if system Java is unavailable.

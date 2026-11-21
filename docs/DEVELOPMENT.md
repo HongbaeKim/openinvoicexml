@@ -33,6 +33,11 @@ Tests  <passed> passed | <skipped> skipped (<total>)
 Only "passed" with `0 skipped` means the validators ran. CI (or `OPENINVOICE_STRICT_VALIDATION=1`)
 turns a missing validator into a failure instead of a skip.
 
+The package-export test (`core/test/package-exports.test.ts`) imports the built package from `dist/`,
+so on a fresh clone it is skipped too, with the reason in its name. Run `npm run build` before
+`npm test` to include it, and rebuild after changing the source: an old `dist/` tests old code. CI
+always builds first, and a missing `dist/` fails there.
+
 ### Full path: anything that touches XML or PDF generation
 
 ```bash
@@ -259,9 +264,10 @@ usually touches:
 ### Continuous integration
 
 Every push and pull request to `main` runs `.github/workflows/ci.yml`: `npm ci`, lint, typecheck,
-the KoSIT, veraPDF and Mustang setup scripts, then `npm run test:coverage` in strict validation
-mode. A missing validator or coverage below the thresholds in `vitest.config.ts` fails the run, so
-every PR is checked against the real validators, even if you only ran the fast path locally.
+`npm run build`, the KoSIT, veraPDF and Mustang setup scripts, then `npm run test:coverage` in strict
+validation mode. A missing validator, a missing `dist/` or coverage below the thresholds in
+`vitest.config.ts` fails the run, so every PR is checked against the real validators, even if you
+only ran the fast path locally.
 
 ## License
 
