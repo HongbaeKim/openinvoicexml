@@ -315,7 +315,38 @@ credit notes).
 `lines[i].unitPrice` (BT-146) is a price per unit, not a currency total, so it is not limited to 2
 decimals (e.g. `0.0055` per piece) and is written to the XML and PDF unrounded. `lineAmount`
 (BT-131) is still limited to 2 decimals (BR-DEC-23) and must equal `round2(quantity × unitPrice)`
-adjusted for line allowances/charges.
+adjusted for line allowances/charges (see "Rounding" below for exactly how).
+
+### Rounding
+
+All amount calculations and checks use exact decimal arithmetic (`core/utils/decimal.ts`, native
+`BigInt`), never binary floating point. Numbers from the `Invoice` object are read through their
+shortest round-trip text (`String(n)`), so `0.0055` is the decimal 0.0055; exponent forms (`1e-7`) are
+accepted. Values are limited only by what a JavaScript `number` can carry (about 15-17 significant digits).
+
+- **Method:** half away from zero, to 2 decimals: 0.165 → 0.17, −0.165 → −0.17, 1.005 → 1.01. For positive
+  amounts this equals commercial rounding and the XPath `round()` of the EN 16931 Schematron; for negative
+  amounts it keeps credit notes symmetric with invoices and matches BR-S-09 / BR-CO-17 (which round the
+  absolute VAT amount).
+- **BT-131 line net amount** (consistent with Peppol BIS Billing 3.0, PEPPOL-EN16931-R120, for the supported
+  model: price base quantity BT-149 of 1, flat allowance/charge amounts): `round2(quantity × unitPrice)`
+  on its own, then line charges added and line allowances subtracted (both 2-decimal amounts). Rounding the
+  product separately keeps the line independent of its adjustments (1 × 0.005 − 1.00 = −0.99).
+- **BT-117 VAT per category:** `round2(BT-116 × rate ÷ 100)`, per VAT breakdown (not per line).
+- **Exact sums, never rounded again:** BT-116 (Σ BT-131 ± document allowances/charges of the category),
+  BT-106, BT-107, BT-108, BT-109, BT-110, BT-112, BT-115.
+- **Checks:** `LINE_AMOUNT_ROUNDING`, and `VAT_TAXABLE_AMOUNT_MISMATCH` / `VAT_TAX_AMOUNT_ROUNDING` for
+  category `S`, allow 1 cent. This is an OpenInvoiceXML validation policy, not a Peppol requirement: it is
+  stricter than R120's 0.02 warning and BR-S-08/BR-S-09's ±1. An invoice this engine accepts is not
+  guaranteed to pass every external validator.
+  For the zero-VAT categories `Z`, `E`, `AE`, `K`, `G` and `O` both breakdown checks are exact: the taxable
+  amount must match (BR-Z/E/AE/IC/G/O-08) and the VAT amount must be exactly 0 (BR-Z/E/AE/IC/G/O-09). The
+  document totals
+  (`INVOICE_TAX_EXCLUSIVE_AMOUNT_MISMATCH`, `INVOICE_TAX_AMOUNT_MISMATCH`,
+  `INVOICE_TAX_INCLUSIVE_AMOUNT_MISMATCH`, `INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH`) must be exact, as BR-CO-13 to
+  BR-CO-16 require; BT-109 is checked against Σ BT-131 − document allowances + document charges (BR-CO-13).
+- **Output:** XML amounts are written from the exact decimal value with 2 decimals (no exponent, no `-0.00`);
+  unit prices keep up to 10 decimals (`MAX_UNIT_PRICE_DECIMALS`).
 
 ### Not yet mapped (deferred)
 

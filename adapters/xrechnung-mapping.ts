@@ -1,4 +1,6 @@
 import type { Invoice, Party, VatBreakdown, InvoiceLine, AllowanceCharge } from "../core/index.js";
+import { toNumber } from "../core/utils/decimal.js";
+import { sumMoney } from "../core/utils/monetary.js";
 
 /**
  * Field mapping — resolves the internal Invoice model (and its nested types) into plain,
@@ -197,15 +199,16 @@ export interface DocumentFields {
 // sum all the lineAmount
 // using reduce() many items -> one value
 function sumLineAmounts(lines: InvoiceLine[]): number {
-  return lines.reduce((sum, line) => sum + line.lineAmount, 0);
+  // Exact decimal sum of the 2-decimal line amounts (no float accumulation).
+  const amounts = lines.map((line) => line.lineAmount);
+  return amounts.every(Number.isFinite) ? toNumber(sumMoney(amounts)) : Number.NaN; // NaN propagates as before
 }
 
 /** BT-107/BT-108: sum of document-level allowance or charge amounts — derived, not stored. */
 function sumAllowancesCharges(items: AllowanceCharge[] | undefined, isCharge: boolean): number {
-  return (items ?? [])
-    // isCharge === true | isCharge === false
-    .filter((ac) => ac.isCharge === isCharge)
-    .reduce((sum, ac) => sum + ac.amount, 0);
+  // Exact decimal sum (no float accumulation). isCharge === true | isCharge === false
+  const amounts = (items ?? []).filter((ac) => ac.isCharge === isCharge).map((ac) => ac.amount);
+  return amounts.every(Number.isFinite) ? toNumber(sumMoney(amounts)) : Number.NaN; // NaN propagates as before
 }
 
 export function mapInvoice(invoice: Invoice): DocumentFields {

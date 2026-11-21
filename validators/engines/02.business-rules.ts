@@ -1,11 +1,21 @@
 import type { Invoice } from "../../core/types/invoice.js";
-import type { AllowanceCharge } from "../../core/types/allowance-charge.js";
 import type { EInvoiceProfile } from "../../core/types/profile.js";
+import type { VatCategoryCode } from "../../core/types/vat-breakdown.js";
 import type { ValidationIssue } from "../types.js";
-import { isClose, round2 } from "../../core/utils/monetary.js";
+import { add, sub, ZERO, type Decimal } from "../../core/utils/decimal.js";
+import {
+  centsApart,
+  lineNetAmount,
+  money,
+  moneyText,
+  netAdjustment,
+  sumMoney,
+  vatAmount,
+} from "../../core/utils/monetary.js";
 import { resolvePlaceOfSupply } from "../../core/utils/place-of-supply.js";
 import {
   EXEMPTION_REASON_REQUIRED_CATEGORIES,
+  ZERO_RATE_CATEGORIES,
   checkDecimalPrecision,
   checkVatRateForCategory,
 } from "../rules/17.vat-rate.js";
@@ -23,9 +33,50 @@ import { checkSellerIdentifierRequirement } from "../rules/21.seller-identifier.
 
 export type { ValidationIssue } from "../types.js";
 
-/** Net effect of a set of allowances/charges: charges add, allowances (discounts) subtract. */
-function netAllowanceChargeAdjustment(items: AllowanceCharge[] | undefined): number {
-  return (items ?? []).reduce((sum, ac) => sum + (ac.isCharge ? ac.amount : -ac.amount), 0);
+// Amount checks use exact decimal arithmetic (core/utils/decimal.ts) and compare whole cents; nothing here
+// is a float comparison. Tolerances:
+//   - LINE_AMOUNT_ROUNDING, and VAT_TAXABLE_AMOUNT_MISMATCH / VAT_TAX_AMOUNT_ROUNDING for category 'S': 1 cent
+//     (the engine's existing project tolerance; stricter than PEPPOL-EN16931-R120's 0.02 warning and
+//     BR-S-08/BR-S-09's ±1).
+//   - VAT_TAXABLE_AMOUNT_MISMATCH / VAT_TAX_AMOUNT_ROUNDING for the zero-VAT categories Z, E, AE, K, G, O: exact.
+//     BR-Z-08, BR-E-08, BR-AE-08, BR-IC-08, BR-G-08, BR-O-08 compare the taxable amount with no tolerance, and
+//     BR-Z-09, BR-E-09, BR-AE-09, BR-IC-09, BR-G-09, BR-O-09 require the VAT amount to be exactly 0.
+//   - Document totals (BR-CO-13 to BR-CO-16): exact, as the EN 16931 Schematron requires.
+const LINE_AND_VAT_TOLERANCE_CENTS = 1n;
+const ZERO_VAT_TOLERANCE_CENTS = 0n;
+const TOTALS_TOLERANCE_CENTS = 0n;
+
+/** EN 16931 rule-ID prefix of each zero-VAT category: 'K' (intra-community supply) is "IC". */
+const ZERO_VAT_RULE_PREFIX: Partial<Record<VatCategoryCode, string>> = {
+  Z: "BR-Z",
+  E: "BR-E",
+  AE: "BR-AE",
+  K: "BR-IC",
+  G: "BR-G",
+  O: "BR-O",
+};
+
+/**
+ * true when `stated` differs from the expected amount by more than `toleranceCents`. A non-finite stated value, or
+ * an expected value that cannot be computed because some input is non-finite (NaN / Infinity), counts as a
+ * difference, so the check reports it instead of throwing (as the old float comparison with NaN also failed).
+ */
+function differsBy(stated: number, expected: () => Decimal, toleranceCents: bigint): boolean {
+  if (!Number.isFinite(stated)) return true;
+  try {
+    return centsApart(money(stated), expected()) > toleranceCents;
+  } catch {
+    return true;
+  }
+}
+
+/** The expected amount as text for messages, or a note when an input is non-finite. */
+function expectedText(expected: () => Decimal): string {
+  try {
+    return moneyText(expected());
+  } catch {
+    return "not computable: an input is not a finite number";
+  }
 }
 
 /**
@@ -72,14 +123,13 @@ export function validateBusinessRules(
 
     // BT-131 = quantity × unitPrice, adjusted by this line's own allowances/charges
     // (BG-27/BG-28) — subtract allowances (discounts), add charges (surcharges).
-    const expectedLineAmount = round2(
-      line.quantity * line.unitPrice + netAllowanceChargeAdjustment(line.allowancesCharges),
-    );
-    if (!isClose(line.lineAmount, expectedLineAmount)) {
+    // Peppol BIS 3.0 / PEPPOL-EN16931-R120: round(quantity × unitPrice) on its own, then + charges − allowances.
+    const expectedLineAmount = (): Decimal => lineNetAmount(line.quantity, line.unitPrice, line.allowancesCharges);
+    if (differsBy(line.lineAmount, expectedLineAmount, LINE_AND_VAT_TOLERANCE_CENTS)) {
       issues.push({
         code: "LINE_AMOUNT_ROUNDING",
         severity: "error",
-        message: `${path}.lineAmount: BT-131 line net amount ${line.lineAmount} does not match quantity × unit price adjusted for line-level allowances/charges (${expectedLineAmount}).`,
+        message: `${path}.lineAmount: BT-131 line net amount ${line.lineAmount} does not match quantity × unit price adjusted for line-level allowances/charges (${expectedText(expectedLineAmount)}).`,
         path: `${path}.lineAmount`,
       });
     }
@@ -158,10 +208,19 @@ export function validateBusinessRules(
   // itself is already covered by LINE_AMOUNT_ROUNDING above and VAT_TAXABLE_AMOUNT_MISMATCH
   // below.
   checkAllowanceChargeRequirements(invoice, issues);
+  // BR-DEC-01/05 (document level) and BR-DEC-24/27 (line level): allowance/charge amounts have at most 2 decimals.
+  // Without this check a 3-decimal amount would be rounded silently by the amount checks and in the XML.
+  (invoice.allowancesCharges ?? []).forEach((ac, j) =>
+    checkDecimalPrecision(ac.amount, `allowancesCharges[${j}].amount`, issues),
+  );
+  invoice.lines.forEach((line, i) =>
+    (line.allowancesCharges ?? []).forEach((ac, j) =>
+      checkDecimalPrecision(ac.amount, `lines[${i}].allowancesCharges[${j}].amount`, issues),
+    ),
+  );
 
   // --- VAT breakdown checks -----------------------------------------------
-  let totalTaxableAmount = 0;
-  let totalTaxAmount = 0;
+  const breakdownTaxAmounts: number[] = [];
 
   invoice.vatBreakdowns.forEach((vb, index) => {
     const path = `vatBreakdowns[${index}]`;
@@ -217,35 +276,49 @@ export function validateBusinessRules(
     const docAdjustmentsForCategory = (invoice.allowancesCharges ?? []).filter(
       (ac) => ac.vatCategoryCode === vb.categoryCode && ac.vatRate === vb.rate,
     );
-    const expectedTaxableAmount = round2(
-      linesForCategory.reduce((sum, line) => sum + line.lineAmount, 0) +
-        netAllowanceChargeAdjustment(docAdjustmentsForCategory),
-    );
-    if (!isClose(vb.taxableAmount, expectedTaxableAmount)) {
+    // Zero-VAT categories: exact taxable amount (BR-<x>-08) and a VAT amount of exactly 0 (BR-<x>-09), whatever
+    // rate was stated (a non-zero rate is reported separately by checkVatRateForCategory).
+    const zeroVatRule = ZERO_RATE_CATEGORIES.includes(vb.categoryCode)
+      ? ZERO_VAT_RULE_PREFIX[vb.categoryCode]
+      : undefined;
+    const breakdownTolerance =
+      zeroVatRule === undefined ? LINE_AND_VAT_TOLERANCE_CENTS : ZERO_VAT_TOLERANCE_CENTS;
+
+    const expectedTaxableAmount = (): Decimal =>
+      add(sumMoney(linesForCategory.map((line) => line.lineAmount)), netAdjustment(docAdjustmentsForCategory));
+    if (differsBy(vb.taxableAmount, expectedTaxableAmount, breakdownTolerance)) {
       issues.push({
         code: "VAT_TAXABLE_AMOUNT_MISMATCH",
         severity: "error",
-        message: `${path}.taxableAmount: BT-116 taxable amount ${vb.taxableAmount} does not match the sum of line amounts (${expectedTaxableAmount}) for category '${vb.categoryCode}' at ${vb.rate}%.`,
+        message: `${path}.taxableAmount: BT-116 taxable amount ${vb.taxableAmount} does not match the sum of line amounts (${expectedText(expectedTaxableAmount)}) for category '${vb.categoryCode}' at ${vb.rate}%${zeroVatRule === undefined ? "" : ` (${zeroVatRule}-08: must match exactly)`}.`,
         path: `${path}.taxableAmount`,
       });
     }
 
-    const expectedTaxAmount = round2(vb.taxableAmount * (vb.rate / 100));
-    if (!isClose(vb.taxAmount, expectedTaxAmount)) {
+    const expectedTaxAmount = (): Decimal =>
+      zeroVatRule === undefined ? vatAmount(money(vb.taxableAmount), vb.rate) : ZERO;
+    if (differsBy(vb.taxAmount, expectedTaxAmount, breakdownTolerance)) {
       issues.push({
         code: "VAT_TAX_AMOUNT_ROUNDING",
         severity: "error",
-        message: `${path}.taxAmount: BT-117 VAT amount ${vb.taxAmount} does not match taxable amount × rate (${expectedTaxAmount}).`,
+        message:
+          zeroVatRule === undefined
+            ? `${path}.taxAmount: BT-117 VAT amount ${vb.taxAmount} does not match taxable amount × rate (${expectedText(expectedTaxAmount)}).`
+            : `${path}.taxAmount: BT-117 VAT amount ${vb.taxAmount} must be exactly 0 for VAT category '${vb.categoryCode}' (${zeroVatRule}-09).`,
         path: `${path}.taxAmount`,
       });
     }
 
-    totalTaxableAmount += vb.taxableAmount;
-    totalTaxAmount += vb.taxAmount;
+    breakdownTaxAmounts.push(vb.taxAmount);
   });
 
-  totalTaxableAmount = round2(totalTaxableAmount);
-  totalTaxAmount = round2(totalTaxAmount);
+  // BR-CO-10/11/12/13: BT-109 = Σ BT-131 − Σ document allowances + Σ document charges (exact).
+  const expectedTaxExclusiveAmount = (): Decimal =>
+    add(sumMoney(invoice.lines.map((line) => line.lineAmount)), netAdjustment(invoice.allowancesCharges));
+  // BR-CO-14: BT-110 = Σ BT-117 (exact).
+  const expectedTaxAmountTotal = (): Decimal => sumMoney(breakdownTaxAmounts);
+  const totalMismatch = (stated: number, expected: () => Decimal): boolean =>
+    differsBy(stated, expected, TOTALS_TOLERANCE_CENTS);
 
   // --- Document-level totals ----------------------------------------------
   checkDecimalPrecision(invoice.taxExclusiveAmount, "taxExclusiveAmount", issues);
@@ -255,49 +328,54 @@ export function validateBusinessRules(
   if (invoice.roundingAmount !== undefined) {
     checkDecimalPrecision(invoice.roundingAmount, "roundingAmount", issues);
   }
+  // BR-DEC-16: BT-113 paid amount has at most 2 decimals. Without this check a value like 10.005 would be
+  // rounded silently (to 10.01) by the BR-CO-16 check and in the XML.
+  if (invoice.prepaidAmount !== undefined) {
+    checkDecimalPrecision(invoice.prepaidAmount, "prepaidAmount", issues);
+  }
 
-  // BT-109 taxExclusiveAmount = sum of all breakdown taxableAmounts. Each taxableAmount
-  // (BT-116) already folds in that category's document-level allowances/charges via the
-  // VAT_TAXABLE_AMOUNT_MISMATCH check above, so no separate adjustment is needed here.
-  if (!isClose(invoice.taxExclusiveAmount, totalTaxableAmount)) {
+  // BT-109 taxExclusiveAmount = Σ line net amounts − document allowances + document charges (BR-CO-13).
+  if (totalMismatch(invoice.taxExclusiveAmount, expectedTaxExclusiveAmount)) {
     issues.push({
       code: "INVOICE_TAX_EXCLUSIVE_AMOUNT_MISMATCH",
       severity: "error",
-      message: `taxExclusiveAmount: BT-109 amount ${invoice.taxExclusiveAmount} does not match the sum of VAT breakdown taxable amounts (${totalTaxableAmount}).`,
+      message: `taxExclusiveAmount: BT-109 amount ${invoice.taxExclusiveAmount} does not match the sum of line net amounts minus document allowances plus document charges (${expectedText(expectedTaxExclusiveAmount)}).`,
       path: "taxExclusiveAmount",
     });
   }
 
   // BT-110 taxAmount = sum of all breakdown taxAmounts.
-  if (!isClose(invoice.taxAmount, totalTaxAmount)) {
+  if (totalMismatch(invoice.taxAmount, expectedTaxAmountTotal)) {
     issues.push({
       code: "INVOICE_TAX_AMOUNT_MISMATCH",
       severity: "error",
-      message: `taxAmount: BT-110 total VAT amount ${invoice.taxAmount} does not match the sum of VAT breakdown amounts (${totalTaxAmount}).`,
+      message: `taxAmount: BT-110 total VAT amount ${invoice.taxAmount} does not match the sum of VAT breakdown amounts (${expectedText(expectedTaxAmountTotal)}).`,
       path: "taxAmount",
     });
   }
 
   // BT-112 taxInclusiveAmount = taxExclusiveAmount + taxAmount.
-  const expectedTaxInclusiveAmount = round2(invoice.taxExclusiveAmount + invoice.taxAmount);
-  if (!isClose(invoice.taxInclusiveAmount, expectedTaxInclusiveAmount)) {
+  const expectedTaxInclusiveAmount = (): Decimal => add(money(invoice.taxExclusiveAmount), money(invoice.taxAmount));
+  if (totalMismatch(invoice.taxInclusiveAmount, expectedTaxInclusiveAmount)) {
     issues.push({
       code: "INVOICE_TAX_INCLUSIVE_AMOUNT_MISMATCH",
       severity: "error",
-      message: `taxInclusiveAmount: BT-112 amount ${invoice.taxInclusiveAmount} does not match taxExclusiveAmount + taxAmount (${expectedTaxInclusiveAmount}).`,
+      message: `taxInclusiveAmount: BT-112 amount ${invoice.taxInclusiveAmount} does not match taxExclusiveAmount + taxAmount (${expectedText(expectedTaxInclusiveAmount)}).`,
       path: "taxInclusiveAmount",
     });
   }
 
   // BR-CO-16: BT-115 = BT-112 − BT-113 + BT-114.
-  const expectedDuePayableAmount = round2(
-    invoice.taxInclusiveAmount - (invoice.prepaidAmount ?? 0) + (invoice.roundingAmount ?? 0),
-  );
-  if (!isClose(invoice.duePayableAmount, expectedDuePayableAmount)) {
+  const expectedDuePayableAmount = (): Decimal =>
+    add(
+      sub(money(invoice.taxInclusiveAmount), invoice.prepaidAmount === undefined ? ZERO : money(invoice.prepaidAmount)),
+      invoice.roundingAmount === undefined ? ZERO : money(invoice.roundingAmount),
+    );
+  if (totalMismatch(invoice.duePayableAmount, expectedDuePayableAmount)) {
     issues.push({
       code: "INVOICE_DUE_PAYABLE_AMOUNT_MISMATCH",
       severity: "error",
-      message: `duePayableAmount: BT-115 amount ${invoice.duePayableAmount} does not match taxInclusiveAmount minus prepaidAmount plus roundingAmount (${expectedDuePayableAmount}).`,
+      message: `duePayableAmount: BT-115 amount ${invoice.duePayableAmount} does not match taxInclusiveAmount minus prepaidAmount plus roundingAmount (${expectedText(expectedDuePayableAmount)}).`,
       path: "duePayableAmount",
     });
   }
