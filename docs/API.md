@@ -10,12 +10,12 @@ website, in [`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-
 
 ## Entry points
 
-| Import                      | Environment | Contents                                                                                                                |
-| --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `openinvoicexml/browser`    | Browser     | `generateInvoiceXml`, `toXRechnung`, `toHybridPdf`, `toFacturXPdf`, `validateBusinessRules`, amount calculations, types |
-| `openinvoicexml/adapters`   | Node.js     | All generation functions, `extractEmbeddedXml`, file/XML external validation, amount calculations                       |
-| `openinvoicexml/validators` | Node.js     | `validateInvoiceSchema`, `validateBusinessRules`, `runKosit`/`runVeraPdf`/`runMustang`, converters                      |
-| `openinvoicexml`            | Any         | The `Invoice` types (`Invoice`, `InvoiceLine`, `Party`, `VatBreakdown`, ... ), amount calculations                      |
+| Import                      | Environment | Contents                                                                                                                                        |
+| --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `openinvoicexml/browser`    | Browser     | `generateInvoiceXml`, `generateCii`, `toXRechnung`, `toCii`, `toHybridPdf`, `toFacturXPdf`, `validateBusinessRules`, amount calculations, types |
+| `openinvoicexml/adapters`   | Node.js     | All generation functions, `extractEmbeddedXml`, file/XML external validation, amount calculations                                               |
+| `openinvoicexml/validators` | Node.js     | `validateInvoiceSchema`, `validateBusinessRules`, `runKosit`/`runVeraPdf`/`runMustang`, converters                                              |
+| `openinvoicexml`            | Any         | The `Invoice` types (`Invoice`, `InvoiceLine`, `Party`, `VatBreakdown`, ... ), amount calculations                                              |
 
 `toHybridPdf` and `toFacturXPdf` exist in both `openinvoicexml/browser` and
 `openinvoicexml/adapters` with the same output; they differ only in how fonts are loaded (see
