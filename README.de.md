@@ -123,20 +123,21 @@ Weitere Funktionen und Ausgabeformate: [docs/API.de.md](docs/API.de.md) (Überbl
 Die Dokumente sind auf Englisch. Deutsche Fassungen gibt es für diese Seite, die
 [unterstützten Szenarien](docs/SUPPORTED_SCENARIOS.de.md) und einen [API-Überblick](docs/API.de.md).
 
-| Dokument                                                | Inhalt                                                                |
-| ------------------------------------------------------- | --------------------------------------------------------------------- |
-| [`ARCHITECTURE.md`](docs/ARCHITECTURE.md)               | Adapter-Muster, Modulgrenzen, Datenfluss, Browser und Node.js         |
-| [`DEVELOPMENT.md`](docs/DEVELOPMENT.md)                 | Lokale Einrichtung, Befehle, Abhängigkeiten, Konventionen             |
-| [`COMPLIANCE.md`](docs/COMPLIANCE.md)                   | Compliance-Quellen, Regel-zu-Datei-Zuordnung, Validierung             |
-| [`DATA-MODEL.md`](docs/DATA-MODEL.md)                   | Internes Rechnungsschema, Zuordnung der XRechnung-BT                  |
-| [`API.md`](docs/API.md)                                 | API-Verwendung und Fehlercodes                                        |
-| [`EXAMPLES.md`](docs/EXAMPLES.md)                       | Drei durchgehende Beispiele: Standardrechnung, §19, hybrides PDF      |
-| [`FAQ.md`](docs/FAQ.md)                                 | Fragen von Freiberuflern und Kleinunternehmen                         |
-| [`PERFORMANCE.md`](docs/PERFORMANCE.md)                 | Gemessene Zeiten für Erzeugung und Validierung (`make benchmark`)     |
-| [`SUPPORTED_SCENARIOS.md`](docs/SUPPORTED_SCENARIOS.md) | Unterstützte, teilweise unterstützte und nicht unterstützte Szenarien |
-| [`LIMITATIONS.md`](docs/LIMITATIONS.md)                 | Was nicht unterstützt oder nicht geprüft wird, und warum              |
-| [`ROADMAP.md`](docs/ROADMAP.md)                         | Phasenziele, Nicht-Ziele, offene Fragen                               |
-| [`SECURITY.md`](docs/SECURITY.md)                       | Sicherheitshinweise und verantwortungsvolle Offenlegung               |
+| Dokument                                                | Inhalt                                                                            |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [`ARCHITECTURE.md`](docs/ARCHITECTURE.md)               | Adapter-Muster, Modulgrenzen, Datenfluss, Browser und Node.js                     |
+| [`DEVELOPMENT.md`](docs/DEVELOPMENT.md)                 | Lokale Einrichtung, Befehle, Abhängigkeiten, Konventionen                         |
+| [`COMPLIANCE.md`](docs/COMPLIANCE.md)                   | Compliance-Quellen, Regel-zu-Datei-Zuordnung, Validierung                         |
+| [`DATA-MODEL.md`](docs/DATA-MODEL.md)                   | Internes Rechnungsschema, Zuordnung der XRechnung-BT                              |
+| [`API.md`](docs/API.md)                                 | API-Verwendung und Fehlercodes                                                    |
+| [`EXAMPLES.md`](docs/EXAMPLES.md)                       | Drei durchgehende Beispiele: Standardrechnung, §19, hybrides PDF                  |
+| [`FAQ.md`](docs/FAQ.md)                                 | Fragen von Freiberuflern und Kleinunternehmen                                     |
+| [`PERFORMANCE.md`](docs/PERFORMANCE.md)                 | Gemessene Zeiten für Erzeugung und Validierung (`make benchmark`)                 |
+| [`SUPPORTED_SCENARIOS.md`](docs/SUPPORTED_SCENARIOS.md) | Unterstützte, teilweise unterstützte und nicht unterstützte Szenarien             |
+| [`LIMITATIONS.md`](docs/LIMITATIONS.md)                 | Was nicht unterstützt oder nicht geprüft wird, und warum                          |
+| [`ROADMAP.md`](docs/ROADMAP.md)                         | Phasenziele, Nicht-Ziele, offene Fragen                                           |
+| [`SECURITY.md`](docs/SECURITY.md)                       | Sicherheitshinweise und verantwortungsvolle Offenlegung                           |
+| [`VERSIONING.md`](docs/VERSIONING.md)                   | Öffentliche API, semantische Versionierung, Breaking Changes und Fehlerbehebungen |
 
 ## Begleit-Repository
 

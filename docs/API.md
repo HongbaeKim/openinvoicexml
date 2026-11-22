@@ -2,7 +2,8 @@
 
 Usage reference for the public API: generating invoices (XML and PDF), validating them, and
 checking existing files. For narrative, task-oriented walkthroughs, see
-[`EXAMPLES.md`](EXAMPLES.md).
+[`EXAMPLES.md`](EXAMPLES.md). What is public and how it may change between versions is defined in
+[`VERSIONING.md`](VERSIONING.md).
 
 This library has no HTTP API. The validation endpoints of the hosted website are described with the
 website, in [`openinvoicexml-web`](https://github.com/HongbaeKim/openinvoicexml-web)

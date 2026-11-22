@@ -130,6 +130,7 @@ and an [API overview](docs/API.de.md). They are maintained by hand and may lag b
 | `SUPPORTED_SCENARIOS.md` — Supported, partially supported, and unsupported scenarios                          | Done   |
 | `LIMITATIONS.md` — What is not supported and why                                                              | Done   |
 | `SECURITY.md` — Security considerations and responsible disclosure                                            | Done   |
+| `VERSIONING.md` — Public API, semantic versioning, breaking changes vs. bug fixes                             | Done   |
 
 ## Companion repo
 
